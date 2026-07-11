@@ -361,8 +361,8 @@
 
     <div class="side-foot">
       <div class="user-chip">
-        <div class="avatar">ي</div>
-        <div><b>يوسف حسن</b><span>ثالثة ثانوي</span></div>
+        <div class="avatar" id="sidebar-avatar">؟</div>
+        <div><b id="sidebar-name">جارٍ التحميل...</b><span id="sidebar-grade"></span></div>
       </div>
     </div>
   </aside>
@@ -372,41 +372,40 @@
 
     <div class="topbar">
       <div>
-        <h1>أهلاً، يوسف 👋</h1>
-        <p>كمّلي من حيث وقفتي — باقي حاجات كتير النهاردة.</p>
+        <h1 id="topbar-greeting">أهلاً 👋</h1>
+        <p>كورساتك وحصصك في مكان واحد.</p>
       </div>
-      <div class="streak-chip">🔥 <span>7 أيام متتالية مذاكرة</span></div>
     </div>
 
-    <!-- ===== STATS ===== -->
+    <!-- ===== STATS (أرقام حقيقية من enrollments/lessons) ===== -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="top-row">
-          <div class="stat-ic" style="background:rgba(95,168,43,0.16); color:var(--green-bright);">📼</div>
+          <div class="stat-ic" style="background:rgba(95,168,43,0.16); color:var(--green-bright);">🎓</div>
         </div>
-        <b>68%</b>
-        <span>نسبة إكمال الكورسات</span>
+        <b id="stat-paid-courses">—</b>
+        <span>كورسات مشترك فيها فعليًا</span>
       </div>
       <div class="stat-card">
         <div class="top-row">
-          <div class="stat-ic" style="background:rgba(232,196,104,0.16); color:var(--gold);">📝</div>
+          <div class="stat-ic" style="background:rgba(232,196,104,0.16); color:var(--gold);">📼</div>
         </div>
-        <b>3</b>
-        <span>واجبات مستنياك</span>
+        <b id="stat-total-lessons">—</b>
+        <span>إجمالي الحصص المتاحة ليك</span>
       </div>
       <div class="stat-card">
         <div class="top-row">
-          <div class="stat-ic" style="background:rgba(95,168,43,0.16); color:var(--green-bright);">✅</div>
+          <div class="stat-ic" style="background:rgba(217,142,75,0.16); color:var(--amber);">⏳</div>
         </div>
-        <b>86%</b>
-        <span>متوسط درجات الاختبارات</span>
+        <b id="stat-pending-courses">—</b>
+        <span>طلبات اشتراك قيد الدفع</span>
       </div>
       <div class="stat-card">
         <div class="top-row">
-          <div class="stat-ic" style="background:rgba(180,82,83,0.16); color:var(--rose);">⏱</div>
+          <div class="stat-ic" style="background:rgba(180,82,83,0.16); color:var(--rose);">📅</div>
         </div>
-        <b>4:20</b>
-        <span>ساعات مذاكرة الأسبوع ده</span>
+        <b id="stat-member-since">—</b>
+        <span>عضو معانا من</span>
       </div>
     </div>
 
@@ -415,64 +414,26 @@
 
       <div style="display:flex; flex-direction:column; gap:22px;">
 
-        <!-- continue learning -->
+        <!-- continue learning: كورسات حقيقية من enrollments -->
         <div class="panel">
           <div class="panel-head">
-            <h2>كمّل من حيث وقفت</h2>
+            <h2>كورساتك</h2>
             <a href="dr-rady-catalog-page.html">كل الكورسات</a>
           </div>
 
-          <div class="course-row">
-            <div class="course-thumb">🎓</div>
-            <div class="course-row-info">
-              <b>باقة المراجعة النهائية — أحياء ثالث ثانوي</b>
-              <div class="progress-track"><div class="progress-fill" style="width:82%; background:var(--rose);"></div></div>
-              <div class="meta">82% مكتمل · آخر نشاط: امبارح</div>
-            </div>
-            <a href="dr-rady-course-page.html" class="btn">كمّل</a>
-          </div>
-
-          <div class="course-row">
-            <div class="course-thumb">🧬</div>
-            <div class="course-row-info">
-              <b>أحياء ثالث ثانوي — المنهج الكامل</b>
-              <div class="progress-track"><div class="progress-fill" style="width:54%; background:var(--rose);"></div></div>
-              <div class="meta">54% مكتمل · آخر نشاط: 3 أيام</div>
-            </div>
-            <a href="dr-rady-course-page.html" class="btn">كمّل</a>
-          </div>
-
-          <div class="course-row">
-            <div class="course-thumb">📝</div>
-            <div class="course-row-info">
-              <b>مراجعة نهائية شاملة — كل المراحل</b>
-              <div class="progress-track"><div class="progress-fill" style="width:21%;"></div></div>
-              <div class="meta">21% مكتمل · آخر نشاط: أسبوع</div>
-            </div>
-            <a href="dr-rady-course-page.html" class="btn btn-outline">ابدأ</a>
+          <div id="my-courses-list">
+            <div class="course-row"><div class="course-row-info"><b>جارٍ تحميل كورساتك...</b></div></div>
           </div>
         </div>
 
-        <!-- quiz results -->
+        <!-- نظام المتابعة والتقييم: لسه بيتبني -->
         <div class="panel">
           <div class="panel-head">
-            <h2>آخر نتايج الاختبارات</h2>
-            <a href="#">كل النتايج</a>
+            <h2>نتايج الاختبارات والواجبات</h2>
           </div>
-          <div class="quiz-list">
-            <div class="quiz-row">
-              <span class="name">الاختبار التقييمي — الوراثة والهرمونات</span>
-              <span class="quiz-score score-high">92%</span>
-            </div>
-            <div class="quiz-row">
-              <span class="name">الشامل الأول — الجهاز العصبي والحواس</span>
-              <span class="quiz-score score-high">88%</span>
-            </div>
-            <div class="quiz-row">
-              <span class="name">واجب سريع — تصنيف الكائنات الحية</span>
-              <span class="quiz-score score-mid">71%</span>
-            </div>
-          </div>
+          <p style="font-size:13px; color:var(--bone-dim);">
+            نظام تتبّع الواجبات والاختبارات لسه بيتضاف — هيظهر هنا أول بأول أول ما يبقى جاهز.
+          </p>
         </div>
 
       </div>
@@ -480,61 +441,24 @@
       <!-- ===== RIGHT COLUMN ===== -->
       <div style="display:flex; flex-direction:column; gap:22px;">
 
-        <!-- to-do -->
+        <!-- طلبات اشتراك محتاجة إكمال دفع -->
         <div class="panel">
           <div class="panel-head">
-            <h2>مطلوب منك النهارده</h2>
+            <h2>محتاج منك تكمل</h2>
           </div>
-          <div class="todo-list">
-            <div class="todo-item">
-              <div class="todo-tag" style="background:rgba(232,196,104,0.16); color:var(--gold);">📝</div>
-              <div>
-                <b>واجب الوراثة والهرمونات</b>
-                <span>آخر ميعاد: النهارده 11 مساءً</span>
-              </div>
-            </div>
-            <div class="todo-item">
-              <div class="todo-tag" style="background:rgba(95,168,43,0.16); color:var(--green-bright);">✅</div>
-              <div>
-                <b>اختبار الشامل الثاني</b>
-                <span>آخر ميعاد: بكرة الساعة 8 مساءً</span>
-              </div>
-            </div>
-            <div class="todo-item">
-              <div class="todo-tag" style="background:rgba(180,82,83,0.16); color:var(--rose);">🎬</div>
-              <div>
-                <b>مشاهدة حصة الجهاز العصبي والحواس</b>
-                <span>الحصة التانية لسه ما اتفتحتش</span>
-              </div>
-            </div>
+          <div class="todo-list" id="pending-list">
+            <div class="todo-item"><div><span>جارٍ التحميل...</span></div></div>
           </div>
         </div>
 
-        <!-- achievements -->
+        <!-- الإنجازات: لسه بيتبني -->
         <div class="panel">
           <div class="panel-head">
-            <h2>إنجازاتك</h2>
-            <a href="#">كل الإنجازات</a>
+            <h2>الإنجازات</h2>
           </div>
-          <p style="font-size:13px; color:var(--bone-dim);">جمّعتي 3 من أصل 8 شارات لحد دلوقتي.</p>
-          <div class="badge-grid">
-            <div class="badge-item">
-              <div class="badge-circle" style="background:rgba(95,168,43,0.18); color:var(--green-bright);">🔥</div>
-              <span>7 أيام متتالية</span>
-            </div>
-            <div class="badge-item">
-              <div class="badge-circle" style="background:rgba(232,196,104,0.18); color:var(--gold);">🎯</div>
-              <span>أول اختبار 90%+</span>
-            </div>
-            <div class="badge-item">
-              <div class="badge-circle" style="background:rgba(217,142,75,0.18); color:var(--amber);">📚</div>
-              <span>أول وحدة كاملة</span>
-            </div>
-            <div class="badge-item locked">
-              <div class="badge-circle" style="background:rgba(243,236,217,0.08); color:var(--bone-dim);">🔒</div>
-              <span>30 يوم متواصل</span>
-            </div>
-          </div>
+          <p style="font-size:13px; color:var(--bone-dim);">
+            نظام الشارات والإنجازات لسه بيتضاف، هيبان هنا أول ما يخلص.
+          </p>
         </div>
 
       </div>
@@ -661,18 +585,94 @@
 
     const { data: profile } = await supabaseClient
       .from('profiles')
-      .select('full_name')
+      .select('full_name, grade, created_at')
       .eq('id', user.id)
       .single();
 
     const displayName = profile?.full_name || user.email;
+    const firstName = displayName.split(' ')[0];
+
     document.getElementById('user-name').textContent = displayName;
     document.getElementById('user-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-name').textContent = displayName;
+    document.getElementById('sidebar-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-grade').textContent = profile?.grade || '';
+    document.getElementById('topbar-greeting').textContent = `أهلاً، ${firstName} 👋`;
 
-    // TODO: هنا هنجيب كورسات المستخدم الحقيقية من جدول enrollments
-    // بدل الأرقام والكروت الثابتة اللي في التصميم
+    if(profile?.created_at){
+      const d = new Date(profile.created_at);
+      document.getElementById('stat-member-since').textContent =
+        d.toLocaleDateString('ar-EG', { month: 'short', year: 'numeric' });
+    } else {
+      document.getElementById('stat-member-since').textContent = '—';
+    }
+
+    // ===== جلب كل الاشتراكات الحقيقية للمستخدم (enrollments) مع بيانات الكورس =====
+    const { data: enrollments, error } = await supabaseClient
+      .from('enrollments')
+      .select('status, created_at, courses(id, title, grade, lessons_count)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    const myCoursesEl = document.getElementById('my-courses-list');
+    const pendingEl = document.getElementById('pending-list');
+
+    if(error || !enrollments || enrollments.length === 0){
+      myCoursesEl.innerHTML = `
+        <div class="course-row">
+          <div class="course-row-info"><b>لسه مشتركتش في أي كورس</b></div>
+          <a href="dr-rady-catalog-page.html" class="btn">تصفّح الكورسات</a>
+        </div>`;
+      document.getElementById('stat-paid-courses').textContent = '0';
+      document.getElementById('stat-total-lessons').textContent = '0';
+      document.getElementById('stat-pending-courses').textContent = '0';
+      pendingEl.innerHTML = `<div class="todo-item"><div><span>مفيش حاجة مستنياك دلوقتي 🎉</span></div></div>`;
+      return;
+    }
+
+    const paid = enrollments.filter(e => e.status === 'paid' && e.courses);
+    const pending = enrollments.filter(e => e.status === 'pending' && e.courses);
+
+    document.getElementById('stat-paid-courses').textContent = paid.length;
+    document.getElementById('stat-total-lessons').textContent =
+      paid.reduce((sum, e) => sum + (e.courses.lessons_count || 0), 0);
+    document.getElementById('stat-pending-courses').textContent = pending.length;
+
+    // ===== قائمة الكورسات المدفوعة فعليًا =====
+    if(paid.length === 0){
+      myCoursesEl.innerHTML = `
+        <div class="course-row">
+          <div class="course-row-info"><b>مفيش كورسات مفعّلة لسه</b><span class="meta">هتظهر هنا أول ما يتأكد الدفع</span></div>
+        </div>`;
+    } else {
+      myCoursesEl.innerHTML = paid.map(e => `
+        <div class="course-row">
+          <div class="course-thumb">🎓</div>
+          <div class="course-row-info">
+            <b>${e.courses.title}</b>
+            <div class="meta">${e.courses.grade || ''} · ${e.courses.lessons_count || 0} حصة</div>
+          </div>
+          <a href="dr-rady-course-page.html?id=${e.courses.id}" class="btn">فتح الكورس</a>
+        </div>
+      `).join('');
+    }
+
+    // ===== طلبات لسه مستنية إكمال الدفع =====
+    if(pending.length === 0){
+      pendingEl.innerHTML = `<div class="todo-item"><div><span>مفيش حاجة مستنياك دلوقتي 🎉</span></div></div>`;
+    } else {
+      pendingEl.innerHTML = pending.map(e => `
+        <div class="todo-item">
+          <div class="todo-tag" style="background:rgba(217,142,75,0.16); color:var(--amber);">⏳</div>
+          <div>
+            <b>${e.courses.title}</b>
+            <span>الاشتراك لسه مستني تأكيد الدفع</span>
+          </div>
+        </div>
+      `).join('');
+    }
   })();
 </script>
 
 </body>
-</html>
+          </html>
