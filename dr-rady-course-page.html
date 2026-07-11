@@ -223,8 +223,8 @@
         <span class="eyebrow"><span class="dot"></span> ثالث ثانوي</span>
         <span class="eyebrow"><span class="dot"></span> مراجعة نهائية</span>
       </div>
-      <h1 class="course-title">باقة المراجعة النهائية — أحياء ثالث ثانوي (شهرين)</h1>
-      <p class="course-desc">
+      <h1 class="course-title" id="course-title">باقة المراجعة النهائية — أحياء ثالث ثانوي (شهرين)</h1>
+      <p class="course-desc" id="course-desc">
         مراجعة كاملة للمنهج بأسلوب الفهم والربط، مقسّمة لمحاضرات موضوعية، مع تدريبات تفاعلية بعد كل حصة
         وواجبات تتابع مستواك أول بأول، ومراجعات شاملة قبل الامتحان مباشرة.
       </p>
@@ -264,8 +264,8 @@
       </div>
       <div class="buy-body">
         <div class="price-row">
-          <span class="price">950 ج.م</span>
-          <span class="old-price">1300 ج.م</span>
+          <span class="price" id="course-price">950 ج.م</span>
+          <span class="old-price" id="course-old-price">1300 ج.م</span>
         </div>
         <p class="price-note">اشتراك لمرة واحدة — وصول كامل لحد نهاية العام الدراسي</p>
         <button class="btn" onclick="startCheckout()">اشترك في الكورس الآن</button>
@@ -286,80 +286,23 @@
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow"><span class="dot"></span> محتوى الكورس</span>
-      <h2>الكورس متقسّم لوحدات موضوعية مش شهور عشوائية</h2>
-      <p>كل وحدة بتجمع موضوعين مترابطين عشان تفهمهم مع بعض مش منفصلين.</p>
+      <h2>كل حصص الكورس في مكان واحد</h2>
+      <p>الحصص مرتّبة بنفس ترتيبها في الكورس، وهتلاقي تحت كل حصة إمكانية المشاهدة لو متاحة.</p>
     </div>
 
-    <div class="unit-card">
-      <div class="unit-num">01</div>
-      <div>
-        <h3>الوراثة والجهاز الهرموني</h3>
-        <div class="unit-tags">
-          <span>قوانين مندل</span><span>الصفات السائدة والمتنحية</span>
-          <span>الغدة النخامية والدرقية</span><span>أمراض وراثية شائعة</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="unit-card">
-      <div class="unit-num">02</div>
-      <div>
-        <h3>الجهاز العصبي والحواس</h3>
-        <div class="unit-tags">
-          <span>المخ والنخاع الشوكي</span><span>الانعكاسات</span>
-          <span>تركيب العين والأذن</span><span>اضطرابات الجهاز العصبي</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- expandable content-type groups -->
+    <!-- الحصص بتتحمل هنا أوتوماتيك من جدول lessons -->
     <div class="group-list">
       <details class="group" open>
         <summary>
           <div class="g-title">
             <div class="g-icon">🎬</div>
-            <div><b>دروس الفيديو</b><span>شرح كل وحدة خطوة بخطوة</span></div>
+            <div><b>دروس الفيديو</b><span id="lessons-summary">جارٍ تحميل الحصص...</span></div>
           </div>
           <span class="g-chev">▾</span>
         </summary>
-        <div class="lesson-row"><span class="lname">الوراثة والهرمونات — الحصة الأولى</span><button class="lbtn">مشاهدة</button></div>
-        <div class="lesson-row"><span class="lname">الجهاز العصبي والحواس — الحصة الثانية</span><button class="lbtn">مشاهدة</button></div>
-      </details>
-
-      <details class="group">
-        <summary>
-          <div class="g-title">
-            <div class="g-icon">📝</div>
-            <div><b>الواجبات</b><span>تطبيق بعد كل حصة يوضّح مستواك</span></div>
-          </div>
-          <span class="g-chev">▾</span>
-        </summary>
-        <div class="lesson-row"><span class="lname">واجب الوراثة والهرمونات</span><button class="lbtn">فتح الواجب</button></div>
-        <div class="lesson-row"><span class="lname">واجب الجهاز العصبي والحواس</span><button class="lbtn">فتح الواجب</button></div>
-      </details>
-
-      <details class="group">
-        <summary>
-          <div class="g-title">
-            <div class="g-icon">📚</div>
-            <div><b>المراجعات الشاملة</b><span>تجميع كل الوحدات في نموذج واحد</span></div>
-          </div>
-          <span class="g-chev">▾</span>
-        </summary>
-        <div class="lesson-row"><span class="lname">الشامل الأول — الوراثة والهرمونات</span><button class="lbtn">فتح المراجعة</button></div>
-        <div class="lesson-row"><span class="lname">الشامل الثاني — كل الوحدات</span><button class="lbtn">فتح المراجعة</button></div>
-      </details>
-
-      <details class="group">
-        <summary>
-          <div class="g-title">
-            <div class="g-icon">✅</div>
-            <div><b>الاختبارات التقييمية</b><span>اعرف مستواك الحقيقي قبل الامتحان</span></div>
-          </div>
-          <span class="g-chev">▾</span>
-        </summary>
-        <div class="lesson-row"><span class="lname">الاختبار التقييمي الأول</span><button class="lbtn">ابدأ الاختبار</button></div>
-        <div class="lesson-row"><span class="lname">الاختبار التقييمي النهائي</span><button class="lbtn">ابدأ الاختبار</button></div>
+        <div id="lessons-list">
+          <div class="lesson-row"><span class="lname">جارٍ التحميل...</span></div>
+        </div>
       </details>
     </div>
   </div>
@@ -395,7 +338,7 @@
 </footer>
 
 <div class="mobile-bar">
-  <span class="price">950 ج.م</span>
+  <span class="price" id="course-price-mobile">950 ج.م</span>
   <button class="btn" onclick="startCheckout()">اشترك الآن</button>
 </div>
 
@@ -403,9 +346,122 @@
   // ⚠️ هنا محتاج نربط بوابة الدفع (Paymob) لاحقًا.
   // دلوقتي: بيتأكد إن المستخدم مسجل دخول، وبيجهز طلب اشتراك "pending"
   // لحد ما نضيف Paymob في المرحلة الجاية.
-  const COURSE_ID = "PASTE_COURSE_UUID_FROM_DB_HERE";
+
+  // ===== قراءة id الكورس من رابط الصفحة (?id=...) =====
+  const urlParams = new URLSearchParams(window.location.search);
+  const COURSE_ID = urlParams.get('id');
+
+  // ===== تحميل بيانات الكورس الحقيقية من الداتابيز =====
+  async function loadCourseDetails(){
+    if(!COURSE_ID) return; // لو دخل الصفحة من غير id، تفضل البيانات الافتراضية الظاهرة في التصميم
+
+    const { data: course, error } = await supabaseClient
+      .from('courses')
+      .select('*')
+      .eq('id', COURSE_ID)
+      .single();
+
+    if(error || !course) return;
+
+    document.getElementById('course-title').textContent = course.title;
+    document.getElementById('course-desc').textContent = course.description || '';
+    document.getElementById('course-price').textContent = course.price + ' ج.م';
+    document.getElementById('course-price-mobile').textContent = course.price + ' ج.م';
+    document.title = course.title + ' — د. راضي | BioTopai';
+
+    const oldPriceEl = document.getElementById('course-old-price');
+    if(course.old_price){
+      oldPriceEl.textContent = course.old_price + ' ج.م';
+      oldPriceEl.style.display = '';
+    } else {
+      oldPriceEl.style.display = 'none';
+    }
+  }
+  loadCourseDetails();
+
+  // ===== تحميل الحصص الحقيقية من جدول lessons =====
+  async function loadLessons(){
+    const listEl = document.getElementById('lessons-list');
+    const summaryEl = document.getElementById('lessons-summary');
+
+    if(!COURSE_ID){
+      listEl.innerHTML = `<div class="lesson-row"><span class="lname">مفيش كورس محدد</span></div>`;
+      return;
+    }
+
+    const { data: lessons, error } = await supabaseClient
+      .from('lessons')
+      .select('*')
+      .eq('course_id', COURSE_ID)
+      .order('order_index', { ascending: true });
+
+    if(error || !lessons || lessons.length === 0){
+      summaryEl.textContent = 'هيتم إضافة الحصص قريبًا';
+      listEl.innerHTML = `<div class="lesson-row"><span class="lname">هيتم إضافة الحصص قريبًا</span></div>`;
+      return;
+    }
+
+    summaryEl.textContent = `${lessons.length} حصة`;
+
+    // هل المستخدم مشترك فعليًا (paid) في الكورس ده؟
+    let isPaid = false;
+    const user = await getCurrentUser();
+    if(user){
+      const { data: enrollment } = await supabaseClient
+        .from('enrollments')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('course_id', COURSE_ID)
+        .maybeSingle();
+      isPaid = enrollment?.status === 'paid';
+    }
+
+    listEl.innerHTML = lessons.map((lesson, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      const unlocked = lesson.is_free_preview || isPaid;
+
+      if(!unlocked){
+        return `
+          <div class="lesson-row">
+            <span class="lname">🔒 ${num}. ${lesson.title}</span>
+            <button class="lbtn" style="background:rgba(243,236,217,0.1); color:var(--bone-dim);" onclick="handleLockedLesson()">مقفولة</button>
+          </div>`;
+      }
+
+      const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
+
+      if(lesson.video_url){
+        return `
+          <div class="lesson-row">
+            <span class="lname">${num}. ${lesson.title}${previewTag}</span>
+            <a class="lbtn" href="${lesson.video_url}" target="_blank" rel="noopener">مشاهدة</a>
+          </div>`;
+      }
+
+      return `
+        <div class="lesson-row">
+          <span class="lname">${num}. ${lesson.title}${previewTag}</span>
+          <button class="lbtn" disabled style="opacity:.5; cursor:not-allowed;">قريبًا</button>
+        </div>`;
+    }).join('');
+  }
+  loadLessons();
+
+  // لما يدوس على حصة مقفولة: يدخل يسجل، أو لو مسجل بالفعل يشوف بوابة الاشتراك
+  async function handleLockedLesson(){
+    const user = await getCurrentUser();
+    if(!user){
+      window.location.href = 'dr-rady-auth-page.html';
+      return;
+    }
+    document.querySelector('.buy-card').scrollIntoView({ behavior: 'smooth' });
+  }
 
   async function startCheckout(){
+    if(!COURSE_ID){
+      alert('حصل خطأ في تحديد الكورس، جرّب تدخل من صفحة الكورسات تاني');
+      return;
+    }
     const user = await getCurrentUser();
     if(!user){
       window.location.href = 'dr-rady-auth-page.html';
@@ -427,4 +483,4 @@
 </script>
 
 </body>
-</html>
+  </html>
