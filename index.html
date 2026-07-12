@@ -1,2 +1,357 @@
-/*
-  Cache-Control: no-cache, no-store, must-revalidate
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioTopai | أحياء الثانوية مع د. راضي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#e2d8bd;
+    --ink:#0c1230;
+    --line: rgba(243,236,217,0.16);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+  }
+  h1,h2,h3,h4{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 26px; border-radius:100px; font-weight:700; font-size:15px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .btn-outline{background:transparent; border:1.5px solid var(--bone-dim); color:var(--bone); padding:11px 22px; font-size:14.5px;}
+  .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(95,168,43,0.14); border:1px solid rgba(95,168,43,0.4);
+    color:var(--green-bright); font-weight:700; font-size:13px;
+    padding:7px 16px; border-radius:100px; margin-bottom:16px;
+  }
+  .eyebrow .dot{width:7px; height:7px; border-radius:50%; background:var(--green-bright);}
+  .section{padding:80px 0;}
+  .section-head{text-align:center; max-width:600px; margin:0 auto 48px;}
+  .section-head h2{font-size:30px; margin-bottom:10px;}
+  .section-head p{color:var(--bone-dim); font-size:15px;}
+
+  /* ===== HEADER ===== */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(16,28,70,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .logo-mark{width:38px; height:38px;}
+  .brand-text{font-family:'Tajawal'; font-weight:800; font-size:20px; color:var(--green-bright);}
+  .brand-text span{color:var(--bone);}
+  nav ul{list-style:none; display:flex; gap:34px;}
+  nav ul a{font-size:15px; font-weight:600; color:var(--bone-dim); transition:.2s;}
+  nav ul a:hover{color:var(--green-bright);}
+  nav ul a.active{color:var(--green-bright);}
+  .menu-toggle{display:none; font-size:26px; background:none; border:none; color:var(--bone); cursor:pointer;}
+
+  /* ===== HERO ===== */
+  .hero{padding:70px 0 40px; text-align:center; position:relative; overflow:hidden;}
+  .hero::before{
+    content:''; position:absolute; top:-120px; right:50%; transform:translateX(50%);
+    width:600px; height:600px; border-radius:50%;
+    background:radial-gradient(circle, rgba(95,168,43,0.18), transparent 65%);
+    pointer-events:none;
+  }
+  .hero h1{font-size:44px; max-width:680px; margin:0 auto 18px; position:relative;}
+  .hero h1 span{color:var(--green-bright);}
+  .hero p{color:var(--bone-dim); font-size:16px; max-width:540px; margin:0 auto 32px; position:relative;}
+  .hero-actions{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative;}
+  .hero-stats{
+    display:flex; justify-content:center; gap:48px; margin-top:56px;
+    flex-wrap:wrap; position:relative;
+  }
+  .hero-stats div{text-align:center;}
+  .hero-stats b{display:block; font-family:'Tajawal'; font-weight:900; font-size:28px; color:var(--green-bright);}
+  .hero-stats span{font-size:12.5px; color:var(--bone-dim);}
+
+  /* ===== WHY US ===== */
+  .why-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .why-card{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:20px;
+    padding:28px 24px; transition:.2s;
+  }
+  .why-card:hover{transform:translateY(-4px); border-color:rgba(95,168,43,0.5);}
+  .why-card .ic{
+    width:48px; height:48px; border-radius:14px; background:rgba(95,168,43,0.16);
+    display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px;
+  }
+  .why-card h3{font-size:17px; margin-bottom:8px;}
+  .why-card p{color:var(--bone-dim); font-size:13.5px;}
+
+  /* ===== CTA STRIP ===== */
+  .cta-strip{
+    background:linear-gradient(120deg, var(--navy-deep), var(--navy-soft));
+    border:1px solid var(--line); border-radius:24px;
+    padding:48px 40px; text-align:center; margin:0 28px;
+  }
+  .cta-strip h2{font-size:26px; margin-bottom:10px;}
+  .cta-strip p{color:var(--bone-dim); font-size:14.5px; margin-bottom:26px;}
+
+  /* ===== TESTIMONIALS ===== */
+  .testi-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .testi-card{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:20px;
+    padding:26px;
+  }
+  .testi-card .stars{color:var(--green-bright); font-size:14px; margin-bottom:14px;}
+  .testi-card p{font-size:13.5px; color:var(--bone-dim); margin-bottom:18px;}
+  .testi-who{display:flex; align-items:center; gap:10px;}
+  .testi-avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--navy-deep);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:var(--green-bright);
+  }
+  .testi-who b{font-size:13.5px; display:block;}
+  .testi-who span{font-size:11.5px; color:var(--bone-dim);}
+
+  /* ===== CONTACT ===== */
+  .contact-wrap{
+    display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;
+  }
+  .contact-list{display:flex; flex-direction:column; gap:16px; margin-top:24px;}
+  .contact-item{
+    display:flex; align-items:center; gap:14px; background:var(--navy-soft);
+    border:1px solid var(--line); border-radius:16px; padding:16px 18px;
+  }
+  .contact-item .ic{
+    width:40px; height:40px; border-radius:12px; background:rgba(95,168,43,0.16);
+    display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+  }
+  .contact-item b{display:block; font-size:13.5px;}
+  .contact-item span{font-size:12.5px; color:var(--bone-dim);}
+  .contact-note{
+    background:rgba(95,168,43,0.1); border:1px dashed rgba(95,168,43,0.4);
+    border-radius:14px; padding:16px 18px; font-size:12.5px; color:var(--green-bright);
+  }
+
+  /* ===== FOOTER ===== */
+  footer{background:var(--navy-deep); padding:40px 0 24px; border-top:1px solid var(--line); text-align:center;}
+  footer p{color:var(--bone-dim); font-size:12.5px;}
+  .social-row{display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:20px;}
+  .social-icon{
+    width:42px; height:42px; border-radius:50%; background:var(--navy-soft);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    transition:.2s; font-size:18px;
+  }
+  .social-icon:hover{background:var(--green); border-color:var(--green); transform:translateY(-3px);}
+
+  @media (max-width:900px){
+    .why-grid, .testi-grid{grid-template-columns:1fr 1fr;}
+    .contact-wrap{grid-template-columns:1fr;}
+  }
+  @media (max-width:640px){
+    nav ul{display:none;}
+    .menu-toggle{display:block;}
+    nav ul{
+      display:none; position:absolute; top:100%; right:0; left:0;
+      background:var(--navy-deep); flex-direction:column; gap:0;
+      border-top:1px solid var(--line); padding:6px 28px 14px;
+    }
+    nav ul.mobile-open{display:flex;}
+    nav ul li{width:100%;}
+    nav ul li a{display:block; padding:13px 0; border-bottom:1px solid var(--line);}
+    nav ul li:last-child a{border-bottom:none;}
+    .hero h1{font-size:30px;}
+    .why-grid, .testi-grid{grid-template-columns:1fr;}
+    .hero-stats{gap:28px;}
+    .cta-strip{margin:0 16px; padding:36px 22px;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js?v=2"></script>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topai</span></div>
+    </div>
+    <nav>
+      <ul id="mainNav">
+        <li><a href="index.html" class="active">الرئيسية</a></li>
+        <li><a href="dr-rady-catalog-page.html">الكورسات</a></li>
+        <li><a href="index.html#testimonials">آراء الطلاب</a></li>
+        <li><a href="index.html#contact">تواصل معنا</a></li>
+      </ul>
+    </nav>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <a href="dr-rady-auth-page.html" class="btn btn-outline" id="header-auth-btn">تسجيل الدخول</a>
+      <button class="menu-toggle" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero wrap">
+  <div class="eyebrow" style="display:inline-flex; margin-inline:auto;"><span class="dot"></span> منصة أحياء الثانوية العامة</div>
+  <h1>الأحياء تبقى <span>سهلة ومفهومة</span> مع د. راضي</h1>
+  <p>كورسات أونلاين متقسّمة بالموضوع مش بالشهور، فيديوهات مسجّلة تتفرج عليها في وقتك، واختبارات بعد كل وحدة توضّحلك مستواك بالظبط.</p>
+  <div class="hero-actions">
+    <a href="dr-rady-catalog-page.html" class="btn">شوف الكورسات 🔎</a>
+    <a href="#contact" class="btn btn-outline">تواصل معانا</a>
+  </div>
+  <div class="hero-stats">
+    <div><b>+3</b><span>مراحل دراسية</span></div>
+    <div><b>+90</b><span>حصة مسجّلة</span></div>
+    <div><b>اختبارات</b><span>بعد كل وحدة</span></div>
+  </div>
+</section>
+
+<!-- ===== WHY US ===== -->
+<section class="section wrap">
+  <div class="section-head">
+    <div class="eyebrow" style="display:inline-flex;"><span class="dot"></span> ليه BioTopai</div>
+    <h2>مذاكرة منظّمة من أول يوم</h2>
+    <p>مش مجرد فيديوهات — نظام متكامل يتابع مستواك ويوريك مكانك بالظبط قبل الامتحان.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="ic">📼</div>
+      <h3>حصص متقسّمة بالموضوع</h3>
+      <p>كل حصة بتغطي فكرة واحدة واضحة، تقدر ترجعلها وقت المراجعة من غير ما تدوّر في فيديو طويل.</p>
+    </div>
+    <div class="why-card">
+      <div class="ic">📊</div>
+      <h3>تتابع مستواك أول بأول</h3>
+      <p>لوحة تحكم شخصية بتوريك إيه اللي خلصته وإيه اللي محتاج مراجعة قبل الاختبار.</p>
+    </div>
+    <div class="why-card">
+      <div class="ic">🕒</div>
+      <h3>ذاكر في وقتك انت</h3>
+      <p>الحصص متاحة أونلاين في أي وقت، تقدر تتفرج، توقف، وترجع تاني براحتك.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA STRIP ===== -->
+<section class="section wrap" style="padding-top:0;">
+  <div class="cta-strip">
+    <h2>مستعد تبدأ؟</h2>
+    <p>اختار المرحلة الدراسية بتاعتك وابدأ أول حصة النهاردة.</p>
+    <a href="dr-rady-catalog-page.html" class="btn">اختار كورسك دلوقتي</a>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="section wrap" id="testimonials">
+  <div class="section-head">
+    <div class="eyebrow" style="display:inline-flex;"><span class="dot"></span> آراء الطلاب</div>
+    <h2>طلاب قالوا إيه</h2>
+  </div>
+  <!-- ملاحظة: دول تجريبيين — استبدلهم بآراء طلاب حقيقية أول ما تجهز -->
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p>الطريقة اللي بيشرح بيها د. راضي بسّطت لي المنهج كله، خصوصًا الوراثة اللي كنت خايف منها.</p>
+      <div class="testi-who">
+        <div class="testi-avatar">م</div>
+        <div><b>محمد أحمد</b><span>تالتة ثانوي</span></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p>بحب إني أقدر أرجع للحصة تاني وقت المراجعة، ده وفّر عليا وقت كتير قبل الامتحانات.</p>
+      <div class="testi-who">
+        <div class="testi-avatar">س</div>
+        <div><b>سارة يوسف</b><span>تانية ثانوي</span></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="stars">★★★★★</div>
+      <p>الاختبارات بعد كل وحدة ساعدتني أعرف نقاط ضعفي بدري بدل ما أكتشفها في الامتحان.</p>
+      <div class="testi-who">
+        <div class="testi-avatar">ي</div>
+        <div><b>يوسف كامل</b><span>أولى ثانوي</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="section wrap" id="contact">
+  <div class="contact-wrap">
+    <div>
+      <div class="eyebrow" style="display:inline-flex;"><span class="dot"></span> تواصل معنا</div>
+      <h2 style="font-size:28px; margin-bottom:12px;">عندك سؤال؟ احنا هنا</h2>
+      <p style="color:var(--bone-dim); font-size:14.5px;">لأي استفسار عن الكورسات أو التسجيل، تقدر توصلنا من أي وسيلة تحتك.</p>
+      <div class="contact-note" style="margin-top:20px;">
+        ⚠️ ملاحظة: بيانات التواصل تحت مؤقتة — لازم تستبدلها بأرقامك وحساباتك الحقيقية قبل ما الموقع يفتح للطلاب.
+      </div>
+    </div>
+    <div class="contact-list">
+      <div class="contact-item">
+        <div class="ic">📱</div>
+        <div><b>واتساب</b><span>ضيف رقم التواصل هنا</span></div>
+      </div>
+      <div class="contact-item">
+        <div class="ic">✉️</div>
+        <div><b>إيميل</b><span>ضيف الإيميل الرسمي هنا</span></div>
+      </div>
+      <div class="contact-item">
+        <div class="ic">📸</div>
+        <div><b>فيسبوك / إنستجرام</b><span>ضيف روابط الصفحات هنا</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="social-row">
+      <a href="#" class="social-icon">📘</a>
+      <a href="#" class="social-icon">📸</a>
+      <a href="#" class="social-icon">💬</a>
+    </div>
+    <p>© 2026 BioTopai — كل الحقوق محفوظة لـ د. راضي</p>
+  </div>
+</footer>
+
+<script>
+  // لو المستخدم داخل بالفعل، نبدّل زرار "تسجيل الدخول" بزرار "لوحتي"
+  (async function checkHeaderAuth(){
+    const user = await getCurrentUser();
+    const authBtn = document.getElementById('header-auth-btn');
+    if(user){
+      authBtn.textContent = 'لوحتي';
+      authBtn.href = 'dr-rady-dashboard-page.html';
+    }
+  })();
+</script>
+
+</body>
+</html>
