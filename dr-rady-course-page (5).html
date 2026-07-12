@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>باقة المراجعة النهائية — أحياء 3 ثانوي — د. راضي | BioTopai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#cdd0e8;
+    --line: rgba(243,236,217,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+    padding-bottom:84px;
+  }
+  h1,h2,h3,h4{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 26px; border-radius:100px; font-weight:700; font-size:14.5px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .btn-outline{background:transparent; border:1.5px solid var(--bone-dim); color:var(--bone);}
+  .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(95,168,43,0.14); border:1px solid rgba(95,168,43,0.4);
+    color:var(--green-bright); font-weight:700; font-size:12.5px;
+    padding:6px 14px; border-radius:100px;
+  }
+  .eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--green-bright);}
+
+  /* ===== HEADER ===== */
+  header{background:rgba(16,28,70,0.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:50;}
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:14px 24px; max-width:1080px; margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand svg{width:34px; height:34px;}
+  .brand-text{font-family:'Tajawal'; font-weight:800; font-size:18px; color:var(--green-bright);}
+  .brand-text span{color:var(--bone);}
+  .back-link{font-size:13.5px; color:var(--bone-dim);}
+  .back-link:hover{color:var(--green-bright);}
+
+  .crumb{padding:16px 0 0; font-size:12px; color:var(--bone-dim);}
+  .crumb span{color:var(--green-bright);}
+
+  /* ===== HERO ===== */
+  .course-hero{padding:26px 0 46px;}
+  .hero-grid{display:grid; grid-template-columns:1fr 0.82fr; gap:40px; align-items:start;}
+  .tags{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .course-title{font-size:28px; line-height:1.45; color:var(--bone); margin-bottom:12px;}
+  .course-desc{color:var(--bone-dim); font-size:14.5px; margin-bottom:18px; max-width:520px;}
+  .teacher-row{display:flex; align-items:center; gap:12px; margin-bottom:18px;}
+  .teacher-row .avatar{
+    width:42px; height:42px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+  }
+  .teacher-row b{display:block; font-size:14px;}
+  .teacher-row span{font-size:12px; color:var(--bone-dim);}
+  .meta-line{
+    display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:var(--bone-dim);
+    padding-top:14px; margin-top:6px; border-top:1px dashed var(--line);
+  }
+  .meta-line b{color:var(--bone-dim); font-weight:700;}
+
+  /* purchase card */
+  .buy-card{
+    background:var(--navy-deep); border:1px solid var(--line); border-radius:22px;
+    overflow:hidden; position:sticky; top:88px;
+  }
+  .buy-cover{
+    aspect-ratio:4/3; position:relative;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(95,168,43,.3), transparent 45%),
+      linear-gradient(150deg, var(--navy-soft), var(--navy-deep));
+    display:flex; align-items:flex-end; justify-content:center; padding-top:14px;
+  }
+  .buy-cover .mascot{width:64%; margin-bottom:-4px;}
+  .buy-badge{
+    position:absolute; top:14px; right:14px; background:var(--green); color:var(--navy-deep);
+    font-size:11px; font-weight:800; padding:5px 12px; border-radius:100px;
+  }
+  .buy-body{padding:22px;}
+  .price-row{display:flex; align-items:baseline; gap:8px; margin-bottom:6px;}
+  .price-row .price{font-family:'Tajawal'; font-size:30px; font-weight:900; color:var(--green-bright);}
+  .price-row .old-price{font-size:13px; color:var(--bone-dim); text-decoration:line-through;}
+  .price-note{font-size:12px; color:var(--bone-dim); margin-bottom:18px;}
+  .buy-body .btn{width:100%; margin-bottom:9px;}
+  .includes{list-style:none; margin-top:16px; display:flex; flex-direction:column; gap:9px;}
+  .includes li{display:flex; gap:9px; align-items:center; font-size:13px; color:var(--bone-dim);}
+  .includes li .ic{color:var(--green-bright);}
+
+  /* ===== SECTIONS ===== */
+  .section{padding:14px 0 46px;}
+  .section-head{margin-bottom:24px;}
+  .section-head h2{font-size:22px; color:var(--bone); margin:12px 0 6px;}
+  .section-head p{font-size:13.5px; color:var(--bone-dim);}
+
+  /* unit / lecture summary cards */
+  .unit-card{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:18px;
+    padding:22px; margin-bottom:14px; display:flex; gap:16px;
+  }
+  .unit-num{
+    flex:0 0 40px; width:40px; height:40px; border-radius:12px;
+    background:rgba(95,168,43,.18); color:var(--green-bright);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Tajawal'; font-weight:900; font-size:15px;
+  }
+  .unit-card h3{font-size:16.5px; margin-bottom:10px; color:var(--bone);}
+  .unit-tags{display:flex; flex-wrap:wrap; gap:8px;}
+  .unit-tags span{
+    font-size:12px; color:var(--bone-dim); background:rgba(243,236,217,0.06);
+    border:1px solid var(--line); padding:5px 11px; border-radius:100px;
+  }
+
+  /* content-type groups (accordion) */
+  .group-list{display:flex; flex-direction:column; gap:12px; margin-top:22px;}
+  details.group{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:16px; overflow:hidden;
+  }
+  details.group summary{
+    list-style:none; cursor:pointer; padding:17px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  details.group summary::-webkit-details-marker{display:none;}
+  .g-title{display:flex; align-items:center; gap:12px;}
+  .g-icon{
+    width:36px; height:36px; border-radius:10px; background:rgba(95,168,43,.16);
+    color:var(--green-bright); display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+  .g-title b{font-size:14.5px; font-family:'Tajawal'; font-weight:800;}
+  .g-title span{font-size:12px; color:var(--bone-dim); display:block;}
+  .g-chev{color:var(--green-bright); transition:.2s;}
+  details.group[open] .g-chev{transform:rotate(180deg);}
+
+  .lesson-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:13px 20px; border-top:1px solid var(--line);
+  }
+  .lesson-row .lname{font-size:13.5px; color:var(--bone-dim);}
+  .lesson-row .lbtn{
+    padding:8px 16px; border-radius:8px; font-size:12.5px; font-weight:800; border:none; white-space:nowrap;
+    background:rgba(95,168,43,.18); color:var(--green-bright);
+  }
+  .lesson-row .lbtn:hover{background:var(--green); color:var(--navy-deep);}
+
+  footer{background:var(--navy-deep); padding:28px 0; text-align:center; border-top:1px solid var(--line);}
+  footer p{color:var(--bone-dim); font-size:12px;}
+  .social-row{display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:18px;}
+  .social-icon{
+    width:40px; height:40px; border-radius:50%; background:var(--navy-soft);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    transition:.2s;
+  }
+  .social-icon svg{width:18px; height:18px;}
+  .social-icon:hover{background:var(--green); border-color:var(--green); transform:translateY(-3px);}
+  .social-icon:hover svg path, .social-icon:hover svg rect, .social-icon:hover svg circle{fill:var(--navy-deep) !important;}
+
+  .mobile-bar{
+    display:none; position:fixed; bottom:0; right:0; left:0; z-index:60;
+    background:var(--navy-deep); border-top:1px solid var(--line);
+    padding:12px 18px; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .mobile-bar .price{font-family:'Tajawal'; font-weight:900; color:var(--green-bright); font-size:18px;}
+  .mobile-bar .btn{padding:10px 20px; font-size:13.5px;}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .buy-card{position:static;}
+    .mobile-bar{display:flex;}
+    body{padding-bottom:76px;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js?v=2"></script>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topai</span></div>
+    </div>
+    <a href="dr-rady-catalog-page.html" class="back-link">→ الرجوع لكل الكورسات</a>
+  </div>
+</header>
+
+<div class="wrap crumb"><a href="index.html" style="color:inherit;">الرئيسية</a> / <a href="dr-rady-catalog-page.html" style="color:inherit;">الكورسات</a> / <span>أحياء ثالث ثانوي</span></div>
+
+<!-- ===== HERO ===== -->
+<section class="course-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="tags">
+        <span class="eyebrow"><span class="dot"></span> أحياء</span>
+        <span class="eyebrow"><span class="dot"></span> ثالث ثانوي</span>
+        <span class="eyebrow"><span class="dot"></span> مراجعة نهائية</span>
+      </div>
+      <h1 class="course-title" id="course-title">باقة المراجعة النهائية — أحياء ثالث ثانوي (شهرين)</h1>
+      <p class="course-desc" id="course-desc">
+        مراجعة كاملة للمنهج بأسلوب الفهم والربط، مقسّمة لمحاضرات موضوعية، مع تدريبات تفاعلية بعد كل حصة
+        وواجبات تتابع مستواك أول بأول، ومراجعات شاملة قبل الامتحان مباشرة.
+      </p>
+      <div class="teacher-row">
+        <div class="avatar">
+          <svg viewBox="0 0 48 48" width="26" height="26" fill="none">
+            <circle cx="24" cy="18" r="9" fill="#f3ecd9" stroke="#101c46" stroke-width="1.3"/>
+            <ellipse cx="20.5" cy="17" rx="2" ry="2.5" fill="#101c46"/>
+            <ellipse cx="27.5" cy="17" rx="2" ry="2.5" fill="#101c46"/>
+          </svg>
+        </div>
+        <div><b>د. راضي</b><span>منصة BioTopai لتعليم الأحياء</span></div>
+      </div>
+      <div class="meta-line">
+        <span>📅 <b>تاريخ الإنشاء:</b> ١٤ مارس ٢٠٢٦</span>
+        <span>🔄 <b>آخر تحديث:</b> ٢٧ يونيو ٢٠٢٦</span>
+        <span>👥 <b>+2,400</b> طالب مشترك</span>
+      </div>
+    </div>
+
+    <div class="buy-card">
+      <div class="buy-cover">
+        <span class="buy-badge">نسخة 2026</span>
+        <svg class="mascot" viewBox="0 0 200 190" fill="none">
+          <path d="M78 100 L122 100 L128 160 L72 160 Z" fill="#1c2f72" stroke="#f3ecd9" stroke-width="2.5"/>
+          <path d="M92 100 L100 118 L108 100" stroke="#f3ecd9" stroke-width="2" fill="none"/>
+          <rect x="96" y="112" width="8" height="30" fill="#5fa82b"/>
+          <circle cx="100" cy="60" r="32" fill="#f3ecd9" stroke="#101c46" stroke-width="2.5"/>
+          <ellipse cx="89" cy="58" rx="6" ry="7.5" fill="#101c46"/>
+          <ellipse cx="111" cy="58" rx="6" ry="7.5" fill="#101c46"/>
+          <path d="M100 66 l-5 8 h10 z" fill="#101c46"/>
+          <path d="M85 80 q15 10 30 0" stroke="#101c46" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <circle cx="89" cy="58" r="9.5" fill="none" stroke="#5fa82b" stroke-width="2"/>
+          <circle cx="111" cy="58" r="9.5" fill="none" stroke="#5fa82b" stroke-width="2"/>
+          <line x1="98.5" y1="58" x2="101.5" y2="58" stroke="#5fa82b" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="buy-body">
+        <div class="price-row">
+          <span class="price" id="course-price">950 ج.م</span>
+          <span class="old-price" id="course-old-price">1300 ج.م</span>
+        </div>
+        <p class="price-note">اشتراك لمرة واحدة — وصول كامل لحد نهاية العام الدراسي</p>
+        <button class="btn" onclick="startCheckout()">اشترك في الكورس الآن</button>
+        <a href="dr-rady-auth-page.html" class="btn btn-outline">جرّب حصة مجانية</a>
+        <ul class="includes">
+          <li><span class="ic">✓</span> فيديوهات شرح لكل وحدة</li>
+          <li><span class="ic">✓</span> واجبات ومتابعة مستوى فردية</li>
+          <li><span class="ic">✓</span> مراجعات شاملة قبل الامتحان</li>
+          <li><span class="ic">✓</span> اختبارات تقييمية دورية</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CURRICULUM ===== -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> محتوى الكورس</span>
+      <h2>كل حصص الكورس في مكان واحد</h2>
+      <p>الحصص مرتّبة بنفس ترتيبها في الكورس، وهتلاقي تحت كل حصة إمكانية المشاهدة لو متاحة.</p>
+    </div>
+
+    <!-- الحصص بتتحمل هنا أوتوماتيك من جدول lessons -->
+    <div class="group-list">
+      <details class="group" open>
+        <summary>
+          <div class="g-title">
+            <div class="g-icon">🎬</div>
+            <div><b>دروس الفيديو</b><span id="lessons-summary">جارٍ تحميل الحصص...</span></div>
+          </div>
+          <span class="g-chev">▾</span>
+        </summary>
+        <div id="lessons-list">
+          <div class="lesson-row"><span class="lname">جارٍ التحميل...</span></div>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="social-row">
+    <a href="https://instagram.com/biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="إنستجرام">
+      <svg viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="2" width="20" height="20" rx="6" stroke="#f3ecd9" stroke-width="1.8"/>
+        <circle cx="12" cy="12" r="4.5" stroke="#f3ecd9" stroke-width="1.8"/>
+        <circle cx="17.3" cy="6.7" r="1.2" fill="#f3ecd9"/>
+      </svg>
+    </a>
+    <a href="https://facebook.com/biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="فيسبوك">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M15 8.5h2.2V5.2h-2.5c-2.6 0-4.2 1.6-4.2 4.2v2.1H8.3v3.3h2.2V22h3.4v-7.2h2.4l.4-3.3h-2.8V9.6c0-.8.4-1.1 1.1-1.1z" fill="#f3ecd9"/>
+      </svg>
+    </a>
+    <a href="https://youtube.com/@biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="يوتيوب">
+      <svg viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="5.5" width="20" height="13" rx="4" stroke="#f3ecd9" stroke-width="1.8"/>
+        <path d="M10.5 9.5l5 2.5-5 2.5z" fill="#f3ecd9"/>
+      </svg>
+    </a>
+    <a href="https://tiktok.com/@biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="تيك توك">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M16.5 2c.3 2.2 1.9 3.9 4.1 4.2v3.1a7.3 7.3 0 0 1-4.1-1.3v6.8a5.7 5.7 0 1 1-5.7-5.7c.3 0 .6 0 .9.1v3.1a2.6 2.6 0 1 0 1.9 2.5V2h2.9z" fill="#f3ecd9"/>
+      </svg>
+    </a>
+  </div>
+  <p>© 2026 BioTopai — د. راضي. جميع الحقوق محفوظة.</p>
+</footer>
+
+<div class="mobile-bar">
+  <span class="price" id="course-price-mobile">950 ج.م</span>
+  <button class="btn" onclick="startCheckout()">اشترك الآن</button>
+</div>
+
+<script>
+  // ⚠️ هنا محتاج نربط بوابة الدفع (Paymob) لاحقًا.
+  // دلوقتي: بيتأكد إن المستخدم مسجل دخول، وبيجهز طلب اشتراك "pending"
+  // لحد ما نضيف Paymob في المرحلة الجاية.
+
+  // ===== قراءة id الكورس من رابط الصفحة (?id=...) =====
+  const urlParams = new URLSearchParams(window.location.search);
+  const COURSE_ID = urlParams.get('id');
+
+  // ===== تحميل بيانات الكورس الحقيقية من الداتابيز =====
+  async function loadCourseDetails(){
+    if(!COURSE_ID) return; // لو دخل الصفحة من غير id، تفضل البيانات الافتراضية الظاهرة في التصميم
+
+    const { data: course, error } = await supabaseClient
+      .from('courses')
+      .select('*')
+      .eq('id', COURSE_ID)
+      .single();
+
+    if(error || !course) return;
+
+    document.getElementById('course-title').textContent = course.title;
+    document.getElementById('course-desc').textContent = course.description || '';
+    document.getElementById('course-price').textContent = course.price + ' ج.م';
+    document.getElementById('course-price-mobile').textContent = course.price + ' ج.م';
+    document.title = course.title + ' — د. راضي | BioTopai';
+
+    const oldPriceEl = document.getElementById('course-old-price');
+    if(course.old_price){
+      oldPriceEl.textContent = course.old_price + ' ج.م';
+      oldPriceEl.style.display = '';
+    } else {
+      oldPriceEl.style.display = 'none';
+    }
+  }
+  loadCourseDetails();
+
+  // ===== تحميل الحصص الحقيقية من جدول lessons =====
+  async function loadLessons(){
+    const listEl = document.getElementById('lessons-list');
+    const summaryEl = document.getElementById('lessons-summary');
+
+    if(!COURSE_ID){
+      listEl.innerHTML = `<div class="lesson-row"><span class="lname">مفيش كورس محدد</span></div>`;
+      return;
+    }
+
+    const { data: lessons, error } = await supabaseClient
+      .from('lessons')
+      .select('*')
+      .eq('course_id', COURSE_ID)
+      .order('order_index', { ascending: true });
+
+    if(error || !lessons || lessons.length === 0){
+      summaryEl.textContent = 'هيتم إضافة الحصص قريبًا';
+      listEl.innerHTML = `<div class="lesson-row"><span class="lname">هيتم إضافة الحصص قريبًا</span></div>`;
+      return;
+    }
+
+    summaryEl.textContent = `${lessons.length} حصة`;
+
+    // هل المستخدم مشترك فعليًا (paid) في الكورس ده؟
+    let isPaid = false;
+    const user = await getCurrentUser();
+    if(user){
+      const { data: enrollment } = await supabaseClient
+        .from('enrollments')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('course_id', COURSE_ID)
+        .maybeSingle();
+      isPaid = enrollment?.status === 'paid';
+    }
+
+    listEl.innerHTML = lessons.map((lesson, i) => {
+      const num = String(i + 1).padStart(2, '0');
+      const unlocked = lesson.is_free_preview || isPaid;
+
+      if(!unlocked){
+        return `
+          <div class="lesson-row">
+            <span class="lname">🔒 ${num}. ${lesson.title}</span>
+            <button class="lbtn" style="background:rgba(243,236,217,0.1); color:var(--bone-dim);" onclick="handleLockedLesson()">مقفولة</button>
+          </div>`;
+      }
+
+      const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
+
+      if(lesson.video_url){
+        return `
+          <div class="lesson-row">
+            <span class="lname">${num}. ${lesson.title}${previewTag}</span>
+            <a class="lbtn" href="${lesson.video_url}" target="_blank" rel="noopener">مشاهدة</a>
+          </div>`;
+      }
+
+      return `
+        <div class="lesson-row">
+          <span class="lname">${num}. ${lesson.title}${previewTag}</span>
+          <button class="lbtn" disabled style="opacity:.5; cursor:not-allowed;">قريبًا</button>
+        </div>`;
+    }).join('');
+  }
+  loadLessons();
+
+  // لما يدوس على حصة مقفولة: يدخل يسجل، أو لو مسجل بالفعل يشوف بوابة الاشتراك
+  async function handleLockedLesson(){
+    const user = await getCurrentUser();
+    if(!user){
+      window.location.href = 'dr-rady-auth-page.html';
+      return;
+    }
+    document.querySelector('.buy-card').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function startCheckout(){
+    if(!COURSE_ID){
+      alert('حصل خطأ في تحديد الكورس، جرّب تدخل من صفحة الكورسات تاني');
+      return;
+    }
+    const user = await getCurrentUser();
+    if(!user){
+      window.location.href = 'dr-rady-auth-page.html';
+      return;
+    }
+    // إنشاء enrollment بحالة pending لحد ما يتم الدفع فعليًا
+    const { error } = await supabaseClient.from('enrollments').insert({
+      user_id: user.id,
+      course_id: COURSE_ID,
+      status: 'pending'
+    });
+    if(error && !error.message.includes('duplicate')){
+      alert('حصل خطأ، حاول تاني');
+      return;
+    }
+    // TODO: هنا هيتم التحويل لصفحة دفع Paymob بدل التنبيه ده
+    alert('تمام! الخطوة الجاية هي الدفع عبر Paymob (هنضيفها في المرحلة الجاية).');
+  }
+</script>
+
+</body>
+</html>
