@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مشاهدة الحصة | BioTopia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js?v=2"></script>
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#cdd0e8;
+    --line: rgba(243,236,217,0.14);
+    --amber:#d98e4b;
+    --rose:#b45253;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+  }
+  h1,h2,h3{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 20px; border-radius:100px; font-weight:700; font-size:13.5px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .btn[disabled]{opacity:.5; cursor:not-allowed; transform:none;}
+  .btn-outline{background:transparent; border:1.5px solid var(--line); color:var(--bone);}
+  .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+  .btn-ghost{background:rgba(95,168,43,0.14); color:var(--green-bright); border:1px solid rgba(95,168,43,0.4);}
+  .btn-sm{padding:8px 14px; font-size:12.5px;}
+
+  header{
+    position:sticky; top:0; z-index:60;
+    background:rgba(16,28,70,0.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-row{
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:1180px; margin:0 auto; padding:14px 24px; gap:14px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; min-width:0;}
+  .brand svg{width:32px; height:32px; flex-shrink:0;}
+  .brand-text{font-family:'Tajawal'; font-weight:800; font-size:17px; color:var(--green-bright); white-space:nowrap;}
+  .course-name-crumb{font-size:12.5px; color:var(--bone-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .back-link{font-size:13px; color:var(--bone-dim); white-space:nowrap;}
+  .back-link:hover{color:var(--green-bright);}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:26px 24px 70px;}
+
+  /* ===== حالات التحميل / الرفض ===== */
+  #state-loading, #state-denied{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:60vh; text-align:center; gap:14px;
+  }
+  #state-denied p{color:var(--bone-dim); font-size:14px; max-width:420px;}
+
+  /* ===== SHELL ===== */
+  .lesson-shell{display:grid; grid-template-columns:1fr 320px; gap:24px; align-items:start;}
+
+  .player-wrap{
+    background:#000; border-radius:18px; overflow:hidden; border:1px solid var(--line);
+    aspect-ratio:16/9; position:relative;
+  }
+  .player-wrap iframe, .player-wrap video{width:100%; height:100%; border:none; display:block;}
+  .player-empty{
+    height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color:var(--bone-dim); gap:8px; font-size:13.5px;
+  }
+
+  .lesson-head{
+    margin-top:20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .lesson-head h1{font-size:21px; color:var(--bone); margin-bottom:6px;}
+  .lesson-head .num-tag{font-size:12.5px; color:var(--green-bright); font-weight:700; margin-bottom:8px; display:block;}
+  .lesson-nav-row{display:flex; gap:10px; margin-top:18px;}
+
+  .panel{background:var(--navy-soft); border:1px solid var(--line); border-radius:18px; padding:22px; margin-top:22px;}
+  .panel h2{font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+
+  /* ملفات مرفقة */
+  .file-row{
+    display:flex; align-items:center; gap:12px; padding:12px 14px;
+    background:var(--navy-deep); border:1px solid var(--line); border-radius:12px; margin-bottom:10px;
+  }
+  .file-row:last-child{margin-bottom:0;}
+  .file-ic{
+    width:36px; height:36px; border-radius:10px; background:rgba(95,168,43,0.16);
+    display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
+  }
+  .file-row .fname{font-size:13.5px; color:var(--bone); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .file-empty{font-size:13px; color:var(--bone-dim);}
+
+  /* ===== SIDEBAR: قائمة حصص الكورس ===== */
+  .side-panel{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:18px;
+    padding:18px; position:sticky; top:88px;
+  }
+  .side-panel h2{font-size:14px; margin-bottom:14px; padding:0 4px;}
+  .side-lesson-list{display:flex; flex-direction:column; gap:4px; max-height:70vh; overflow-y:auto;}
+  .side-lesson{
+    display:flex; align-items:center; gap:10px; padding:11px 10px; border-radius:12px;
+    font-size:13px; color:var(--bone-dim); transition:.15s;
+  }
+  .side-lesson:hover{background:rgba(243,236,217,0.05);}
+  .side-lesson.current{background:rgba(95,168,43,0.16); color:var(--green-bright); font-weight:700;}
+  .side-lesson.locked{opacity:.55; cursor:not-allowed;}
+  .side-lesson .st-ic{width:20px; text-align:center; flex-shrink:0; font-size:13px;}
+  .side-lesson .st-title{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  @media (max-width:900px){
+    .lesson-shell{grid-template-columns:1fr;}
+    .side-panel{position:static;}
+    .course-name-crumb{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
+      <span class="course-name-crumb" id="crumb-course-name">/ جارٍ التحميل...</span>
+    </div>
+    <a href="#" id="back-to-course" class="back-link">→ رجوع لصفحة الكورس</a>
+  </div>
+</header>
+
+<!-- ===== حالة التحميل ===== -->
+<div id="state-loading" class="wrap">
+  <h2>جارٍ تجهيز الحصة...</h2>
+</div>
+
+<!-- ===== حالة عدم الصلاحية ===== -->
+<div id="state-denied" class="wrap" style="display:none;">
+  <h2 id="denied-title">الحصة دي مقفولة 🔒</h2>
+  <p id="denied-msg">لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.</p>
+  <a href="#" id="denied-back" class="btn">رجوع لصفحة الكورس</a>
+</div>
+
+<!-- ===== المحتوى ===== -->
+<div class="wrap" id="state-content" style="display:none;">
+  <div class="lesson-shell">
+
+    <!-- ===== المحتوى الرئيسي ===== -->
+    <div>
+      <div class="player-wrap" id="player-wrap">
+        <div class="player-empty">جارٍ تحميل الفيديو...</div>
+      </div>
+
+      <div class="lesson-head">
+        <div>
+          <span class="num-tag" id="lesson-num-tag">الحصة</span>
+          <h1 id="lesson-title">—</h1>
+        </div>
+        <button class="btn btn-ghost" id="complete-btn" onclick="toggleComplete()">✓ حدد كـ "خلصتها"</button>
+      </div>
+
+      <div class="lesson-nav-row">
+        <a href="#" id="prev-lesson-link" class="btn btn-outline btn-sm">→ الحصة السابقة</a>
+        <a href="#" id="next-lesson-link" class="btn btn-outline btn-sm">الحصة الجاية ←</a>
+      </div>
+
+      <!-- ===== الملفات المرفقة ===== -->
+      <div class="panel">
+        <h2>📎 ملفات الحصة</h2>
+        <div id="files-list">
+          <p class="file-empty">جارٍ تحميل الملفات...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== سايدبار: كل حصص الكورس ===== -->
+    <div class="side-panel">
+      <h2>محتوى الكورس</h2>
+      <div class="side-lesson-list" id="side-lesson-list">
+        <div class="side-lesson"><span class="st-title">جارٍ التحميل...</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const COURSE_ID = params.get('course');
+  const LESSON_ID = params.get('lesson');
+
+  let allLessons = [];
+  let currentLesson = null;
+  let currentUser = null;
+  let isPaid = false;
+  let progressRow = null;
+
+  function showState(name){
+    document.getElementById('state-loading').style.display = name === 'loading' ? 'flex' : 'none';
+    document.getElementById('state-denied').style.display = name === 'denied' ? 'flex' : 'none';
+    document.getElementById('state-content').style.display = name === 'content' ? 'block' : 'none';
+  }
+
+  function denied(title, msg){
+    document.getElementById('denied-title').textContent = title;
+    document.getElementById('denied-msg').textContent = msg;
+    showState('denied');
+  }
+
+  // ===== بناء رابط تضمين الفيديو حسب مصدره (يوتيوب / فيميو / رابط مباشر) =====
+  function buildPlayerHTML(url){
+    if(!url){
+      return `<div class="player-empty">لسه مفيش فيديو مضاف للحصة دي</div>`;
+    }
+    // يوتيوب
+    let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
+    if(m){
+      return `<iframe src="https://www.youtube.com/embed/${m[1]}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    }
+    // فيميو
+    m = url.match(/vimeo\.com\/(\d+)/);
+    if(m){
+      return `<iframe src="https://player.vimeo.com/video/${m[1]}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+    }
+    // ملف فيديو مباشر
+    if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)){
+      return `<video controls src="${url}"></video>`;
+    }
+    // أي مصدر تاني (زي Bunny.net iframe embed) بيتحط في iframe مباشرة
+    return `<iframe src="${url}" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  }
+
+  async function init(){
+    if(!COURSE_ID || !LESSON_ID){
+      denied('رابط غير صحيح ⚠️', 'الرابط ده ناقصه بيانات، ارجع لصفحة الكورس واختار الحصة تاني.');
+      return;
+    }
+
+    const user = await requireAuth();
+    if(!user) return; // requireAuth بيحوّل لصفحة الدخول لو مفيش مستخدم
+    currentUser = user;
+
+    document.getElementById('back-to-course').href = `dr-rady-course-page.html?id=${COURSE_ID}`;
+    document.getElementById('denied-back').href = `dr-rady-course-page.html?id=${COURSE_ID}`;
+
+    // بيانات الكورس (للاسم في الهيدر)
+    const { data: course } = await supabaseClient
+      .from('courses').select('title').eq('id', COURSE_ID).single();
+    if(course){
+      document.getElementById('crumb-course-name').textContent = '/ ' + course.title;
+      document.title = course.title + ' | BioTopia';
+    }
+
+    // كل حصص الكورس
+    const { data: lessons, error: lessonsErr } = await supabaseClient
+      .from('lessons').select('*').eq('course_id', COURSE_ID).order('order_index', { ascending: true });
+
+    if(lessonsErr || !lessons || lessons.length === 0){
+      denied('حصل خطأ ⚠️', 'مقدرناش نجيب حصص الكورس ده دلوقتي.');
+      return;
+    }
+    allLessons = lessons;
+
+    currentLesson = lessons.find(l => l.id === LESSON_ID);
+    if(!currentLesson){
+      denied('الحصة مش موجودة ⚠️', 'الحصة دي مش موجودة في الكورس ده.');
+      return;
+    }
+
+    // هل المستخدم مشترك فعليًا؟
+    const { data: enrollment } = await supabaseClient
+      .from('enrollments').select('status').eq('user_id', user.id).eq('course_id', COURSE_ID).maybeSingle();
+    isPaid = enrollment?.status === 'paid';
+
+    const unlocked = currentLesson.is_free_preview || isPaid;
+    if(!unlocked){
+      denied('الحصة دي مقفولة 🔒', 'لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.');
+      return;
+    }
+
+    renderLesson();
+    renderSidebar();
+    await loadProgress();
+    await loadFiles();
+    showState('content');
+  }
+
+  function renderLesson(){
+    const idx = allLessons.findIndex(l => l.id === currentLesson.id);
+    document.getElementById('lesson-num-tag').textContent = `الحصة ${idx + 1} من ${allLessons.length}`;
+    document.getElementById('lesson-title').textContent = currentLesson.title;
+    document.getElementById('player-wrap').innerHTML = buildPlayerHTML(currentLesson.video_url);
+
+    // التنقل بين الحصص
+    const prevLesson = allLessons[idx - 1];
+    const nextLesson = allLessons[idx + 1];
+    const prevLink = document.getElementById('prev-lesson-link');
+    const nextLink = document.getElementById('next-lesson-link');
+
+    if(prevLesson){
+      prevLink.href = `dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${prevLesson.id}`;
+      prevLink.style.display = '';
+    } else {
+      prevLink.style.display = 'none';
+    }
+    if(nextLesson){
+      nextLink.href = `dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${nextLesson.id}`;
+      nextLink.style.display = '';
+    } else {
+      nextLink.style.display = 'none';
+    }
+  }
+
+  function renderSidebar(){
+    const listEl = document.getElementById('side-lesson-list');
+    listEl.innerHTML = allLessons.map((l, i) => {
+      const unlocked = l.is_free_preview || isPaid;
+      const isCurrent = l.id === currentLesson.id;
+      const num = String(i + 1).padStart(2, '0');
+
+      if(!unlocked){
+        return `<div class="side-lesson locked"><span class="st-ic">🔒</span><span class="st-title">${num}. ${l.title}</span></div>`;
+      }
+      return `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${l.id}" class="side-lesson ${isCurrent ? 'current' : ''}" data-lesson-id="${l.id}">
+        <span class="st-ic">${isCurrent ? '▶' : '⚪'}</span>
+        <span class="st-title">${num}. ${l.title}</span>
+      </a>`;
+    }).join('');
+  }
+
+  async function loadProgress(){
+    const { data } = await supabaseClient
+      .from('lesson_progress')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .eq('lesson_id', currentLesson.id)
+      .maybeSingle();
+    progressRow = data || null;
+    updateCompleteBtn();
+  }
+
+  function updateCompleteBtn(){
+    const btn = document.getElementById('complete-btn');
+    if(progressRow?.completed){
+      btn.textContent = '✓ خلصتها بالفعل';
+      btn.classList.remove('btn-ghost');
+      btn.style.background = 'var(--green)';
+      btn.style.color = 'var(--navy-deep)';
+      btn.style.border = 'none';
+    } else {
+      btn.textContent = '✓ حدد كـ "خلصتها"';
+      btn.classList.add('btn-ghost');
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.border = '';
+    }
+  }
+
+  async function toggleComplete(){
+    const btn = document.getElementById('complete-btn');
+    btn.disabled = true;
+
+    const newValue = !(progressRow?.completed);
+    const { data, error } = await supabaseClient
+      .from('lesson_progress')
+      .upsert({
+        user_id: currentUser.id,
+        lesson_id: currentLesson.id,
+        completed: newValue,
+        completed_at: newValue ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,lesson_id' })
+      .select()
+      .single();
+
+    btn.disabled = false;
+    if(error){
+      alert('حصل خطأ، حاول تاني');
+      return;
+    }
+    progressRow = data;
+    updateCompleteBtn();
+  }
+
+  function fileIcon(name){
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    if(ext === 'pdf') return '📕';
+    if(['doc','docx'].includes(ext)) return '📘';
+    if(['xls','xlsx'].includes(ext)) return '📗';
+    if(['png','jpg','jpeg','webp'].includes(ext)) return '🖼️';
+    return '📄';
+  }
+
+  async function loadFiles(){
+    const listEl = document.getElementById('files-list');
+    const { data: files, error } = await supabaseClient
+      .from('lesson_files')
+      .select('*')
+      .eq('lesson_id', currentLesson.id)
+      .order('created_at', { ascending: true });
+
+    if(error || !files || files.length === 0){
+      listEl.innerHTML = `<p class="file-empty">مفيش ملفات مرفقة للحصة دي لسه</p>`;
+      return;
+    }
+
+    listEl.innerHTML = files.map(f => `
+      <div class="file-row">
+        <div class="file-ic">${fileIcon(f.file_name)}</div>
+        <span class="fname">${f.file_name}</span>
+        <a href="${f.file_url}" target="_blank" rel="noopener" class="btn btn-sm">تحميل</a>
+      </div>
+    `).join('');
+  }
+
+  init();
+</script>
+
+</body>
+</html>

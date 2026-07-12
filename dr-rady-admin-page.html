@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة تحكم د. راضي | BioTopai</title>
+<title>لوحة تحكم د. راضي | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -81,7 +81,7 @@
 
 <header>
   <div class="header-row">
-    <div class="brand">Bio<span>Topai</span> — لوحة التحكم</div>
+    <div class="brand">Bio<span>Topia</span> — لوحة التحكم</div>
     <a href="dr-rady-dashboard-page.html" class="back-link">→ رجوع للوحتك العادية</a>
   </div>
 </header>
@@ -137,6 +137,19 @@
           <option value="تالتة ثانوي" selected>تالتة ثانوي</option>
           <option value="كل المراحل">كل المراحل</option>
         </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>نوع الكورس</label>
+        <select id="course-type">
+          <option value="ترم كامل" selected>ترم كامل</option>
+          <option value="مراجعة نهائية">مراجعة نهائية</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>رابط صورة الكورس (اختياري)</label>
+        <input type="text" id="course-image" placeholder="https://...">
       </div>
     </div>
     <label class="checkbox-row"><input type="checkbox" id="course-published" checked> منشور وظاهر في الكتالوج</label>
@@ -201,6 +214,145 @@
           <tr><td colspan="4">اختار كورس عشان تشوف حصصه</td></tr>
         </tbody>
       </table>
+
+      <!-- ===== إدارة ملفات الحصة المختارة ===== -->
+      <div id="lesson-files-manager" style="display:none; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
+        <div class="panel-head">
+          <h2>📎 ملفات حصة: <span id="files-lesson-name" style="color:var(--green-bright);"></span></h2>
+          <button class="btn btn-outline btn-sm" onclick="closeFilesManager()">إغلاق</button>
+        </div>
+
+        <div class="msg msg-error" id="file-form-error"></div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>اسم الملف (زي ما هيظهر للطالب)</label>
+            <input type="text" id="file-name-input" placeholder="مثال: ملخص الوحدة الأولى.pdf">
+          </div>
+          <div class="field">
+            <label>رابط الملف</label>
+            <input type="text" id="file-url-input" placeholder="https://...">
+          </div>
+        </div>
+        <button class="btn" id="add-file-btn" onclick="addLessonFile()">إضافة الملف</button>
+
+        <table style="margin-top:18px;">
+          <thead>
+            <tr><th>اسم الملف</th><th></th></tr>
+          </thead>
+          <tbody id="lesson-files-table-body">
+            <tr><td colspan="2">جارٍ التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== إدارة الاختبارات ===== -->
+  <div class="panel">
+    <div class="panel-head"><h2>📝 إدارة الاختبارات</h2></div>
+
+    <div class="field">
+      <label>اختار الكورس</label>
+      <select id="exams-course-select" onchange="loadExamsForCourse()">
+        <option value="">-- اختار كورس --</option>
+      </select>
+    </div>
+
+    <div id="exams-manager" style="display:none;">
+      <div class="msg msg-error" id="exam-form-error"></div>
+
+      <div class="field">
+        <label>عنوان الاختبار</label>
+        <input type="text" id="exam-title" placeholder="مثال: اختبار الوحدة الأولى">
+      </div>
+      <div class="field">
+        <label>وصف قصير (اختياري)</label>
+        <textarea id="exam-desc" rows="2" placeholder="بيظهر للطالب فوق الأسئلة"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>مرتبط بحصة معينة؟ (اختياري)</label>
+          <select id="exam-lesson">
+            <option value="">بدون — اختبار وحدة/نهائي</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ترتيب الظهور</label>
+          <input type="number" id="exam-order" placeholder="1">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>مدة الاختبار بالدقايق (اختياري — سيبه فاضي = بدون وقت)</label>
+          <input type="number" id="exam-time-limit" placeholder="15">
+        </div>
+        <div class="field">
+          <label>نسبة النجاح %</label>
+          <input type="number" id="exam-passing-score" placeholder="50" value="50">
+        </div>
+      </div>
+
+      <input type="hidden" id="exam-edit-id">
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="save-exam-btn" onclick="saveExam()">حفظ الاختبار</button>
+        <button class="btn btn-outline" id="cancel-exam-edit" style="display:none;" onclick="resetExamForm()">إلغاء التعديل</button>
+      </div>
+
+      <table style="margin-top:20px;">
+        <thead>
+          <tr><th>العنوان</th><th>مرتبط بـ</th><th>عدد الأسئلة</th><th></th></tr>
+        </thead>
+        <tbody id="exams-table-body">
+          <tr><td colspan="4">اختار كورس عشان تشوف اختباراته</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ===== إدارة أسئلة الاختبار المختار ===== -->
+      <div id="questions-manager" style="display:none; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
+        <div class="panel-head">
+          <h2>❓ أسئلة اختبار: <span id="questions-exam-name" style="color:var(--green-bright);"></span></h2>
+          <button class="btn btn-outline btn-sm" onclick="closeQuestionsManager()">إغلاق</button>
+        </div>
+
+        <div class="msg msg-error" id="question-form-error"></div>
+
+        <div class="field">
+          <label>نص السؤال</label>
+          <textarea id="question-text" rows="2" placeholder="مثال: العضية المسؤولة عن التنفس الخلوي هي؟"></textarea>
+        </div>
+        <p style="font-size:12px; color:var(--bone-dim); margin-bottom:10px;">اكتب الاختيارات وحدد الإجابة الصح بالراديو. سيب أي خانة فاضية لو محتاج اختيارات أقل من 4.</p>
+        <div class="field-row" style="margin-bottom:6px;">
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="correct-opt" value="0" checked style="accent-color:var(--green); margin-left:6px;">اختيار 1</label>
+            <input type="text" id="opt-text-0" placeholder="نص الاختيار الأول">
+          </div>
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="correct-opt" value="1" style="accent-color:var(--green); margin-left:6px;">اختيار 2</label>
+            <input type="text" id="opt-text-1" placeholder="نص الاختيار الثاني">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="correct-opt" value="2" style="accent-color:var(--green); margin-left:6px;">اختيار 3</label>
+            <input type="text" id="opt-text-2" placeholder="نص الاختيار الثالث (اختياري)">
+          </div>
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="correct-opt" value="3" style="accent-color:var(--green); margin-left:6px;">اختيار 4</label>
+            <input type="text" id="opt-text-3" placeholder="نص الاختيار الرابع (اختياري)">
+          </div>
+        </div>
+        <button class="btn" id="add-question-btn" onclick="addQuestion()">إضافة السؤال</button>
+
+        <table style="margin-top:18px;">
+          <thead>
+            <tr><th>#</th><th>السؤال</th><th>الإجابة الصح</th><th></th></tr>
+          </thead>
+          <tbody id="questions-table-body">
+            <tr><td colspan="4">جارٍ التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -254,7 +406,14 @@
 
     tbody.innerHTML = courses.map(c => `
       <tr>
-        <td>${c.title}</td>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${c.image_url
+              ? `<img src="${c.image_url}" alt="" style="width:34px; height:34px; border-radius:8px; object-fit:cover; flex-shrink:0;">`
+              : `<span style="width:34px; height:34px; border-radius:8px; background:var(--navy-deep); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px;">📼</span>`}
+            <span>${c.title}</span>
+          </div>
+        </td>
         <td>${c.grade || '—'}</td>
         <td>${c.price} ج.م</td>
         <td>${c.lessons_count || 0}</td>
@@ -270,6 +429,10 @@
 
     select.innerHTML = `<option value="">-- اختار كورس --</option>` +
       courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+
+    const examsSelect = document.getElementById('exams-course-select');
+    examsSelect.innerHTML = `<option value="">-- اختار كورس --</option>` +
+      courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
   }
 
   function resetCourseForm(){
@@ -279,6 +442,8 @@
     document.getElementById('course-price').value = '';
     document.getElementById('course-old-price').value = '';
     document.getElementById('course-grade').value = 'تالتة ثانوي';
+    document.getElementById('course-type').value = 'ترم كامل';
+    document.getElementById('course-image').value = '';
     document.getElementById('course-published').checked = true;
     document.getElementById('course-form-title').textContent = '➕ إضافة كورس جديد';
     document.getElementById('cancel-course-edit').style.display = 'none';
@@ -294,6 +459,8 @@
     document.getElementById('course-price').value = c.price || '';
     document.getElementById('course-old-price').value = c.old_price || '';
     document.getElementById('course-grade').value = c.grade || 'تالتة ثانوي';
+    document.getElementById('course-type').value = c.course_type || 'ترم كامل';
+    document.getElementById('course-image').value = c.image_url || '';
     document.getElementById('course-published').checked = !!c.is_published;
     document.getElementById('course-form-title').textContent = '✏️ تعديل الكورس';
     document.getElementById('cancel-course-edit').style.display = 'inline-flex';
@@ -318,6 +485,8 @@
       price: Number(price),
       old_price: document.getElementById('course-old-price').value ? Number(document.getElementById('course-old-price').value) : null,
       grade: document.getElementById('course-grade').value,
+      course_type: document.getElementById('course-type').value,
+      image_url: document.getElementById('course-image').value.trim() || null,
       is_published: document.getElementById('course-published').checked
     };
 
@@ -362,6 +531,8 @@
     currentLessonsCourseId = courseId || null;
     const manager = document.getElementById('lessons-manager');
 
+    closeFilesManager();
+
     if(!courseId){
       manager.style.display = 'none';
       return;
@@ -394,6 +565,7 @@
         <td>
           <div class="row-actions">
             <button class="btn btn-outline btn-sm" onclick='editLesson(${JSON.stringify(l)})'>تعديل</button>
+            <button class="btn btn-outline btn-sm" onclick="manageLessonFiles('${l.id}', ${JSON.stringify(l.title)})">📎 ملفات</button>
             <button class="btn btn-danger btn-sm" onclick="deleteLesson('${l.id}')">حذف</button>
           </div>
         </td>
@@ -470,7 +642,376 @@
     if(!confirm('متأكد إنك عايز تمسح الحصة دي؟')) return;
     const { error } = await supabaseClient.from('lessons').delete().eq('id', id);
     if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    if(currentFilesLessonId === id){
+      document.getElementById('lesson-files-manager').style.display = 'none';
+      currentFilesLessonId = null;
+    }
     refreshLessonsTable();
+  }
+
+  // ===== إدارة ملفات الحصة =====
+  let currentFilesLessonId = null;
+
+  function manageLessonFiles(lessonId, lessonTitle){
+    currentFilesLessonId = lessonId;
+    document.getElementById('files-lesson-name').textContent = lessonTitle;
+    document.getElementById('lesson-files-manager').style.display = 'block';
+    document.getElementById('file-name-input').value = '';
+    document.getElementById('file-url-input').value = '';
+    document.getElementById('file-form-error').style.display = 'none';
+    document.getElementById('lesson-files-manager').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    loadLessonFilesAdmin();
+  }
+
+  function closeFilesManager(){
+    currentFilesLessonId = null;
+    document.getElementById('lesson-files-manager').style.display = 'none';
+  }
+
+  async function loadLessonFilesAdmin(){
+    const tbody = document.getElementById('lesson-files-table-body');
+    tbody.innerHTML = `<tr><td colspan="2">جارٍ التحميل...</td></tr>`;
+
+    const { data: files, error } = await supabaseClient
+      .from('lesson_files')
+      .select('*')
+      .eq('lesson_id', currentFilesLessonId)
+      .order('created_at', { ascending: true });
+
+    if(error){
+      tbody.innerHTML = `<tr><td colspan="2">حصل خطأ في تحميل الملفات</td></tr>`;
+      return;
+    }
+    if(!files || files.length === 0){
+      tbody.innerHTML = `<tr><td colspan="2">مفيش ملفات مضافة للحصة دي لسه</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = files.map(f => `
+      <tr>
+        <td>${f.file_name}</td>
+        <td>
+          <div class="row-actions">
+            <a href="${f.file_url}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">فتح</a>
+            <button class="btn btn-danger btn-sm" onclick="deleteLessonFile('${f.id}')">حذف</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function addLessonFile(){
+    const errEl = document.getElementById('file-form-error');
+    errEl.style.display = 'none';
+
+    const fileName = document.getElementById('file-name-input').value.trim();
+    const fileUrl = document.getElementById('file-url-input').value.trim();
+
+    if(!fileName || !fileUrl){
+      errEl.textContent = 'اسم الملف والرابط مطلوبين';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('add-file-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
+
+    const { error } = await supabaseClient.from('lesson_files').insert({
+      lesson_id: currentFilesLessonId,
+      file_name: fileName,
+      file_url: fileUrl
+    });
+
+    btn.disabled = false; btn.textContent = 'إضافة الملف';
+
+    if(error){
+      errEl.textContent = 'حصل خطأ، حاول تاني';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    document.getElementById('file-name-input').value = '';
+    document.getElementById('file-url-input').value = '';
+    loadLessonFilesAdmin();
+  }
+
+  async function deleteLessonFile(fileId){
+    if(!confirm('متأكد إنك عايز تمسح الملف ده؟')) return;
+    const { error } = await supabaseClient.from('lesson_files').delete().eq('id', fileId);
+    if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    loadLessonFilesAdmin();
+  }
+
+  // ============================================================
+  // ===== إدارة الاختبارات =====
+  // ============================================================
+  let currentExamsCourseId = null;
+  let currentExamsCourseLessons = [];
+  let currentQuestionsExamId = null;
+
+  async function loadExamsForCourse(){
+    currentExamsCourseId = document.getElementById('exams-course-select').value;
+    const manager = document.getElementById('exams-manager');
+
+    if(!currentExamsCourseId){
+      manager.style.display = 'none';
+      return;
+    }
+    manager.style.display = 'block';
+    closeQuestionsManager();
+    resetExamForm();
+
+    // جلب حصص الكورس عشان نعرضها في اختيار "مرتبط بحصة"
+    const { data: lessons } = await supabaseClient
+      .from('lessons').select('id, title').eq('course_id', currentExamsCourseId).order('order_index', { ascending: true });
+    currentExamsCourseLessons = lessons || [];
+
+    const lessonSelect = document.getElementById('exam-lesson');
+    lessonSelect.innerHTML = `<option value="">بدون — اختبار وحدة/نهائي</option>` +
+      currentExamsCourseLessons.map(l => `<option value="${l.id}">${l.title}</option>`).join('');
+
+    await refreshExamsTable();
+  }
+
+  async function refreshExamsTable(){
+    const { data: exams, error } = await supabaseClient
+      .from('exams').select('*').eq('course_id', currentExamsCourseId).order('order_index', { ascending: true });
+
+    const tbody = document.getElementById('exams-table-body');
+    if(error || !exams || exams.length === 0){
+      tbody.innerHTML = `<tr><td colspan="4">مفيش اختبارات مضافة للكورس ده لسه</td></tr>`;
+      return;
+    }
+
+    const examIds = exams.map(e => e.id);
+    const { data: questions } = await supabaseClient.from('exam_questions').select('id, exam_id').in('exam_id', examIds);
+    const qCountMap = {};
+    (questions || []).forEach(q => { qCountMap[q.exam_id] = (qCountMap[q.exam_id] || 0) + 1; });
+
+    tbody.innerHTML = exams.map(e => {
+      const lessonTitle = e.lesson_id ? (currentExamsCourseLessons.find(l => l.id === e.lesson_id)?.title || '—') : 'اختبار وحدة';
+      return `
+        <tr>
+          <td>${e.title}</td>
+          <td>${lessonTitle}</td>
+          <td>${qCountMap[e.id] || 0}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-outline btn-sm" onclick="manageExamQuestions('${e.id}', '${e.title.replace(/'/g,"")}')">الأسئلة</button>
+              <button class="btn btn-outline btn-sm" onclick="editExam('${e.id}')">تعديل</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteExam('${e.id}')">حذف</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function resetExamForm(){
+    document.getElementById('exam-edit-id').value = '';
+    document.getElementById('exam-title').value = '';
+    document.getElementById('exam-desc').value = '';
+    document.getElementById('exam-lesson').value = '';
+    document.getElementById('exam-order').value = '';
+    document.getElementById('exam-time-limit').value = '';
+    document.getElementById('exam-passing-score').value = '50';
+    document.getElementById('exam-form-error').style.display = 'none';
+    document.getElementById('save-exam-btn').textContent = 'حفظ الاختبار';
+    document.getElementById('cancel-exam-edit').style.display = 'none';
+  }
+
+  async function editExam(id){
+    const { data: exam, error } = await supabaseClient.from('exams').select('*').eq('id', id).single();
+    if(error || !exam) return;
+
+    document.getElementById('exam-edit-id').value = exam.id;
+    document.getElementById('exam-title').value = exam.title;
+    document.getElementById('exam-desc').value = exam.description || '';
+    document.getElementById('exam-lesson').value = exam.lesson_id || '';
+    document.getElementById('exam-order').value = exam.order_index || '';
+    document.getElementById('exam-time-limit').value = exam.time_limit_minutes || '';
+    document.getElementById('exam-passing-score').value = exam.passing_score ?? 50;
+    document.getElementById('save-exam-btn').textContent = 'حفظ التعديل';
+    document.getElementById('cancel-exam-edit').style.display = 'inline-flex';
+    window.scrollTo({ top: document.getElementById('exam-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+  }
+
+  async function saveExam(){
+    const errEl = document.getElementById('exam-form-error');
+    errEl.style.display = 'none';
+
+    const title = document.getElementById('exam-title').value.trim();
+    if(!title){
+      errEl.textContent = 'عنوان الاختبار مطلوب';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const payload = {
+      course_id: currentExamsCourseId,
+      lesson_id: document.getElementById('exam-lesson').value || null,
+      title: title,
+      description: document.getElementById('exam-desc').value.trim() || null,
+      order_index: parseInt(document.getElementById('exam-order').value) || 0,
+      time_limit_minutes: document.getElementById('exam-time-limit').value ? parseInt(document.getElementById('exam-time-limit').value) : null,
+      passing_score: parseInt(document.getElementById('exam-passing-score').value) || 50
+    };
+
+    const editId = document.getElementById('exam-edit-id').value;
+    const btn = document.getElementById('save-exam-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+
+    const { error } = editId
+      ? await supabaseClient.from('exams').update(payload).eq('id', editId)
+      : await supabaseClient.from('exams').insert(payload);
+
+    btn.disabled = false;
+
+    if(error){
+      errEl.textContent = 'حصل خطأ، حاول تاني';
+      errEl.style.display = 'block';
+      btn.textContent = editId ? 'حفظ التعديل' : 'حفظ الاختبار';
+      return;
+    }
+
+    resetExamForm();
+    refreshExamsTable();
+  }
+
+  async function deleteExam(id){
+    if(!confirm('متأكد إنك عايز تمسح الاختبار ده؟ هيتمسح معاه كل الأسئلة والنتايج المرتبطة بيه.')) return;
+    const { error } = await supabaseClient.from('exams').delete().eq('id', id);
+    if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    if(currentQuestionsExamId === id) closeQuestionsManager();
+    refreshExamsTable();
+  }
+
+  // ============================================================
+  // ===== إدارة أسئلة الاختبار =====
+  // ============================================================
+  function manageExamQuestions(examId, examTitle){
+    currentQuestionsExamId = examId;
+    document.getElementById('questions-exam-name').textContent = examTitle;
+    document.getElementById('questions-manager').style.display = 'block';
+    resetQuestionForm();
+    loadQuestionsForExam();
+    document.getElementById('questions-manager').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeQuestionsManager(){
+    currentQuestionsExamId = null;
+    document.getElementById('questions-manager').style.display = 'none';
+  }
+
+  function resetQuestionForm(){
+    document.getElementById('question-text').value = '';
+    for(let i = 0; i < 4; i++) document.getElementById(`opt-text-${i}`).value = '';
+    document.querySelector('input[name="correct-opt"][value="0"]').checked = true;
+    document.getElementById('question-form-error').style.display = 'none';
+  }
+
+  async function loadQuestionsForExam(){
+    const tbody = document.getElementById('questions-table-body');
+    tbody.innerHTML = `<tr><td colspan="4">جارٍ التحميل...</td></tr>`;
+
+    const { data: questions, error } = await supabaseClient
+      .from('exam_questions').select('id, question_text, order_index').eq('exam_id', currentQuestionsExamId).order('order_index', { ascending: true });
+
+    if(error || !questions || questions.length === 0){
+      tbody.innerHTML = `<tr><td colspan="4">مفيش أسئلة مضافة للاختبار ده لسه</td></tr>`;
+      return;
+    }
+
+    const qIds = questions.map(q => q.id);
+    const { data: options } = await supabaseClient
+      .from('exam_options').select('id, question_id, option_text, is_correct').in('question_id', qIds);
+
+    tbody.innerHTML = questions.map((q, i) => {
+      const correctOpt = (options || []).find(o => o.question_id === q.id && o.is_correct);
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${q.question_text}</td>
+          <td style="color:var(--green-bright);">${correctOpt ? correctOpt.option_text : '—'}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${q.id}')">حذف</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function addQuestion(){
+    const errEl = document.getElementById('question-form-error');
+    errEl.style.display = 'none';
+
+    const questionText = document.getElementById('question-text').value.trim();
+    const optionTexts = [0, 1, 2, 3].map(i => document.getElementById(`opt-text-${i}`).value.trim());
+    const filledOptions = optionTexts.map((text, i) => ({ text, i })).filter(o => o.text !== '');
+    const correctIndex = parseInt(document.querySelector('input[name="correct-opt"]:checked').value);
+
+    if(!questionText){
+      errEl.textContent = 'نص السؤال مطلوب';
+      errEl.style.display = 'block';
+      return;
+    }
+    if(filledOptions.length < 2){
+      errEl.textContent = 'لازم اختيارين على الأقل';
+      errEl.style.display = 'block';
+      return;
+    }
+    if(optionTexts[correctIndex] === ''){
+      errEl.textContent = 'الإجابة الصح المحددة فاضية، اكتب نص الاختيار ده أو غيّر الاختيار الصح';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('add-question-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
+
+    const { data: newQuestion, error: qError } = await supabaseClient
+      .from('exam_questions')
+      .insert({ exam_id: currentQuestionsExamId, question_text: questionText, order_index: Date.now() })
+      .select().single();
+
+    if(qError || !newQuestion){
+      errEl.textContent = 'حصل خطأ في إضافة السؤال، حاول تاني';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'إضافة السؤال';
+      return;
+    }
+
+    const optionsPayload = filledOptions.map(o => ({
+      question_id: newQuestion.id,
+      option_text: o.text,
+      is_correct: o.i === correctIndex,
+      order_index: o.i
+    }));
+
+    const { error: optError } = await supabaseClient.from('exam_options').insert(optionsPayload);
+
+    btn.disabled = false; btn.textContent = 'إضافة السؤال';
+
+    if(optError){
+      errEl.textContent = 'اتضاف السؤال بس حصل خطأ في الاختيارات، احذف السؤال وجرب تاني';
+      errEl.style.display = 'block';
+      loadQuestionsForExam();
+      return;
+    }
+
+    resetQuestionForm();
+    loadQuestionsForExam();
+    refreshExamsTable();
+  }
+
+  async function deleteQuestion(id){
+    if(!confirm('متأكد إنك عايز تمسح السؤال ده؟')) return;
+    const { error } = await supabaseClient.from('exam_questions').delete().eq('id', id);
+    if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    loadQuestionsForExam();
+    refreshExamsTable();
   }
 </script>
 

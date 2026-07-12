@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BioTopai | أحياء الثانوية مع د. راضي</title>
+<title>BioTopia | أحياء الثانوية مع د. راضي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -110,22 +110,6 @@
   .cta-strip h2{font-size:26px; margin-bottom:10px;}
   .cta-strip p{color:var(--bone-dim); font-size:14.5px; margin-bottom:26px;}
 
-  /* ===== TESTIMONIALS ===== */
-  .testi-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
-  .testi-card{
-    background:var(--navy-soft); border:1px solid var(--line); border-radius:20px;
-    padding:26px;
-  }
-  .testi-card .stars{color:var(--green-bright); font-size:14px; margin-bottom:14px;}
-  .testi-card p{font-size:13.5px; color:var(--bone-dim); margin-bottom:18px;}
-  .testi-who{display:flex; align-items:center; gap:10px;}
-  .testi-avatar{
-    width:38px; height:38px; border-radius:50%; background:var(--navy-deep);
-    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:var(--green-bright);
-  }
-  .testi-who b{font-size:13.5px; display:block;}
-  .testi-who span{font-size:11.5px; color:var(--bone-dim);}
-
   /* ===== CONTACT ===== */
   .contact-wrap{
     display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center;
@@ -156,9 +140,11 @@
     transition:.2s; font-size:18px;
   }
   .social-icon:hover{background:var(--green); border-color:var(--green); transform:translateY(-3px);}
+  .social-icon svg{width:17px; height:17px;}
+  .social-icon:hover svg path, .social-icon:hover svg rect, .social-icon:hover svg circle{fill:var(--navy-deep) !important;}
 
   @media (max-width:900px){
-    .why-grid, .testi-grid{grid-template-columns:1fr 1fr;}
+    .why-grid{grid-template-columns:1fr 1fr;}
     .contact-wrap{grid-template-columns:1fr;}
   }
   @media (max-width:640px){
@@ -174,7 +160,7 @@
     nav ul li a{display:block; padding:13px 0; border-bottom:1px solid var(--line);}
     nav ul li:last-child a{border-bottom:none;}
     .hero h1{font-size:30px;}
-    .why-grid, .testi-grid{grid-template-columns:1fr;}
+    .why-grid{grid-template-columns:1fr;}
     .hero-stats{gap:28px;}
     .cta-strip{margin:0 16px; padding:36px 22px;}
   }
@@ -199,13 +185,12 @@
         <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
         <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      <div class="brand-text">Bio<span style="color:#f3ecd9">Topai</span></div>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
     </div>
     <nav>
       <ul id="mainNav">
         <li><a href="index.html" class="active">الرئيسية</a></li>
         <li><a href="dr-rady-catalog-page.html">الكورسات</a></li>
-        <li><a href="index.html#testimonials">آراء الطلاب</a></li>
         <li><a href="index.html#contact">تواصل معنا</a></li>
       </ul>
     </nav>
@@ -226,8 +211,8 @@
     <a href="#contact" class="btn btn-outline">تواصل معانا</a>
   </div>
   <div class="hero-stats">
-    <div><b>+3</b><span>مراحل دراسية</span></div>
-    <div><b>+90</b><span>حصة مسجّلة</span></div>
+    <div><b id="stat-grades">—</b><span>مراحل دراسية متاحة</span></div>
+    <div><b id="stat-lessons">—</b><span>حصة مسجّلة</span></div>
     <div><b>اختبارات</b><span>بعد كل وحدة</span></div>
   </div>
 </section>
@@ -235,7 +220,7 @@
 <!-- ===== WHY US ===== -->
 <section class="section wrap">
   <div class="section-head">
-    <div class="eyebrow" style="display:inline-flex;"><span class="dot"></span> ليه BioTopai</div>
+    <div class="eyebrow" style="display:inline-flex;"><span class="dot"></span> ليه BioTopia</div>
     <h2>مذاكرة منظّمة من أول يوم</h2>
     <p>مش مجرد فيديوهات — نظام متكامل يتابع مستواك ويوريك مكانك بالظبط قبل الامتحان.</p>
   </div>
@@ -264,41 +249,6 @@
     <h2>مستعد تبدأ؟</h2>
     <p>اختار المرحلة الدراسية بتاعتك وابدأ أول حصة النهاردة.</p>
     <a href="dr-rady-catalog-page.html" class="btn">اختار كورسك دلوقتي</a>
-  </div>
-</section>
-
-<!-- ===== TESTIMONIALS ===== -->
-<section class="section wrap" id="testimonials">
-  <div class="section-head">
-    <div class="eyebrow" style="display:inline-flex;"><span class="dot"></span> آراء الطلاب</div>
-    <h2>طلاب قالوا إيه</h2>
-  </div>
-  <!-- ملاحظة: دول تجريبيين — استبدلهم بآراء طلاب حقيقية أول ما تجهز -->
-  <div class="testi-grid">
-    <div class="testi-card">
-      <div class="stars">★★★★★</div>
-      <p>الطريقة اللي بيشرح بيها د. راضي بسّطت لي المنهج كله، خصوصًا الوراثة اللي كنت خايف منها.</p>
-      <div class="testi-who">
-        <div class="testi-avatar">م</div>
-        <div><b>محمد أحمد</b><span>تالتة ثانوي</span></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="stars">★★★★★</div>
-      <p>بحب إني أقدر أرجع للحصة تاني وقت المراجعة، ده وفّر عليا وقت كتير قبل الامتحانات.</p>
-      <div class="testi-who">
-        <div class="testi-avatar">س</div>
-        <div><b>سارة يوسف</b><span>تانية ثانوي</span></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="stars">★★★★★</div>
-      <p>الاختبارات بعد كل وحدة ساعدتني أعرف نقاط ضعفي بدري بدل ما أكتشفها في الامتحان.</p>
-      <div class="testi-who">
-        <div class="testi-avatar">ي</div>
-        <div><b>يوسف كامل</b><span>أولى ثانوي</span></div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -333,11 +283,31 @@
 <footer>
   <div class="wrap">
     <div class="social-row">
-      <a href="#" class="social-icon">📘</a>
-      <a href="#" class="social-icon">📸</a>
-      <a href="#" class="social-icon">💬</a>
+      <a href="https://instagram.com/biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="إنستجرام">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="2" width="20" height="20" rx="6" stroke="#f3ecd9" stroke-width="1.8"/>
+          <circle cx="12" cy="12" r="4.5" stroke="#f3ecd9" stroke-width="1.8"/>
+          <circle cx="17.3" cy="6.7" r="1.2" fill="#f3ecd9"/>
+        </svg>
+      </a>
+      <a href="https://facebook.com/biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="فيسبوك">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 8.5h2.2V5.2h-2.5c-2.6 0-4.2 1.6-4.2 4.2v2.1H8.3v3.3h2.2V22h3.4v-7.2h2.4l.4-3.3h-2.8V9.6c0-.8.4-1.1 1.1-1.1z" fill="#f3ecd9"/>
+        </svg>
+      </a>
+      <a href="https://youtube.com/@biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="يوتيوب">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="5.5" width="20" height="13" rx="4" stroke="#f3ecd9" stroke-width="1.8"/>
+          <path d="M10.5 9.5l5 2.5-5 2.5z" fill="#f3ecd9"/>
+        </svg>
+      </a>
+      <a href="https://tiktok.com/@biotopai" target="_blank" rel="noopener" class="social-icon" aria-label="تيك توك">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M16.5 2c.3 2.2 1.9 3.9 4.1 4.2v3.1a7.3 7.3 0 0 1-4.1-1.3v6.8a5.7 5.7 0 1 1-5.7-5.7c.3 0 .6 0 .9.1v3.1a2.6 2.6 0 1 0 1.9 2.5V2h2.9z" fill="#f3ecd9"/>
+        </svg>
+      </a>
     </div>
-    <p>© 2026 BioTopai — كل الحقوق محفوظة لـ د. راضي</p>
+    <p>© 2026 BioTopia — كل الحقوق محفوظة لـ د. راضي</p>
   </div>
 </footer>
 
@@ -350,6 +320,29 @@
       authBtn.textContent = 'لوحتي';
       authBtn.href = 'dr-rady-dashboard-page.html';
     }
+  })();
+
+  // ===== أرقام حقيقية من قاعدة البيانات بدل أرقام وهمية ثابتة =====
+  (async function loadHeroStats(){
+    const { data: courses, error } = await supabaseClient
+      .from('courses')
+      .select('grade, lessons_count')
+      .eq('is_published', true);
+
+    const gradesEl = document.getElementById('stat-grades');
+    const lessonsEl = document.getElementById('stat-lessons');
+
+    if(error || !courses || courses.length === 0){
+      gradesEl.textContent = '—';
+      lessonsEl.textContent = '—';
+      return;
+    }
+
+    const uniqueGrades = new Set(courses.map(c => c.grade).filter(Boolean));
+    const totalLessons = courses.reduce((sum, c) => sum + (c.lessons_count || 0), 0);
+
+    gradesEl.textContent = uniqueGrades.size || '—';
+    lessonsEl.textContent = totalLessons > 0 ? `+${totalLessons}` : '—';
   })();
 </script>
 

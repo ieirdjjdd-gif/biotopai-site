@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحتي | BioTopai</title>
+<title>لوحتي | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -40,6 +40,8 @@
   .btn-outline{background:transparent; border:1.5px solid var(--line); color:var(--bone);}
   .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
   .btn-ghost{background:rgba(95,168,43,0.14); color:var(--green-bright); border:1px solid rgba(95,168,43,0.4);}
+  .link-accent{font-weight:700; color:var(--green-bright);}
+  .link-accent:hover{text-decoration:underline;}
 
   /* ===== SHELL ===== */
   .shell{display:grid; grid-template-columns:250px 1fr; min-height:calc(100vh - 71px);}
@@ -133,8 +135,9 @@
     width:56px; height:56px; border-radius:14px; flex:0 0 56px;
     background:linear-gradient(150deg, var(--navy-base), var(--navy-deep));
     display:flex; align-items:center; justify-content:center; font-size:22px;
-    border:1px solid var(--line);
+    border:1px solid var(--line); overflow:hidden;
   }
+  .course-thumb img{width:100%; height:100%; object-fit:cover;}
   .course-row-info{flex:1; min-width:0;}
   .course-row-info b{display:block; font-size:14.5px; color:var(--bone); margin-bottom:6px;}
   .progress-track{
@@ -325,13 +328,12 @@
         <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
         <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      <div class="brand-text">Bio<span style="color:#f3ecd9">Topai</span></div>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
     </div>
     <nav>
       <ul id="mainNav">
         <li><a href="dr-rady-dashboard-page.html" class="active">الرئيسية</a></li>
         <li><a href="dr-rady-catalog-page.html">الكورسات</a></li>
-        <li><a href="index.html#testimonials">آراء الطلاب</a></li>
         <li><a href="index.html#contact">تواصل معنا</a></li>
       </ul>
     </nav>
@@ -353,10 +355,10 @@
     <nav class="side-nav">
       <a href="#" class="side-link active"><span class="ic">🏠</span> لوحتي</a>
       <a href="dr-rady-catalog-page.html" class="side-link"><span class="ic">📚</span> كورساتي</a>
-      <a href="#" class="side-link"><span class="ic">📝</span> الواجبات</a>
-      <a href="#" class="side-link"><span class="ic">✅</span> الاختبارات</a>
-      <a href="#" class="side-link"><span class="ic">🏆</span> الإنجازات</a>
-      <a href="#" class="side-link"><span class="ic">⚙️</span> الإعدادات</a>
+      <a href="dr-rady-assignments-page.html" class="side-link"><span class="ic">📝</span> الواجبات</a>
+      <a href="dr-rady-exams-page.html" class="side-link"><span class="ic">✅</span> الاختبارات</a>
+      <a href="dr-rady-achievements-page.html" class="side-link"><span class="ic">🏆</span> الإنجازات</a>
+      <a href="dr-rady-settings-page.html" class="side-link"><span class="ic">⚙️</span> الإعدادات</a>
     </nav>
 
     <div class="side-foot">
@@ -429,10 +431,11 @@
         <!-- نظام المتابعة والتقييم: لسه بيتبني -->
         <div class="panel">
           <div class="panel-head">
-            <h2>نتايج الاختبارات والواجبات</h2>
+            <h2>الواجبات والدرجات</h2>
+            <a href="dr-rady-assignments-page.html">شوف كل حاجة</a>
           </div>
           <p style="font-size:13px; color:var(--bone-dim);">
-            نظام تتبّع الواجبات والاختبارات لسه بيتضاف — هيظهر هنا أول بأول أول ما يبقى جاهز.
+            تابع واجباتك المستنياك وشوف درجاتك في الاختبارات اللي خلّصتها من صفحة الواجبات.
           </p>
         </div>
 
@@ -451,13 +454,14 @@
           </div>
         </div>
 
-        <!-- الإنجازات: لسه بيتبني -->
+        <!-- الإنجازات -->
         <div class="panel">
           <div class="panel-head">
             <h2>الإنجازات</h2>
+            <a href="dr-rady-achievements-page.html">شوف شاراتك</a>
           </div>
           <p style="font-size:13px; color:var(--bone-dim);">
-            نظام الشارات والإنجازات لسه بيتضاف، هيبان هنا أول ما يخلص.
+            كل ما تكمّل حصص وتنجح في اختبارات، شارات جديدة هتتفتح — روح لصفحة الإنجازات تتفرج عليها.
           </p>
         </div>
 
@@ -490,7 +494,7 @@
           </svg>
         </a>
       </div>
-      <p>© 2026 BioTopai — د. راضي. جميع الحقوق محفوظة.</p>
+      <p>© 2026 BioTopia — د. راضي. جميع الحقوق محفوظة.</p>
     </div>
 
   </main>
@@ -610,7 +614,7 @@
     // ===== جلب كل الاشتراكات الحقيقية للمستخدم (enrollments) مع بيانات الكورس =====
     const { data: enrollments, error } = await supabaseClient
       .from('enrollments')
-      .select('status, created_at, courses(id, title, grade, lessons_count)')
+      .select('status, created_at, courses(id, title, grade, lessons_count, image_url)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -647,7 +651,7 @@
     } else {
       myCoursesEl.innerHTML = paid.map(e => `
         <div class="course-row">
-          <div class="course-thumb">🎓</div>
+          <div class="course-thumb">${e.courses.image_url ? `<img src="${e.courses.image_url}" alt="">` : '🎓'}</div>
           <div class="course-row-info">
             <b>${e.courses.title}</b>
             <div class="meta">${e.courses.grade || ''} · ${e.courses.lessons_count || 0} حصة</div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>كل الكورسات | BioTopai</title>
+<title>كل الكورسات | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -121,13 +121,15 @@
   }
   .course-card:hover{transform:translateY(-6px); border-color:rgba(95,168,43,0.5);}
   .course-cover{
-    aspect-ratio:16/10; position:relative;
+    aspect-ratio:16/10; position:relative; overflow:hidden;
     background:
       radial-gradient(circle at 20% 10%, rgba(95,168,43,.28), transparent 45%),
       linear-gradient(150deg, var(--navy-base), var(--navy-deep));
     display:flex; align-items:flex-end; justify-content:center;
   }
+  .course-cover img{width:100%; height:100%; object-fit:cover;}
   .course-cover .mascot{width:52%; margin-bottom:-2px;}
+  .course-cover .fallback-ic{font-size:38px; margin-bottom:auto; margin-top:auto; opacity:.55;}
   .course-cover .cover-badge{
     position:absolute; top:12px; right:12px; background:var(--green); color:var(--navy-deep);
     font-size:11px; font-weight:800; padding:5px 12px; border-radius:100px;
@@ -202,13 +204,12 @@
         <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
         <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      <div class="brand-text">Bio<span style="color:#f3ecd9">Topai</span></div>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
     </div>
     <nav>
       <ul id="mainNav">
         <li><a href="index.html">الرئيسية</a></li>
         <li><a href="#" class="active">الكورسات</a></li>
-        <li><a href="index.html#testimonials">آراء الطلاب</a></li>
         <li><a href="index.html#contact">تواصل معنا</a></li>
       </ul>
     </nav>
@@ -225,7 +226,7 @@
   <h1>اختار الكورس اللي مناسب لمرحلتك</h1>
   <p>من أول ثانوي لحد المراجعة النهائية — كل كورس متقسّم بالموضوع مش بالشهور، وبعد كل وحدة اختبار يوضّحلك مستواك.</p>
   <div class="search-bar">
-    <input type="text" placeholder="دوّر باسم الكورس...">
+    <input type="text" id="search-input" placeholder="دوّر باسم الكورس...">
     <span class="ic">🔍</span>
   </div>
 </section>
@@ -233,25 +234,25 @@
 <!-- ===== FILTERS ===== -->
 <div class="wrap filters">
   <span class="filter-label">المرحلة:</span>
-  <button class="chip active">الكل</button>
-  <button class="chip">أولى ثانوي</button>
-  <button class="chip">تانية ثانوي</button>
-  <button class="chip">تالتة ثانوي</button>
+  <button class="chip active" data-grade="الكل">الكل</button>
+  <button class="chip" data-grade="أولى ثانوي">أولى ثانوي</button>
+  <button class="chip" data-grade="تانية ثانوي">تانية ثانوي</button>
+  <button class="chip" data-grade="تالتة ثانوي">تالتة ثانوي</button>
   <div class="filter-divider"></div>
   <span class="filter-label">النوع:</span>
-  <button class="chip active">الكل</button>
-  <button class="chip">ترم كامل</button>
-  <button class="chip">مراجعة نهائية</button>
+  <button class="chip active" data-type="الكل">الكل</button>
+  <button class="chip" data-type="ترم كامل">ترم كامل</button>
+  <button class="chip" data-type="مراجعة نهائية">مراجعة نهائية</button>
 </div>
 
 <!-- ===== RESULTS + GRID ===== -->
 <div class="wrap">
   <div class="results-row">
     <div class="results-count" id="results-count">جارٍ تحميل الكورسات...</div>
-    <select class="sort-select">
-      <option>الأحدث</option>
-      <option>الأقل سعرًا</option>
-      <option>الأعلى تقييمًا</option>
+    <select class="sort-select" id="sort-select">
+      <option value="newest">الأحدث</option>
+      <option value="price-asc">الأقل سعرًا</option>
+      <option value="rating">الأعلى تقييمًا</option>
     </select>
   </div>
 
@@ -261,8 +262,11 @@
 </div>
 
 <script>
+  let allCourses = [];
+  let activeGrade = 'الكل';
+  let activeType = 'الكل';
+
   async function loadCourses(){
-    const grid = document.getElementById('courses-grid');
     const countEl = document.getElementById('results-count');
 
     const { data: courses, error } = await supabaseClient
@@ -276,30 +280,92 @@
       countEl.textContent = 'حصل خطأ في تحميل الكورسات: ' + error.message;
       return;
     }
-    if(!courses || courses.length === 0){
-      countEl.textContent = 'مفيش كورسات متاحة دلوقتي';
-      return;
-    }
 
-    countEl.innerHTML = `لقينا <b>${courses.length}</b> كورسات مناسبة ليك`;
+    allCourses = courses || [];
+    applyFilters();
+  }
 
-    grid.innerHTML = courses.map(course => `
+  function courseCardHTML(course){
+    const cover = course.image_url
+      ? `<img src="${course.image_url}" alt="${course.title}" loading="lazy">`
+      : `<span class="fallback-ic">📼</span>`;
+    return `
       <a href="dr-rady-course-page.html?id=${course.id}" class="course-card">
         <div class="course-cover">
+          ${cover}
           <span class="cover-tag">${course.grade || ''}</span>
         </div>
         <div class="course-body">
           <h3>${course.title}</h3>
           <p>${course.description || ''}</p>
-          <div class="course-meta"><span>📼 ${course.lessons_count || 0} حصة</span></div>
+          <div class="course-meta"><span>📼 ${course.lessons_count || 0} حصة</span>${course.course_type ? `<span>🏷️ ${course.course_type}</span>` : ''}</div>
           <div class="course-price-row">
             <div class="course-price">${course.price} ${course.old_price ? `<span class="old">${course.old_price}</span>` : ''}<span>ج.م</span></div>
             <span class="btn" style="padding:8px 16px; font-size:12.5px;">التفاصيل</span>
           </div>
         </div>
       </a>
-    `).join('');
+    `;
   }
+
+  function applyFilters(){
+    const grid = document.getElementById('courses-grid');
+    const countEl = document.getElementById('results-count');
+    const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+    const sortMode = document.getElementById('sort-select').value;
+
+    if(allCourses.length === 0){
+      countEl.textContent = 'مفيش كورسات متاحة دلوقتي';
+      grid.innerHTML = '';
+      return;
+    }
+
+    let filtered = allCourses.filter(course => {
+      const matchesGrade = activeGrade === 'الكل' || course.grade === activeGrade || course.grade === 'كل المراحل';
+      const matchesType = activeType === 'الكل' || course.course_type === activeType;
+      const matchesSearch = !searchTerm ||
+        (course.title || '').toLowerCase().includes(searchTerm) ||
+        (course.description || '').toLowerCase().includes(searchTerm);
+      return matchesGrade && matchesType && matchesSearch;
+    });
+
+    if(sortMode === 'price-asc'){
+      filtered = filtered.slice().sort((a, b) => (a.price || 0) - (b.price || 0));
+    } else if(sortMode === 'rating'){
+      // ملاحظة: مفيش عمود تقييم في جدول courses لسه، فالترتيب ده هيفضل زي "الأحدث" لحد ما يتضاف
+      filtered = filtered.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+
+    if(filtered.length === 0){
+      countEl.textContent = 'مفيش كورسات مطابقة للفلاتر دي';
+      grid.innerHTML = '';
+      return;
+    }
+
+    countEl.innerHTML = `لقينا <b>${filtered.length}</b> كورسات مناسبة ليك`;
+    grid.innerHTML = filtered.map(courseCardHTML).join('');
+  }
+
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+  document.getElementById('sort-select').addEventListener('change', applyFilters);
+
+  document.querySelectorAll('[data-grade]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('[data-grade]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeGrade = chip.dataset.grade;
+      applyFilters();
+    });
+  });
+
+  document.querySelectorAll('[data-type]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('[data-type]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeType = chip.dataset.type;
+      applyFilters();
+    });
+  });
 
   loadCourses();
 
@@ -340,28 +406,10 @@
       </svg>
     </a>
   </div>
-  <p>© 2026 BioTopai — د. راضي. جميع الحقوق محفوظة.</p>
+  <p>© 2026 BioTopia — د. راضي. جميع الحقوق محفوظة.</p>
 </footer>
 
 <script>
-  // simple chip toggle within each filter group
-  document.querySelectorAll('.filters').forEach(group=>{
-    let sections = [[], []];
-    let current = 0;
-    group.querySelectorAll('.chip, .filter-divider').forEach(el=>{
-      if(el.classList.contains('filter-divider')){ current = 1; return; }
-      sections[current].push(el);
-    });
-    sections.forEach(chips=>{
-      chips.forEach(chip=>{
-        chip.addEventListener('click', ()=>{
-          chips.forEach(c=>c.classList.remove('active'));
-          chip.classList.add('active');
-        });
-      });
-    });
-  });
-
   document.querySelectorAll('#mainNav a').forEach(function(a){
     a.addEventListener('click', function(){
       document.getElementById('mainNav').classList.remove('mobile-open');

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الإعدادات | BioTopia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#e2d8bd;
+    --ink:#0c1230;
+    --line: rgba(243,236,217,0.14);
+    --rose:#b45253;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+  }
+  h1,h2,h3,h4{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 22px; border-radius:100px; font-weight:700; font-size:13.5px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .btn:disabled{opacity:.6; cursor:default; transform:none;}
+  .btn-outline{background:transparent; border:1.5px solid var(--line); color:var(--bone); padding:10px 20px;}
+  .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+  .btn-danger{background:transparent; border:1.5px solid rgba(180,82,83,0.5); color:var(--rose); padding:10px 20px;}
+  .btn-danger:hover{background:rgba(180,82,83,0.12); border-color:var(--rose);}
+  .link-accent{font-weight:700; color:var(--green-bright);}
+  .link-accent:hover{text-decoration:underline;}
+
+  /* ===== SHELL ===== */
+  .shell{display:grid; grid-template-columns:250px 1fr; min-height:calc(100vh - 71px);}
+  .sidebar{
+    background:var(--navy-deep); border-left:1px solid var(--line);
+    padding:24px 18px; display:flex; flex-direction:column; gap:26px;
+    position:sticky; top:71px; height:calc(100vh - 71px);
+  }
+  header{
+    position:sticky; top:0; z-index:60;
+    background:rgba(16,28,70,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto;}
+  .nav .brand{display:flex; align-items:center; gap:10px;}
+  .nav .brand .logo-mark{width:38px; height:38px;}
+  .nav .brand-text{font-family:'Tajawal'; font-weight:800; font-size:20px; color:var(--green-bright);}
+  .nav .brand-text span{color:var(--bone);}
+  .nav ul{list-style:none; display:flex; gap:34px;}
+  .nav ul a{font-size:15px; font-weight:600; color:var(--bone-dim); transition:.2s;}
+  .nav ul a:hover{color:var(--green-bright);}
+  .nav ul a.active{color:var(--green-bright);}
+  .menu-toggle{display:none; font-size:26px; background:none; border:none; color:var(--bone); cursor:pointer;}
+  .header-user{display:flex; align-items:center; gap:10px;}
+  .header-user .avatar{
+    width:36px; height:36px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+    font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:13px;
+  }
+  .header-user b{font-size:13.5px; color:var(--bone);}
+
+  /* ===== SIDEBAR ===== */
+  .side-nav{display:flex; flex-direction:column; gap:4px;}
+  .side-link{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
+    font-size:14px; font-weight:600; color:var(--bone-dim); transition:.2s;
+  }
+  .side-link .ic{font-size:16px; width:20px; text-align:center;}
+  .side-link:hover{background:rgba(243,236,217,0.05); color:var(--bone);}
+  .side-link.active{background:rgba(95,168,43,0.16); color:var(--green-bright);}
+  .side-foot{margin-top:auto; padding-top:16px; border-top:1px solid var(--line);}
+  .user-chip{display:flex; align-items:center; gap:10px; padding:8px 6px;}
+  .user-chip .avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+    font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:14px;
+  }
+  .user-chip b{display:block; font-size:13.5px;}
+  .user-chip span{font-size:11.5px; color:var(--bone-dim);}
+
+  /* ===== MAIN ===== */
+  main{padding:32px 36px 60px; max-width:720px;}
+  .topbar{margin-bottom:28px;}
+  .topbar h1{font-size:24px; color:var(--bone);}
+  .topbar p{font-size:13.5px; color:var(--bone-dim); margin-top:4px;}
+
+  .panel{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:26px; margin-bottom:22px;}
+  .panel-head{margin-bottom:20px;}
+  .panel-head h2{font-size:16.5px; color:var(--bone); display:flex; align-items:center; gap:8px;}
+  .panel-head p{font-size:12.5px; color:var(--bone-dim); margin-top:4px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:700; color:var(--bone-dim); margin-bottom:7px;}
+  .field input, .field select{
+    width:100%; background:var(--navy-deep); border:1.5px solid var(--line); border-radius:12px;
+    padding:12px 14px; color:var(--bone); font-family:'Cairo'; font-size:14px; outline:none; transition:.2s;
+  }
+  .field input:focus, .field select:focus{border-color:var(--green);}
+  .field input:disabled{opacity:.55; cursor:not-allowed;}
+  .field .hint{font-size:11.5px; color:var(--bone-dim); margin-top:6px;}
+  .row-2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+
+  .alert{
+    padding:12px 16px; border-radius:12px; font-size:13px; margin-bottom:16px; display:none;
+  }
+  .alert-success{background:rgba(95,168,43,0.14); border:1px solid rgba(95,168,43,0.4); color:var(--green-bright);}
+  .alert-error{background:rgba(180,82,83,0.14); border:1px solid rgba(180,82,83,0.4); color:#e8a3a4;}
+
+  .danger-zone{border-color:rgba(180,82,83,0.3);}
+  .danger-row{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;}
+  .danger-row p{font-size:12.5px; color:var(--bone-dim); max-width:400px;}
+
+  @media (max-width:900px){
+    .menu-toggle{display:block;}
+    .header-user b{display:none;}
+    .nav ul{
+      display:none; position:absolute; top:100%; right:0; left:0;
+      background:var(--navy-deep); flex-direction:column; gap:0;
+      border-top:1px solid var(--line); padding:6px 28px 14px;
+    }
+    .nav ul.mobile-open{display:flex;}
+    .nav ul li{width:100%;}
+    .nav ul li a{display:block; padding:13px 0; border-bottom:1px solid var(--line);}
+    .nav ul li:last-child a{border-bottom:none;}
+  }
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr; min-height:auto;}
+    .sidebar{position:static; height:auto; flex-direction:row; align-items:center; overflow-x:auto;}
+    .side-nav{flex-direction:row;}
+    .side-foot{display:none;}
+    main{padding:24px 18px 48px; max-width:100%;}
+    .row-2{grid-template-columns:1fr;}
+    .danger-row{flex-direction:column; align-items:stretch;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js?v=2"></script>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
+    </div>
+    <nav>
+      <ul id="mainNav">
+        <li><a href="dr-rady-dashboard-page.html">الرئيسية</a></li>
+        <li><a href="dr-rady-catalog-page.html">الكورسات</a></li>
+        <li><a href="index.html#contact">تواصل معنا</a></li>
+      </ul>
+    </nav>
+    <div style="display:flex; gap:16px; align-items:center;">
+      <div class="header-user">
+        <div class="avatar" id="user-avatar">؟</div>
+        <b id="user-name">جارٍ التحميل...</b>
+      </div>
+      <a href="#" class="link-accent" style="font-size:13px;" onclick="signOut(); return false;">تسجيل خروج</a>
+      <button class="menu-toggle" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <nav class="side-nav">
+      <a href="dr-rady-dashboard-page.html" class="side-link"><span class="ic">🏠</span> لوحتي</a>
+      <a href="dr-rady-catalog-page.html" class="side-link"><span class="ic">📚</span> كورساتي</a>
+      <a href="dr-rady-assignments-page.html" class="side-link"><span class="ic">📝</span> الواجبات</a>
+      <a href="dr-rady-exams-page.html" class="side-link"><span class="ic">✅</span> الاختبارات</a>
+      <a href="dr-rady-achievements-page.html" class="side-link"><span class="ic">🏆</span> الإنجازات</a>
+      <a href="dr-rady-settings-page.html" class="side-link active"><span class="ic">⚙️</span> الإعدادات</a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-avatar">؟</div>
+        <div><b id="sidebar-name">جارٍ التحميل...</b><span id="sidebar-grade"></span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+
+    <div class="topbar">
+      <h1>الإعدادات</h1>
+      <p>عدّل بياناتك الشخصية وكلمة المرور بتاعتك.</p>
+    </div>
+
+    <!-- ===== بيانات الطالب ===== -->
+    <form class="panel" id="profile-form">
+      <div class="panel-head">
+        <h2>👤 البيانات الشخصية</h2>
+        <p>البيانات دي بتظهر لدكتور راضي في لوحة التحكم.</p>
+      </div>
+
+      <div class="alert alert-success" id="profile-success">تم حفظ بياناتك بنجاح ✅</div>
+      <div class="alert alert-error" id="profile-error">حصل خطأ أثناء الحفظ، حاول تاني.</div>
+
+      <div class="field">
+        <label for="f-email">البريد الإلكتروني</label>
+        <input type="email" id="f-email" disabled>
+        <div class="hint">مينفعش تتغيّر من هنا، لو محتاج تغيّرها تواصل معانا.</div>
+      </div>
+
+      <div class="field">
+        <label for="f-name">الاسم بالكامل</label>
+        <input type="text" id="f-name" placeholder="اسمك رباعي">
+      </div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="f-grade">الصف الدراسي</label>
+          <select id="f-grade">
+            <option value="أولى ثانوي">أولى ثانوي</option>
+            <option value="تانية ثانوي">تانية ثانوي</option>
+            <option value="تالتة ثانوي">تالتة ثانوي</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-phone">رقم موبايلك</label>
+          <input type="tel" id="f-phone" placeholder="01xxxxxxxxx">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-guardian">رقم ولي الأمر</label>
+        <input type="tel" id="f-guardian" placeholder="01xxxxxxxxx">
+      </div>
+
+      <button type="submit" class="btn" id="profile-save-btn">حفظ التعديلات</button>
+    </form>
+
+    <!-- ===== تغيير كلمة المرور ===== -->
+    <form class="panel" id="password-form">
+      <div class="panel-head">
+        <h2>🔒 تغيير كلمة المرور</h2>
+        <p>لو عايز تغيّر كلمة المرور بتاعتك، اكتبها هنا.</p>
+      </div>
+
+      <div class="alert alert-success" id="pass-success">تم تغيير كلمة المرور بنجاح ✅</div>
+      <div class="alert alert-error" id="pass-error">حصل خطأ، حاول تاني.</div>
+
+      <div class="row-2">
+        <div class="field">
+          <label for="f-pass1">كلمة المرور الجديدة</label>
+          <input type="password" id="f-pass1" placeholder="8 أحرف على الأقل">
+        </div>
+        <div class="field">
+          <label for="f-pass2">تأكيد كلمة المرور</label>
+          <input type="password" id="f-pass2" placeholder="اكتبها تاني">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-outline" id="pass-save-btn">تغيير كلمة المرور</button>
+    </form>
+
+  </main>
+</div>
+
+<script>
+  let currentUser = null;
+
+  // ===== حماية الصفحة: لازم تسجيل دخول =====
+  (async function initSettings(){
+    const user = await requireAuth();
+    if(!user) return;
+    currentUser = user;
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('full_name, grade, phone, guardian_phone')
+      .eq('id', user.id)
+      .single();
+
+    if(error){
+      console.error('load profile error:', error);
+    }
+
+    const displayName = profile?.full_name || user.email;
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('user-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-name').textContent = displayName;
+    document.getElementById('sidebar-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-grade').textContent = profile?.grade || '';
+
+    document.getElementById('f-email').value = user.email || '';
+    document.getElementById('f-name').value = profile?.full_name || '';
+    document.getElementById('f-grade').value = profile?.grade || 'أولى ثانوي';
+    document.getElementById('f-phone').value = profile?.phone || '';
+    document.getElementById('f-guardian').value = profile?.guardian_phone || '';
+  })();
+
+  // ===== حفظ البيانات الشخصية =====
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const successEl = document.getElementById('profile-success');
+    const errorEl = document.getElementById('profile-error');
+    successEl.style.display = 'none';
+    errorEl.style.display = 'none';
+
+    const btn = document.getElementById('profile-save-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({
+        full_name: document.getElementById('f-name').value.trim(),
+        grade: document.getElementById('f-grade').value,
+        phone: document.getElementById('f-phone').value.trim(),
+        guardian_phone: document.getElementById('f-guardian').value.trim(),
+      })
+      .eq('id', currentUser.id);
+
+    btn.disabled = false; btn.textContent = 'حفظ التعديلات';
+
+    if(error){
+      console.error('update profile error:', error);
+      errorEl.textContent = 'حصل خطأ أثناء الحفظ: ' + error.message;
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    successEl.style.display = 'block';
+    // نحدّث الاسم الظاهر في الهيدر والسايدبار فورًا
+    const newName = document.getElementById('f-name').value.trim() || currentUser.email;
+    document.getElementById('user-name').textContent = newName;
+    document.getElementById('user-avatar').textContent = newName.charAt(0);
+    document.getElementById('sidebar-name').textContent = newName;
+    document.getElementById('sidebar-avatar').textContent = newName.charAt(0);
+    document.getElementById('sidebar-grade').textContent = document.getElementById('f-grade').value;
+  });
+
+  // ===== تغيير كلمة المرور =====
+  document.getElementById('password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const successEl = document.getElementById('pass-success');
+    const errorEl = document.getElementById('pass-error');
+    successEl.style.display = 'none';
+    errorEl.style.display = 'none';
+
+    const pass1 = document.getElementById('f-pass1').value;
+    const pass2 = document.getElementById('f-pass2').value;
+
+    if(pass1.length < 8){
+      errorEl.textContent = 'كلمة المرور لازم تكون 8 أحرف على الأقل.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    if(pass1 !== pass2){
+      errorEl.textContent = 'كلمتا المرور مش متطابقتين.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('pass-save-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ التغيير...';
+
+    const { error } = await supabaseClient.auth.updateUser({ password: pass1 });
+
+    btn.disabled = false; btn.textContent = 'تغيير كلمة المرور';
+
+    if(error){
+      console.error('update password error:', error);
+      errorEl.textContent = 'حصل خطأ: ' + error.message;
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    successEl.style.display = 'block';
+    document.getElementById('f-pass1').value = '';
+    document.getElementById('f-pass2').value = '';
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الإنجازات | BioTopia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#e2d8bd;
+    --ink:#0c1230;
+    --line: rgba(243,236,217,0.14);
+    --rose:#b45253;
+    --gold:#e8c468;
+    --amber:#d98e4b;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+  }
+  h1,h2,h3,h4{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 22px; border-radius:100px; font-weight:700; font-size:13.5px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .link-accent{font-weight:700; color:var(--green-bright);}
+  .link-accent:hover{text-decoration:underline;}
+
+  /* ===== SHELL ===== */
+  .shell{display:grid; grid-template-columns:250px 1fr; min-height:calc(100vh - 71px);}
+  .sidebar{
+    background:var(--navy-deep); border-left:1px solid var(--line);
+    padding:24px 18px; display:flex; flex-direction:column; gap:26px;
+    position:sticky; top:71px; height:calc(100vh - 71px);
+  }
+  header{
+    position:sticky; top:0; z-index:60;
+    background:rgba(16,28,70,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto;}
+  .nav .brand{display:flex; align-items:center; gap:10px;}
+  .nav .brand .logo-mark{width:38px; height:38px;}
+  .nav .brand-text{font-family:'Tajawal'; font-weight:800; font-size:20px; color:var(--green-bright);}
+  .nav .brand-text span{color:var(--bone);}
+  .nav ul{list-style:none; display:flex; gap:34px;}
+  .nav ul a{font-size:15px; font-weight:600; color:var(--bone-dim); transition:.2s;}
+  .nav ul a:hover{color:var(--green-bright);}
+  .nav ul a.active{color:var(--green-bright);}
+  .menu-toggle{display:none; font-size:26px; background:none; border:none; color:var(--bone); cursor:pointer;}
+  .header-user{display:flex; align-items:center; gap:10px;}
+  .header-user .avatar{
+    width:36px; height:36px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+    font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:13px;
+  }
+  .header-user b{font-size:13.5px; color:var(--bone);}
+
+  /* ===== SIDEBAR ===== */
+  .side-nav{display:flex; flex-direction:column; gap:4px;}
+  .side-link{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
+    font-size:14px; font-weight:600; color:var(--bone-dim); transition:.2s;
+  }
+  .side-link .ic{font-size:16px; width:20px; text-align:center;}
+  .side-link:hover{background:rgba(243,236,217,0.05); color:var(--bone);}
+  .side-link.active{background:rgba(95,168,43,0.16); color:var(--green-bright);}
+  .side-foot{margin-top:auto; padding-top:16px; border-top:1px solid var(--line);}
+  .user-chip{display:flex; align-items:center; gap:10px; padding:8px 6px;}
+  .user-chip .avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+    font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:14px;
+  }
+  .user-chip b{display:block; font-size:13.5px;}
+  .user-chip span{font-size:11.5px; color:var(--bone-dim);}
+
+  /* ===== MAIN ===== */
+  main{padding:32px 36px 60px; max-width:980px;}
+  .topbar{margin-bottom:22px;}
+  .topbar h1{font-size:24px; color:var(--bone);}
+  .topbar p{font-size:13.5px; color:var(--bone-dim); margin-top:4px;}
+
+  /* ===== OVERALL PROGRESS PANEL ===== */
+  .progress-panel{
+    background:linear-gradient(120deg, var(--navy-deep), var(--navy-soft));
+    border:1px solid var(--line); border-radius:22px; padding:26px 28px; margin-bottom:30px;
+    display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  }
+  .progress-trophy{
+    width:64px; height:64px; border-radius:18px; flex-shrink:0;
+    background:rgba(232,196,104,0.16); border:1px solid rgba(232,196,104,0.4);
+    display:flex; align-items:center; justify-content:center; font-size:30px;
+  }
+  .progress-info{flex:1; min-width:220px;}
+  .progress-info h2{font-size:17px; color:var(--bone); margin-bottom:6px;}
+  .progress-info p{font-size:12.5px; color:var(--bone-dim); margin-bottom:12px;}
+  .progress-track-lg{height:10px; background:var(--navy-deep); border-radius:100px; overflow:hidden; border:1px solid var(--line);}
+  .progress-fill-lg{height:100%; background:linear-gradient(90deg, var(--green), var(--green-bright)); border-radius:100px; transition:width .5s ease;}
+  .progress-count{font-family:'Tajawal'; font-weight:900; font-size:30px; color:var(--gold); flex-shrink:0; text-align:center;}
+  .progress-count span{display:block; font-family:'Cairo'; font-weight:600; font-size:11px; color:var(--bone-dim); margin-top:2px;}
+
+  /* ===== ACHIEVEMENT GRID ===== */
+  .ach-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .ach-card{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:20px;
+    padding:22px 20px; text-align:center; position:relative; transition:.2s;
+  }
+  .ach-card.unlocked{border-color:rgba(232,196,104,0.45); background:linear-gradient(160deg, var(--navy-soft), rgba(232,196,104,0.06));}
+  .ach-card.unlocked:hover{transform:translateY(-3px);}
+  .ach-icon{
+    width:60px; height:60px; border-radius:50%; margin:0 auto 14px;
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+    background:var(--navy-deep); border:2px solid var(--line);
+  }
+  .ach-card.unlocked .ach-icon{
+    background:rgba(232,196,104,0.18); border-color:var(--gold);
+  }
+  .ach-card.locked .ach-icon{filter:grayscale(1); opacity:.55;}
+  .ach-card h4{font-size:14px; color:var(--bone); margin-bottom:6px;}
+  .ach-card.locked h4{color:var(--bone-dim);}
+  .ach-card p{font-size:11.5px; color:var(--bone-dim); min-height:32px;}
+  .ach-check{
+    position:absolute; top:12px; left:12px; width:22px; height:22px; border-radius:50%;
+    background:var(--green); color:var(--navy-deep); font-size:12px; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ach-progress{margin-top:12px;}
+  .ach-progress-track{height:6px; background:var(--navy-deep); border-radius:100px; overflow:hidden; border:1px solid var(--line);}
+  .ach-progress-fill{height:100%; background:var(--green); border-radius:100px;}
+  .ach-progress-text{font-size:10.5px; color:var(--bone-dim); margin-top:6px; font-weight:700;}
+
+  .skeleton-ach{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; height:190px; opacity:.5;}
+
+  @media (max-width:760px){
+    .ach-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:480px){
+    .ach-grid{grid-template-columns:1fr 1fr;}
+    .progress-panel{flex-direction:column; text-align:center;}
+  }
+  @media (max-width:900px){
+    .menu-toggle{display:block;}
+    .header-user b{display:none;}
+    .nav ul{
+      display:none; position:absolute; top:100%; right:0; left:0;
+      background:var(--navy-deep); flex-direction:column; gap:0;
+      border-top:1px solid var(--line); padding:6px 28px 14px;
+    }
+    .nav ul.mobile-open{display:flex;}
+    .nav ul li{width:100%;}
+    .nav ul li a{display:block; padding:13px 0; border-bottom:1px solid var(--line);}
+    .nav ul li:last-child a{border-bottom:none;}
+  }
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr; min-height:auto;}
+    .sidebar{position:static; height:auto; flex-direction:row; align-items:center; overflow-x:auto;}
+    .side-nav{flex-direction:row;}
+    .side-foot{display:none;}
+    main{padding:24px 18px 48px; max-width:100%;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js?v=2"></script>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
+    </div>
+    <nav>
+      <ul id="mainNav">
+        <li><a href="dr-rady-dashboard-page.html">الرئيسية</a></li>
+        <li><a href="dr-rady-catalog-page.html">الكورسات</a></li>
+        <li><a href="index.html#contact">تواصل معنا</a></li>
+      </ul>
+    </nav>
+    <div style="display:flex; gap:16px; align-items:center;">
+      <div class="header-user">
+        <div class="avatar" id="user-avatar">؟</div>
+        <b id="user-name">جارٍ التحميل...</b>
+      </div>
+      <a href="#" class="link-accent" style="font-size:13px;" onclick="signOut(); return false;">تسجيل خروج</a>
+      <button class="menu-toggle" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <nav class="side-nav">
+      <a href="dr-rady-dashboard-page.html" class="side-link"><span class="ic">🏠</span> لوحتي</a>
+      <a href="dr-rady-catalog-page.html" class="side-link"><span class="ic">📚</span> كورساتي</a>
+      <a href="dr-rady-assignments-page.html" class="side-link"><span class="ic">📝</span> الواجبات</a>
+      <a href="dr-rady-exams-page.html" class="side-link"><span class="ic">✅</span> الاختبارات</a>
+      <a href="dr-rady-achievements-page.html" class="side-link active"><span class="ic">🏆</span> الإنجازات</a>
+      <a href="dr-rady-settings-page.html" class="side-link"><span class="ic">⚙️</span> الإعدادات</a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-avatar">؟</div>
+        <div><b id="sidebar-name">جارٍ التحميل...</b><span id="sidebar-grade"></span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+
+    <div class="topbar">
+      <h1>الإنجازات</h1>
+      <p>كل ما تذاكر وتخلّص وتنجح، شارات جديدة هتتفتح هنا.</p>
+    </div>
+
+    <!-- ===== OVERALL PROGRESS ===== -->
+    <div class="progress-panel">
+      <div class="progress-trophy">🏆</div>
+      <div class="progress-info">
+        <h2 id="progress-title">جارٍ حساب إنجازاتك...</h2>
+        <p>كل ما تكمّل حصص وتعمل اختبارات وتنجح فيها، شارات جديدة هتتفتح تلقائي.</p>
+        <div class="progress-track-lg">
+          <div class="progress-fill-lg" id="progress-fill" style="width:0%;"></div>
+        </div>
+      </div>
+      <div class="progress-count">
+        <span id="progress-num">0/0</span>
+        <span>إنجاز اتفتح</span>
+      </div>
+    </div>
+
+    <!-- ===== ACHIEVEMENTS GRID ===== -->
+    <div class="ach-grid" id="ach-grid">
+      <div class="skeleton-ach"></div>
+      <div class="skeleton-ach"></div>
+      <div class="skeleton-ach"></div>
+      <div class="skeleton-ach"></div>
+      <div class="skeleton-ach"></div>
+      <div class="skeleton-ach"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let currentUser = null;
+
+  document.querySelectorAll('#mainNav a').forEach(function(a){
+    a.addEventListener('click', function(){
+      document.getElementById('mainNav').classList.remove('mobile-open');
+    });
+  });
+
+  // ===== حماية الصفحة: لازم تسجيل دخول =====
+  (async function initAchievements(){
+    const user = await requireAuth();
+    if(!user) return;
+    currentUser = user;
+
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('full_name, grade, created_at')
+      .eq('id', user.id)
+      .single();
+
+    const displayName = profile?.full_name || user.email;
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('user-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-name').textContent = displayName;
+    document.getElementById('sidebar-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-grade').textContent = profile?.grade || '';
+
+    await loadAchievements(profile);
+  })();
+
+  async function loadAchievements(profile){
+    const grid = document.getElementById('ach-grid');
+
+    // 1) الكورسات المدفوعة فعليًا
+    const { data: enrollments } = await supabaseClient
+      .from('enrollments')
+      .select('course_id, courses(id, lessons_count)')
+      .eq('user_id', currentUser.id)
+      .eq('status', 'paid');
+
+    const paidCourses = (enrollments || []).filter(e => e.courses).map(e => e.courses);
+    const courseIds = paidCourses.map(c => c.id);
+    const paidCoursesCount = paidCourses.length;
+
+    // 2) كل الحصص بتاعة الكورسات دي (عشان نعرف كل حصة تابعة لأنهي كورس)
+    let lessons = [];
+    if(courseIds.length > 0){
+      const { data } = await supabaseClient
+        .from('lessons').select('id, course_id').in('course_id', courseIds);
+      lessons = data || [];
+    }
+
+    // 3) تقدّم الطالب في الحصص (المكتملة بس)
+    let completedLessonIds = [];
+    if(lessons.length > 0){
+      const { data } = await supabaseClient
+        .from('lesson_progress')
+        .select('lesson_id, completed')
+        .eq('user_id', currentUser.id)
+        .eq('completed', true)
+        .in('lesson_id', lessons.map(l => l.id));
+      completedLessonIds = (data || []).map(r => r.lesson_id);
+    }
+    const completedLessonsCount = completedLessonIds.length;
+
+    // كام كورس خلصه بالكامل
+    let completedCoursesCount = 0;
+    paidCourses.forEach(c => {
+      if(!c.lessons_count || c.lessons_count <= 0) return;
+      const courseLessonIds = lessons.filter(l => l.course_id === c.id).map(l => l.id);
+      const doneInCourse = courseLessonIds.filter(id => completedLessonIds.includes(id)).length;
+      if(doneInCourse >= c.lessons_count) completedCoursesCount++;
+    });
+
+    // 4) الاختبارات ومحاولات الطالب فيها
+    let exams = [];
+    let attempts = [];
+    if(courseIds.length > 0){
+      const { data: examsData } = await supabaseClient
+        .from('exams').select('id, passing_score').in('course_id', courseIds);
+      exams = examsData || [];
+
+      if(exams.length > 0){
+        const { data: attemptsData } = await supabaseClient
+          .from('exam_attempts')
+          .select('exam_id, percentage')
+          .eq('user_id', currentUser.id)
+          .in('exam_id', exams.map(e => e.id))
+          .order('completed_at', { ascending: false });
+        attempts = attemptsData || [];
+      }
+    }
+
+    const lastAttemptMap = {};
+    attempts.forEach(a => { if(!(a.exam_id in lastAttemptMap)) lastAttemptMap[a.exam_id] = a; });
+    const examsMap = {};
+    exams.forEach(e => examsMap[e.id] = e);
+
+    const examAttemptsCount = Object.keys(lastAttemptMap).length;
+    const examsPassedCount = Object.keys(lastAttemptMap).filter(examId => {
+      const exam = examsMap[examId];
+      return exam && lastAttemptMap[examId].percentage >= (exam.passing_score || 50);
+    }).length;
+    const bestPercentage = attempts.length > 0 ? Math.max(...attempts.map(a => a.percentage)) : 0;
+    const avgPercentage = examAttemptsCount > 0
+      ? Object.values(lastAttemptMap).reduce((sum, a) => sum + a.percentage, 0) / examAttemptsCount
+      : 0;
+
+    // 5) عدد أيام العضوية
+    const daysSinceJoin = profile?.created_at
+      ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / 86400000)
+      : 0;
+
+    // ============== تعريف كل الإنجازات ==============
+    const achievements = [
+      {
+        icon: '🚀', title: 'أول خطوة', desc: 'اشتركت في أول كورس ليك',
+        unlocked: paidCoursesCount >= 1, progress: paidCoursesCount, target: 1
+      },
+      {
+        icon: '🧭', title: 'مستكشف', desc: 'اشتركت في كورسين أو أكتر',
+        unlocked: paidCoursesCount >= 2, progress: paidCoursesCount, target: 2
+      },
+      {
+        icon: '📼', title: 'أول حصة', desc: 'خلّصت أول حصة ليك',
+        unlocked: completedLessonsCount >= 1, progress: completedLessonsCount, target: 1
+      },
+      {
+        icon: '🔥', title: 'مثابر', desc: 'خلّصت 10 حصص',
+        unlocked: completedLessonsCount >= 10, progress: completedLessonsCount, target: 10
+      },
+      {
+        icon: '💪', title: 'محارب المذاكرة', desc: 'خلّصت 25 حصة',
+        unlocked: completedLessonsCount >= 25, progress: completedLessonsCount, target: 25
+      },
+      {
+        icon: '🏁', title: 'كورس كامل', desc: 'خلّصت كل حصص كورس بالكامل',
+        unlocked: completedCoursesCount >= 1, progress: completedCoursesCount, target: 1
+      },
+      {
+        icon: '📝', title: 'أول اختبار', desc: 'عملت أول اختبار ليك',
+        unlocked: examAttemptsCount >= 1, progress: examAttemptsCount, target: 1
+      },
+      {
+        icon: '✅', title: 'ناجح', desc: 'نجحت في أول اختبار',
+        unlocked: examsPassedCount >= 1, progress: examsPassedCount, target: 1
+      },
+      {
+        icon: '🎯', title: 'ثلاثية النجاح', desc: 'نجحت في 3 اختبارات',
+        unlocked: examsPassedCount >= 3, progress: examsPassedCount, target: 3
+      },
+      {
+        icon: '🧠', title: 'عبقري الأحياء', desc: 'حققت 90% أو أكتر في اختبار',
+        unlocked: bestPercentage >= 90, progress: Math.round(bestPercentage), target: 90, unit: '%'
+      },
+      {
+        icon: '📊', title: 'الطالب الدقيق', desc: 'متوسط درجاتك 80%+ في 3 اختبارات فأكتر',
+        unlocked: avgPercentage >= 80 && examAttemptsCount >= 3,
+        progress: examAttemptsCount >= 3 ? Math.round(avgPercentage) : 0, target: 80, unit: '%'
+      },
+      {
+        icon: '🗓️', title: 'عضو من زمان', desc: 'عدّى شهر من انضمامك لينا',
+        unlocked: daysSinceJoin >= 30, progress: daysSinceJoin, target: 30, unit: ' يوم'
+      },
+    ];
+
+    const unlockedCount = achievements.filter(a => a.unlocked).length;
+    const totalCount = achievements.length;
+    const pct = Math.round((unlockedCount / totalCount) * 100);
+
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-num').textContent = `${unlockedCount}/${totalCount}`;
+    document.getElementById('progress-title').textContent =
+      unlockedCount === 0 ? 'يلا نبدأ نفتح إنجازات! 🎬' :
+      unlockedCount === totalCount ? 'جامد جدًا! فتحت كل الإنجازات 🏆' :
+      `فتحت ${unlockedCount} من ${totalCount} إنجاز — كمّل كده 💪`;
+
+    grid.innerHTML = achievements.map(a => {
+      const unit = a.unit || '';
+      const target = a.target;
+      const progressClamped = Math.min(a.progress, target);
+      const barPct = target > 0 ? Math.min(100, Math.round((a.progress / target) * 100)) : 0;
+
+      if(a.unlocked){
+        return `
+          <div class="ach-card unlocked">
+            <div class="ach-check">✓</div>
+            <div class="ach-icon">${a.icon}</div>
+            <h4>${a.title}</h4>
+            <p>${a.desc}</p>
+          </div>
+        `;
+      }
+      return `
+        <div class="ach-card locked">
+          <div class="ach-icon">${a.icon}</div>
+          <h4>${a.title}</h4>
+          <p>${a.desc}</p>
+          <div class="ach-progress">
+            <div class="ach-progress-track">
+              <div class="ach-progress-fill" style="width:${barPct}%;"></div>
+            </div>
+            <div class="ach-progress-text">${progressClamped}${unit} / ${target}${unit}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+</script>
+
+</body>
+</html>

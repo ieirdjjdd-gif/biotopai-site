@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تسجيل الدخول | BioTopai</title>
+<title>تسجيل الدخول | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -185,7 +185,7 @@
         <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
         <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      <div class="brand-text">Bio<span style="color:#f3ecd9">Topai</span></div>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
     </div>
     <a href="index.html" class="back-home">→ الرجوع للرئيسية</a>
   </div>
@@ -377,7 +377,7 @@
       </svg>
     </a>
   </div>
-  <p>© 2026 BioTopai — د. راضي. جميع الحقوق محفوظة.</p>
+  <p>© 2026 BioTopia — د. راضي. جميع الحقوق محفوظة.</p>
 </footer>
 
 <script>
@@ -453,13 +453,21 @@
 
     // 2) حفظ البيانات الإضافية (الاسم، الصف، التليفون) في جدول profiles
     if(data.user){
-      await supabaseClient.from('profiles').insert({
+      const { error: profileError } = await supabaseClient.from('profiles').insert({
         id: data.user.id,
         full_name: name,
         grade: grade,
         phone: phone,
         guardian_phone: guardianPhone
       });
+
+      if(profileError){
+        console.error('profile insert error:', profileError);
+        btn.disabled = false; btn.textContent = 'إنشاء الحساب';
+        showError('signup-error', 'اتعمل حسابك، بس حصلت مشكلة في حفظ بياناتك. هنوديك للوحتك، وكمّل بياناتك من صفحة الإعدادات.');
+        setTimeout(() => { window.location.href = 'dr-rady-dashboard-page.html'; }, 2500);
+        return;
+      }
     }
 
     btn.disabled = false; btn.textContent = 'إنشاء الحساب';
