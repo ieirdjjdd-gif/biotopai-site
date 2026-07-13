@@ -1260,7 +1260,7 @@
 
     const { data: newQuestion, error: qError } = await supabaseClient
       .from('exam_questions')
-      .insert({ exam_id: currentQuestionsExamId, question_text: questionText, order_index: Date.now() })
+      .insert({ exam_id: currentQuestionsExamId, question_text: questionText, order_index: Math.floor(Date.now() / 1000) })
       .select().single();
 
     if(qError || !newQuestion){
@@ -1392,7 +1392,7 @@
 
       const { data: newQuestion, error: qError } = await supabaseClient
         .from('exam_questions')
-        .insert({ exam_id: currentQuestionsExamId, question_text: q.questionText, order_index: Date.now() + i })
+        .insert({ exam_id: currentQuestionsExamId, question_text: q.questionText, order_index: Math.floor(Date.now() / 1000) + i })
         .select().single();
 
       if(qError || !newQuestion){
