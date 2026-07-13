@@ -314,20 +314,11 @@
         <label>وصف قصير (اختياري)</label>
         <textarea id="exam-desc" rows="2" placeholder="بيظهر للطالب فوق الأسئلة"></textarea>
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label>مرتبط بحصة معينة؟ (اختياري)</label>
-          <select id="exam-lesson">
-            <option value="">بدون — اختبار وحدة/نهائي</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>نوع الاختبار</label>
-          <select id="exam-kind">
-            <option value="exam">اختبار</option>
-            <option value="homework">واجب</option>
-          </select>
-        </div>
+      <div class="field">
+        <label>مرتبط بحصة معينة؟ (اختياري)</label>
+        <select id="exam-lesson">
+          <option value="">بدون — اختبار وحدة/نهائي</option>
+        </select>
       </div>
       <div class="field-row">
         <div class="field">
@@ -360,7 +351,7 @@
 
       <table style="margin-top:20px;">
         <thead>
-          <tr><th>العنوان</th><th>النوع</th><th>مرتبط بـ</th><th>عدد الأسئلة</th><th></th></tr>
+          <tr><th>العنوان</th><th>مرتبط بـ</th><th>عدد الأسئلة</th><th></th></tr>
         </thead>
         <tbody id="exams-table-body">
           <tr><td colspan="4">اختار كورس عشان تشوف اختباراته</td></tr>
@@ -453,6 +444,7 @@
     </div>
   </div>
 
+
   <!-- ===== نتائج الاختبارات ===== -->
   <div class="panel">
     <div class="panel-head"><h2>📊 نتائج الاختبارات</h2></div>
@@ -490,6 +482,199 @@
         <button class="btn btn-outline btn-sm" onclick="closeAttemptDetail()">إغلاق</button>
       </div>
       <div id="attempt-detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== إدارة الواجبات ===== -->
+  <div class="panel">
+    <div class="panel-head"><h2>📚 إدارة الواجبات</h2></div>
+
+    <div class="field">
+      <label>اختار الكورس</label>
+      <select id="hw-course-select" onchange="loadHwForCourse()">
+        <option value="">-- اختار كورس --</option>
+      </select>
+    </div>
+
+    <div id="hw-manager" style="display:none;">
+      <div class="msg msg-error" id="hw-form-error"></div>
+
+      <div class="field">
+        <label>عنوان الواجب</label>
+        <input type="text" id="hw-title" placeholder="مثال: واجب الوحدة الأولى">
+      </div>
+      <div class="field">
+        <label>وصف قصير (اختياري)</label>
+        <textarea id="hw-desc" rows="2" placeholder="بيظهر للطالب فوق الأسئلة"></textarea>
+      </div>
+      <div class="field">
+        <label>مرتبط بحصة معينة؟ (اختياري)</label>
+        <select id="hw-lesson">
+          <option value="">بدون — واجب عام</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>ترتيب الظهور</label>
+          <input type="number" id="hw-order" placeholder="1">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>مدة الواجب بالدقايق (اختياري — سيبه فاضي = بدون وقت)</label>
+          <input type="number" id="hw-time-limit" placeholder="15">
+        </div>
+        <div class="field">
+          <label>نسبة النجاح %</label>
+          <input type="number" id="hw-passing-score" placeholder="50" value="50">
+        </div>
+      </div>
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="hw-allow-retake" checked style="accent-color:var(--green); width:16px; height:16px;">
+          السماح للطالب بإعادة المحاولة بعد ما يخلّص (لو مطفي، محاولة واحدة بس وبس)
+        </label>
+      </div>
+
+      <input type="hidden" id="hw-edit-id">
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="save-hw-btn" onclick="saveHw()">حفظ الواجب</button>
+        <button class="btn btn-outline" id="cancel-hw-edit" style="display:none;" onclick="resetHwForm()">إلغاء التعديل</button>
+      </div>
+
+      <table style="margin-top:20px;">
+        <thead>
+          <tr><th>العنوان</th><th>مرتبط بـ</th><th>عدد الأسئلة</th><th></th></tr>
+        </thead>
+        <tbody id="hw-table-body">
+          <tr><td colspan="4">اختار كورس عشان تشوف واجباته</td></tr>
+        </tbody>
+      </table>
+
+      <!-- ===== إدارة أسئلة الواجب المختار ===== -->
+      <div id="hw-questions-manager" style="display:none; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
+        <div class="panel-head">
+          <h2>❓ أسئلة واجب: <span id="hw-questions-name" style="color:var(--green-bright);"></span></h2>
+          <button class="btn btn-outline btn-sm" onclick="closeHwQuestionsManager()">إغلاق</button>
+        </div>
+
+        <div class="msg msg-error" id="hw-question-form-error"></div>
+
+        <div class="field">
+          <label>نص السؤال</label>
+          <textarea id="hw-question-text" rows="2" placeholder="مثال: العضية المسؤولة عن التنفس الخلوي هي؟"></textarea>
+        </div>
+        <div class="field">
+          <label>صورة السؤال (اختياري)</label>
+          <input type="file" id="hw-question-image-input" accept="image/*" onchange="uploadHwQuestionImage()">
+          <p id="hw-question-image-progress" style="font-size:12px; color:var(--bone-dim); margin-top:6px; display:none;">جارٍ رفع الصورة...</p>
+          <div id="hw-question-image-preview" style="display:none; margin-top:10px; position:relative; max-width:260px;">
+            <img id="hw-question-image-preview-img" src="" alt="" style="width:100%; border-radius:10px; border:1px solid var(--line);">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeHwQuestionImage()" style="margin-top:8px;">إزالة الصورة</button>
+          </div>
+          <input type="hidden" id="hw-question-image-url">
+        </div>
+        <p style="font-size:12px; color:var(--bone-dim); margin-bottom:10px;">اكتب الاختيارات وحدد الإجابة الصح بالراديو. سيب أي خانة فاضية لو محتاج اختيارات أقل من 4.</p>
+        <div class="field-row" style="margin-bottom:6px;">
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="hw-correct-opt" value="0" checked style="accent-color:var(--green); margin-left:6px;">اختيار 1</label>
+            <input type="text" id="hw-opt-text-0" placeholder="نص الاختيار الأول">
+          </div>
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="hw-correct-opt" value="1" style="accent-color:var(--green); margin-left:6px;">اختيار 2</label>
+            <input type="text" id="hw-opt-text-1" placeholder="نص الاختيار الثاني">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="hw-correct-opt" value="2" style="accent-color:var(--green); margin-left:6px;">اختيار 3</label>
+            <input type="text" id="hw-opt-text-2" placeholder="نص الاختيار الثالث (اختياري)">
+          </div>
+          <div class="field" style="margin-bottom:8px;">
+            <label><input type="radio" name="hw-correct-opt" value="3" style="accent-color:var(--green); margin-left:6px;">اختيار 4</label>
+            <input type="text" id="hw-opt-text-3" placeholder="نص الاختيار الرابع (اختياري)">
+          </div>
+        </div>
+        <button class="btn" id="add-hw-question-btn" onclick="addHwQuestion()">إضافة السؤال</button>
+
+        <div style="display:flex; align-items:center; gap:10px; margin:22px 0; color:var(--bone-dim); font-size:12px;">
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+          أو ضيف كذا سؤال دفعة واحدة (لو عندك ملف واجب جاهز)
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+        </div>
+
+        <div class="panel" style="background:var(--navy-deep); padding:18px;">
+          <p style="font-size:12.5px; color:var(--bone-dim); margin-bottom:10px; line-height:2;">
+            الصق أسئلتك بالشكل ده (سطر فاضي بين كل سؤال والتاني، وحط <b style="color:var(--green-bright);">*</b> قبل الإجابة الصح بس):
+            <br>
+            <code style="display:block; background:var(--navy-base); border:1px solid var(--line); border-radius:8px; padding:10px; margin-top:6px; white-space:pre-wrap; font-size:11.5px;">العضية المسؤولة عن التنفس الخلوي هي؟
+- النواة
+* الميتوكوندريا
+- الريبوسوم
+
+سؤال تاني هنا؟
+* إجابة صح
+- إجابة غلط
+- إجابة غلط</code>
+          </p>
+          <textarea id="hw-bulk-questions-input" rows="8" placeholder="الصق كل الأسئلة هنا..." style="font-family:monospace; font-size:12.5px;"></textarea>
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-outline" id="hw-bulk-preview-btn" onclick="previewBulkHwQuestions()">معاينة الأسئلة</button>
+            <button class="btn" id="hw-bulk-confirm-btn" onclick="confirmBulkHwImport()" style="display:none;">تأكيد وإضافة الكل</button>
+          </div>
+          <div id="hw-bulk-preview-area" style="margin-top:16px;"></div>
+        </div>
+
+        <table style="margin-top:18px;">
+          <thead>
+            <tr><th>#</th><th>السؤال</th><th>الإجابة الصح</th><th></th></tr>
+          </thead>
+          <tbody id="hw-questions-table-body">
+            <tr><td colspan="4">جارٍ التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== نتائج الواجبات ===== -->
+  <div class="panel">
+    <div class="panel-head"><h2>📊 نتائج الواجبات</h2></div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>اختار الكورس</label>
+        <select id="hw-results-course-select" onchange="loadHwForResults()">
+          <option value="">-- اختار كورس --</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>اختار الواجب</label>
+        <select id="hw-results-exam-select" onchange="loadHwResults()" disabled>
+          <option value="">-- اختار واجب --</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="hw-results-summary" style="display:none; margin-bottom:16px; font-size:13.5px; color:var(--bone-dim);"></div>
+
+    <table id="hw-results-table" style="display:none;">
+      <thead>
+        <tr><th>الطالب</th><th>الصف</th><th>النتيجة</th><th>النسبة</th><th>التاريخ</th><th></th></tr>
+      </thead>
+      <tbody id="hw-results-table-body"></tbody>
+    </table>
+
+    <p id="hw-results-empty" style="font-size:13px; color:var(--bone-dim); display:none;">مفيش محاولات على الواجب ده لسه</p>
+
+    <!-- ===== تفاصيل محاولة طالب ===== -->
+    <div id="hw-attempt-detail" style="display:none; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
+      <div class="panel-head">
+        <h2>🧾 تفاصيل محاولة: <span id="hw-attempt-student-name" style="color:var(--green-bright);"></span></h2>
+        <button class="btn btn-outline btn-sm" onclick="closeHwAttemptDetail()">إغلاق</button>
+      </div>
+      <div id="hw-attempt-detail-body"></div>
     </div>
   </div>
 
@@ -574,6 +759,14 @@
 
     const resultsSelect = document.getElementById('results-course-select');
     resultsSelect.innerHTML = `<option value="">-- اختار كورس --</option>` +
+      courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+
+    const hwSelect = document.getElementById('hw-course-select');
+    hwSelect.innerHTML = `<option value="">-- اختار كورس --</option>` +
+      courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+
+    const hwResultsSelect = document.getElementById('hw-results-course-select');
+    hwResultsSelect.innerHTML = `<option value="">-- اختار كورس --</option>` +
       courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
   }
 
@@ -1083,11 +1276,11 @@
 
   async function refreshExamsTable(){
     const { data: exams, error } = await supabaseClient
-      .from('exams').select('*').eq('course_id', currentExamsCourseId).order('order_index', { ascending: true });
+      .from('exams').select('*').eq('course_id', currentExamsCourseId).eq('kind', 'exam').order('order_index', { ascending: true });
 
     const tbody = document.getElementById('exams-table-body');
     if(error || !exams || exams.length === 0){
-      tbody.innerHTML = `<tr><td colspan="5">مفيش اختبارات مضافة للكورس ده لسه</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4">مفيش اختبارات مضافة للكورس ده لسه</td></tr>`;
       return;
     }
 
@@ -1098,12 +1291,10 @@
 
     tbody.innerHTML = exams.map(e => {
       const lessonTitle = e.lesson_id ? (currentExamsCourseLessons.find(l => l.id === e.lesson_id)?.title || '—') : 'اختبار وحدة';
-      const kindLabel = e.kind === 'homework' ? '📝 واجب' : '✅ اختبار';
       const retakeLabel = e.allow_retake === false ? ' <span style="color:var(--rose,#e08182); font-size:11px;">(محاولة واحدة)</span>' : '';
       return `
         <tr>
-          <td>${e.title}</td>
-          <td>${kindLabel}${retakeLabel}</td>
+          <td>${e.title}${retakeLabel}</td>
           <td>${lessonTitle}</td>
           <td>${qCountMap[e.id] || 0}</td>
           <td>
@@ -1123,7 +1314,6 @@
     document.getElementById('exam-title').value = '';
     document.getElementById('exam-desc').value = '';
     document.getElementById('exam-lesson').value = '';
-    document.getElementById('exam-kind').value = 'exam';
     document.getElementById('exam-order').value = '';
     document.getElementById('exam-time-limit').value = '';
     document.getElementById('exam-passing-score').value = '50';
@@ -1141,7 +1331,6 @@
     document.getElementById('exam-title').value = exam.title;
     document.getElementById('exam-desc').value = exam.description || '';
     document.getElementById('exam-lesson').value = exam.lesson_id || '';
-    document.getElementById('exam-kind').value = exam.kind || 'exam';
     document.getElementById('exam-order').value = exam.order_index || '';
     document.getElementById('exam-time-limit').value = exam.time_limit_minutes || '';
     document.getElementById('exam-passing-score').value = exam.passing_score ?? 50;
@@ -1165,7 +1354,7 @@
     const payload = {
       course_id: currentExamsCourseId,
       lesson_id: document.getElementById('exam-lesson').value || null,
-      kind: document.getElementById('exam-kind').value || 'exam',
+      kind: 'exam',
       title: title,
       description: document.getElementById('exam-desc').value.trim() || null,
       order_index: parseInt(document.getElementById('exam-order').value) || 0,
@@ -1529,6 +1718,480 @@
     refreshExamsTable();
   }
 
+
+  let currentHwCourseId = null;
+  let currentHwCourseLessons = [];
+  let currentQuestionsHwId = null;
+
+  async function loadHwForCourse(){
+    currentHwCourseId = document.getElementById('hw-course-select').value;
+    const manager = document.getElementById('hw-manager');
+
+    if(!currentHwCourseId){
+      manager.style.display = 'none';
+      return;
+    }
+    manager.style.display = 'block';
+    closeHwQuestionsManager();
+    resetHwForm();
+
+    // جلب حصص الكورس عشان نعرضها في اختيار "مرتبط بحصة"
+    const { data: lessons } = await supabaseClient
+      .from('lessons').select('id, title').eq('course_id', currentHwCourseId).order('order_index', { ascending: true });
+    currentHwCourseLessons = lessons || [];
+
+    const lessonSelect = document.getElementById('hw-lesson');
+    lessonSelect.innerHTML = `<option value="">بدون — واجب عام</option>` +
+      currentHwCourseLessons.map(l => `<option value="${l.id}">${l.title}</option>`).join('');
+
+    await refreshHwTable();
+  }
+
+  async function refreshHwTable(){
+    const { data: exams, error } = await supabaseClient
+      .from('exams').select('*').eq('course_id', currentHwCourseId).eq('kind', 'homework').order('order_index', { ascending: true });
+
+    const tbody = document.getElementById('hw-table-body');
+    if(error || !exams || exams.length === 0){
+      tbody.innerHTML = `<tr><td colspan="4">مفيش واجبات مضافة للكورس ده لسه</td></tr>`;
+      return;
+    }
+
+    const examIds = exams.map(e => e.id);
+    const { data: questions } = await supabaseClient.from('exam_questions').select('id, exam_id').in('exam_id', examIds);
+    const qCountMap = {};
+    (questions || []).forEach(q => { qCountMap[q.exam_id] = (qCountMap[q.exam_id] || 0) + 1; });
+
+    tbody.innerHTML = exams.map(e => {
+      const lessonTitle = e.lesson_id ? (currentHwCourseLessons.find(l => l.id === e.lesson_id)?.title || '—') : 'واجب عام';
+      const retakeLabel = e.allow_retake === false ? ' <span style="color:var(--rose,#e08182); font-size:11px;">(محاولة واحدة)</span>' : '';
+      return `
+        <tr>
+          <td>${e.title}${retakeLabel}</td>
+          <td>${lessonTitle}</td>
+          <td>${qCountMap[e.id] || 0}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-outline btn-sm" onclick="manageHwQuestions('${e.id}', '${e.title.replace(/'/g,"")}')">الأسئلة</button>
+              <button class="btn btn-outline btn-sm" onclick="editHw('${e.id}')">تعديل</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteHw('${e.id}')">حذف</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function resetHwForm(){
+    document.getElementById('hw-edit-id').value = '';
+    document.getElementById('hw-title').value = '';
+    document.getElementById('hw-desc').value = '';
+    document.getElementById('hw-lesson').value = '';
+    document.getElementById('hw-order').value = '';
+    document.getElementById('hw-time-limit').value = '';
+    document.getElementById('hw-passing-score').value = '50';
+    document.getElementById('hw-allow-retake').checked = true;
+    document.getElementById('hw-form-error').style.display = 'none';
+    document.getElementById('save-hw-btn').textContent = 'حفظ الواجب';
+    document.getElementById('cancel-hw-edit').style.display = 'none';
+  }
+
+  async function editHw(id){
+    const { data: exam, error } = await supabaseClient.from('exams').select('*').eq('id', id).single();
+    if(error || !exam) return;
+
+    document.getElementById('hw-edit-id').value = exam.id;
+    document.getElementById('hw-title').value = exam.title;
+    document.getElementById('hw-desc').value = exam.description || '';
+    document.getElementById('hw-lesson').value = exam.lesson_id || '';
+    document.getElementById('hw-order').value = exam.order_index || '';
+    document.getElementById('hw-time-limit').value = exam.time_limit_minutes || '';
+    document.getElementById('hw-passing-score').value = exam.passing_score ?? 50;
+    document.getElementById('hw-allow-retake').checked = exam.allow_retake !== false;
+    document.getElementById('save-hw-btn').textContent = 'حفظ التعديل';
+    document.getElementById('cancel-hw-edit').style.display = 'inline-flex';
+    window.scrollTo({ top: document.getElementById('hw-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+  }
+
+  async function saveHw(){
+    const errEl = document.getElementById('hw-form-error');
+    errEl.style.display = 'none';
+
+    const title = document.getElementById('hw-title').value.trim();
+    if(!title){
+      errEl.textContent = 'عنوان الواجب مطلوب';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const payload = {
+      course_id: currentHwCourseId,
+      lesson_id: document.getElementById('hw-lesson').value || null,
+      kind: 'homework',
+      title: title,
+      description: document.getElementById('hw-desc').value.trim() || null,
+      order_index: parseInt(document.getElementById('hw-order').value) || 0,
+      time_limit_minutes: document.getElementById('hw-time-limit').value ? parseInt(document.getElementById('hw-time-limit').value) : null,
+      passing_score: parseInt(document.getElementById('hw-passing-score').value) || 50,
+      allow_retake: document.getElementById('hw-allow-retake').checked
+    };
+
+    const editId = document.getElementById('hw-edit-id').value;
+    const btn = document.getElementById('save-hw-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+
+    const { error } = editId
+      ? await supabaseClient.from('exams').update(payload).eq('id', editId)
+      : await supabaseClient.from('exams').insert(payload);
+
+    btn.disabled = false;
+
+    if(error){
+      errEl.textContent = 'حصل خطأ، حاول تاني';
+      errEl.style.display = 'block';
+      btn.textContent = editId ? 'حفظ التعديل' : 'حفظ الواجب';
+      return;
+    }
+
+    resetHwForm();
+    refreshHwTable();
+  }
+
+  async function deleteHw(id){
+    if(!confirm('متأكد إنك عايز تمسح الواجب ده؟ هيتمسح معاه كل الأسئلة والنتايج المرتبطة بيه.')) return;
+    const { error } = await supabaseClient.from('exams').delete().eq('id', id);
+    if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    if(currentQuestionsHwId === id) closeHwQuestionsManager();
+    refreshHwTable();
+  }
+
+  // ============================================================
+  // ===== إدارة أسئلة الواجب =====
+  // ============================================================
+  function manageHwQuestions(examId, examTitle){
+    currentQuestionsHwId = examId;
+    document.getElementById('hw-questions-name').textContent = examTitle;
+    document.getElementById('hw-questions-manager').style.display = 'block';
+    resetHwQuestionForm();
+    loadHwQuestions();
+    document.getElementById('hw-questions-manager').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeHwQuestionsManager(){
+    currentQuestionsHwId = null;
+    document.getElementById('hw-questions-manager').style.display = 'none';
+  }
+
+  function resetHwQuestionForm(){
+    document.getElementById('hw-question-text').value = '';
+    for(let i = 0; i < 4; i++) document.getElementById(`hw-opt-text-${i}`).value = '';
+    document.querySelector('input[name="hw-correct-opt"][value="0"]').checked = true;
+    document.getElementById('hw-question-form-error').style.display = 'none';
+    removeHwQuestionImage();
+    document.getElementById('hw-bulk-questions-input').value = '';
+    document.getElementById('hw-bulk-preview-area').innerHTML = '';
+    document.getElementById('hw-bulk-confirm-btn').style.display = 'none';
+    parsedBulkHwQuestions = [];
+  }
+
+  async function loadHwQuestions(){
+    const tbody = document.getElementById('hw-questions-table-body');
+    tbody.innerHTML = `<tr><td colspan="4">جارٍ التحميل...</td></tr>`;
+
+    const { data: questions, error } = await supabaseClient
+      .from('exam_questions').select('id, question_text, image_url, order_index').eq('exam_id', currentQuestionsHwId).order('order_index', { ascending: true });
+
+    if(error || !questions || questions.length === 0){
+      tbody.innerHTML = `<tr><td colspan="4">مفيش أسئلة مضافة للواجب ده لسه</td></tr>`;
+      return;
+    }
+
+    const qIds = questions.map(q => q.id);
+    const { data: options } = await supabaseClient
+      .from('exam_options').select('id, question_id, option_text, is_correct').in('question_id', qIds);
+
+    tbody.innerHTML = questions.map((q, i) => {
+      const correctOpt = (options || []).find(o => o.question_id === q.id && o.is_correct);
+      const imgThumb = q.image_url ? `<img src="${q.image_url}" alt="" style="width:36px; height:36px; object-fit:cover; border-radius:6px; margin-inline-end:8px; vertical-align:middle;">` : '';
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${imgThumb}${q.question_text}</td>
+          <td style="color:var(--green-bright);">${correctOpt ? correctOpt.option_text : '—'}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn btn-danger btn-sm" onclick="deleteHwQuestion('${q.id}')">حذف</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ===== رفع صورة السؤال =====
+  async function uploadHwQuestionImage(){
+    const input = document.getElementById('hw-question-image-input');
+    const file = input.files[0];
+    if(!file) return;
+
+    const errEl = document.getElementById('hw-question-form-error');
+    const progressEl = document.getElementById('hw-question-image-progress');
+    errEl.style.display = 'none';
+    progressEl.style.display = 'block';
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_\u0600-\u06FF ]/g, '');
+    const filePath = `${currentQuestionsHwId}/${Date.now()}_${safeName}`;
+
+    const { error: uploadError } = await supabaseClient
+      .storage
+      .from('question-images')
+      .upload(filePath, file);
+
+    progressEl.style.display = 'none';
+
+    if(uploadError){
+      errEl.textContent = 'حصل خطأ أثناء رفع الصورة، حاول تاني (تأكد إن ملف 07-question-images.sql اتشغّل في Supabase)';
+      errEl.style.display = 'block';
+      input.value = '';
+      return;
+    }
+
+    const { data: publicUrlData } = supabaseClient
+      .storage
+      .from('question-images')
+      .getPublicUrl(filePath);
+
+    document.getElementById('hw-question-image-url').value = publicUrlData.publicUrl;
+    document.getElementById('hw-question-image-preview-img').src = publicUrlData.publicUrl;
+    document.getElementById('hw-question-image-preview').style.display = 'block';
+    input.value = '';
+  }
+
+  function removeHwQuestionImage(){
+    document.getElementById('hw-question-image-url').value = '';
+    document.getElementById('hw-question-image-preview').style.display = 'none';
+    document.getElementById('hw-question-image-preview-img').src = '';
+    document.getElementById('hw-question-image-input').value = '';
+  }
+
+  async function addHwQuestion(){
+    const errEl = document.getElementById('hw-question-form-error');
+    errEl.style.display = 'none';
+
+    const questionText = document.getElementById('hw-question-text').value.trim();
+    const optionTexts = [0, 1, 2, 3].map(i => document.getElementById(`hw-opt-text-${i}`).value.trim());
+    const filledOptions = optionTexts.map((text, i) => ({ text, i })).filter(o => o.text !== '');
+    const correctIndex = parseInt(document.querySelector('input[name="hw-correct-opt"]:checked').value);
+
+    if(!questionText){
+      errEl.textContent = 'نص السؤال مطلوب';
+      errEl.style.display = 'block';
+      return;
+    }
+    if(filledOptions.length < 2){
+      errEl.textContent = 'لازم اختيارين على الأقل';
+      errEl.style.display = 'block';
+      return;
+    }
+    if(optionTexts[correctIndex] === ''){
+      errEl.textContent = 'الإجابة الصح المحددة فاضية، اكتب نص الاختيار ده أو غيّر الاختيار الصح';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('add-hw-question-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
+
+    const imageUrl = document.getElementById('hw-question-image-url').value.trim() || null;
+
+    const { data: newQuestion, error: qError } = await supabaseClient
+      .from('exam_questions')
+      .insert({ exam_id: currentQuestionsHwId, question_text: questionText, image_url: imageUrl, order_index: Math.floor(Date.now() / 1000) })
+      .select().single();
+
+    if(qError || !newQuestion){
+      errEl.textContent = 'حصل خطأ في إضافة السؤال، حاول تاني';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'إضافة السؤال';
+      return;
+    }
+
+    const optionsPayload = filledOptions.map(o => ({
+      question_id: newQuestion.id,
+      option_text: o.text,
+      is_correct: o.i === correctIndex,
+      order_index: o.i
+    }));
+
+    const { error: optError } = await supabaseClient.from('exam_options').insert(optionsPayload);
+
+    btn.disabled = false; btn.textContent = 'إضافة السؤال';
+
+    if(optError){
+      errEl.textContent = 'اتضاف السؤال بس حصل خطأ في الاختيارات، احذف السؤال وجرب تاني';
+      errEl.style.display = 'block';
+      loadHwQuestions();
+      return;
+    }
+
+    resetHwQuestionForm();
+    loadHwQuestions();
+    refreshHwTable();
+  }
+
+  async function deleteHwQuestion(id){
+    if(!confirm('متأكد إنك عايز تمسح السؤال ده؟')) return;
+    const { error } = await supabaseClient.from('exam_questions').delete().eq('id', id);
+    if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    loadHwQuestions();
+    refreshHwTable();
+  }
+
+  // ===== استيراد أسئلة دفعة واحدة (لصق نص) =====
+  let parsedBulkHwQuestions = [];
+
+  function previewBulkHwQuestions(){
+    const raw = document.getElementById('hw-bulk-questions-input').value;
+    const previewArea = document.getElementById('hw-bulk-preview-area');
+    const confirmBtn = document.getElementById('hw-bulk-confirm-btn');
+
+    const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(b => b !== '');
+
+    parsedBulkHwQuestions = [];
+    const errors = [];
+
+    blocks.forEach((block, idx) => {
+      const lines = block.split('\n').map(l => l.trim()).filter(l => l !== '');
+      if(lines.length === 0) return;
+
+      // أول سطر مش بادئ بـ - أو * = نص السؤال (مع تنضيف ترقيم زي "1." أو "س:" لو موجود)
+      let questionText = lines[0].replace(/^(س\s*\d*[:.\-]|\d+[.)\-])\s*/,'').trim();
+      const optionLines = lines.slice(1).filter(l => /^[-*]/.test(l));
+
+      const options = optionLines.map(l => ({
+        text: l.replace(/^[-*]\s*/, '').trim(),
+        correct: l.trim().startsWith('*')
+      })).filter(o => o.text !== '');
+
+      const correctCount = options.filter(o => o.correct).length;
+
+      if(!questionText || options.length < 2 || correctCount !== 1){
+        errors.push({ idx: idx + 1, text: questionText || '(سؤال بدون نص)', reason:
+          !questionText ? 'مفيش نص سؤال' :
+          options.length < 2 ? 'أقل من اختيارين' :
+          correctCount === 0 ? 'مفيش إجابة متعلّم عليها بـ *' : 'أكتر من إجابة متعلّم عليها بـ * (لازم واحدة بس)'
+        });
+        return;
+      }
+
+      parsedBulkHwQuestions.push({ questionText, options });
+    });
+
+    let html = '';
+    if(parsedBulkHwQuestions.length > 0){
+      html += `<div class="msg msg-success" style="display:block; margin-bottom:12px;">✓ ${parsedBulkHwQuestions.length} سؤال جاهز للإضافة</div>`;
+      html += parsedBulkHwQuestions.map((q, i) => `
+        <div style="background:var(--navy-soft); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px;">
+          <b style="font-size:13px;">${i + 1}. ${q.questionText}</b>
+          <ul style="margin:8px 0 0; padding-inline-start:20px; font-size:12.5px; color:var(--bone-dim);">
+            ${q.options.map(o => `<li style="${o.correct ? 'color:var(--green-bright); font-weight:700;' : ''}">${o.text}${o.correct ? ' ✓' : ''}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+    if(errors.length > 0){
+      html += `<div class="msg msg-error" style="display:block; margin-top:10px;">
+        ⚠️ ${errors.length} سؤال فيه مشكلة ومش هيتضاف، راجعهم وصلّحهم في النص وجرّب المعاينة تاني:
+        <ul style="margin:8px 0 0; padding-inline-start:20px;">
+          ${errors.map(e => `<li>سؤال رقم ${e.idx} ("${e.text}"): ${e.reason}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+    if(blocks.length === 0){
+      html = `<div class="msg msg-error" style="display:block;">الصق نص الأسئلة الأول قبل المعاينة</div>`;
+    }
+
+    previewArea.innerHTML = html;
+    confirmBtn.style.display = parsedBulkHwQuestions.length > 0 ? 'inline-flex' : 'none';
+  }
+
+  async function confirmBulkHwImport(){
+    if(parsedBulkHwQuestions.length === 0) return;
+    const confirmBtn = document.getElementById('hw-bulk-confirm-btn');
+    const previewBtn = document.getElementById('hw-bulk-preview-btn');
+    confirmBtn.disabled = true; previewBtn.disabled = true;
+
+    let addedCount = 0;
+    const failures = [];
+
+    if(!currentQuestionsHwId){
+      confirmBtn.disabled = false; previewBtn.disabled = false;
+      confirmBtn.textContent = 'تأكيد وإضافة الكل';
+      document.getElementById('hw-bulk-preview-area').innerHTML =
+        `<div class="msg msg-error" style="display:block;">⚠️ مفيش واجب محدد، افتح إدارة أسئلة واجب معيّن الأول</div>`;
+      return;
+    }
+
+    for(let i = 0; i < parsedBulkHwQuestions.length; i++){
+      const q = parsedBulkHwQuestions[i];
+      confirmBtn.textContent = `جارٍ الإضافة... (${i + 1}/${parsedBulkHwQuestions.length})`;
+
+      const { data: newQuestion, error: qError } = await supabaseClient
+        .from('exam_questions')
+        .insert({ exam_id: currentQuestionsHwId, question_text: q.questionText, order_index: Math.floor(Date.now() / 1000) + i })
+        .select().single();
+
+      if(qError || !newQuestion){
+        console.error('bulk import - question insert failed:', qError);
+        failures.push({ idx: i + 1, text: q.questionText, reason: qError ? qError.message : 'مفيش داتا راجعة' });
+        continue;
+      }
+
+      const optionsPayload = q.options.map((o, oi) => ({
+        question_id: newQuestion.id,
+        option_text: o.text,
+        is_correct: o.correct,
+        order_index: oi
+      }));
+      const { error: optError } = await supabaseClient.from('exam_options').insert(optionsPayload);
+      if(!optError){
+        addedCount++;
+      } else {
+        console.error('bulk import - options insert failed:', optError);
+        failures.push({ idx: i + 1, text: q.questionText, reason: 'السؤال اتضاف بس الاختيارات فشلت: ' + optError.message });
+      }
+    }
+
+    confirmBtn.disabled = false; previewBtn.disabled = false;
+    confirmBtn.textContent = 'تأكيد وإضافة الكل';
+    confirmBtn.style.display = 'none';
+
+    document.getElementById('hw-bulk-questions-input').value = '';
+
+    let resultHtml = `<div class="msg ${addedCount > 0 ? 'msg-success' : 'msg-error'}" style="display:block;">
+      ${addedCount > 0 ? '✓' : '⚠️'} اتضاف ${addedCount} سؤال بنجاح ${failures.length > 0 ? `(وفشل ${failures.length})` : ''}
+    </div>`;
+
+    if(failures.length > 0){
+      resultHtml += `<div class="msg msg-error" style="display:block; margin-top:10px;">
+        تفاصيل الأسئلة اللي فشلت:
+        <ul style="margin:8px 0 0; padding-inline-start:20px;">
+          ${failures.map(f => `<li>سؤال رقم ${f.idx} ("${f.text}"): ${f.reason}</li>`).join('')}
+        </ul>
+        <div style="margin-top:8px; font-size:12px;">
+          لو السبب حاجة زي "new row violates row-level security policy" فده معناه إن حسابك مش متسجل كـ admin في جدول profiles (is_admin = true)، أو إن جلسة الدخول انتهت. جرب تعمل تسجيل خروج ودخول تاني وتتأكد إن حسابك admin.
+        </div>
+      </div>`;
+    }
+
+    document.getElementById('hw-bulk-preview-area').innerHTML = resultHtml;
+    parsedBulkHwQuestions = [];
+
+    loadHwQuestions();
+    refreshHwTable();
+  }
+
+
   // ============================================================
   // ===== نتائج الاختبارات =====
   // ============================================================
@@ -1553,7 +2216,7 @@
     }
 
     const { data: exams } = await supabaseClient
-      .from('exams').select('id, title').eq('course_id', courseId).order('order_index', { ascending: true });
+      .from('exams').select('id, title').eq('course_id', courseId).eq('kind', 'exam').order('order_index', { ascending: true });
 
     examSelect.innerHTML = `<option value="">-- اختار اختبار --</option>` +
       (exams || []).map(e => `<option value="${e.id}">${e.title}</option>`).join('');
@@ -1674,6 +2337,153 @@
   function closeAttemptDetail(){
     document.getElementById('attempt-detail').style.display = 'none';
   }
+
+  // ============================================================
+  // ===== نتائج الواجبات =====
+  // ============================================================
+  let currentResultsHwId = null;
+  let currentResultsHwQuestions = [];
+  let currentResultsHwAttempts = [];
+  let currentResultsHwProfilesMap = {};
+
+  async function loadHwForResults(){
+    const courseId = document.getElementById('hw-results-course-select').value;
+    const examSelect = document.getElementById('hw-results-exam-select');
+
+    document.getElementById('hw-results-table').style.display = 'none';
+    document.getElementById('hw-results-summary').style.display = 'none';
+    document.getElementById('hw-results-empty').style.display = 'none';
+    closeHwAttemptDetail();
+
+    if(!courseId){
+      examSelect.innerHTML = `<option value="">-- اختار واجب --</option>`;
+      examSelect.disabled = true;
+      return;
+    }
+
+    const { data: exams } = await supabaseClient
+      .from('exams').select('id, title').eq('course_id', courseId).eq('kind', 'homework').order('order_index', { ascending: true });
+
+    examSelect.innerHTML = `<option value="">-- اختار واجب --</option>` +
+      (exams || []).map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+    examSelect.disabled = false;
+  }
+
+  async function loadHwResults(){
+    currentResultsHwId = document.getElementById('hw-results-exam-select').value;
+    closeHwAttemptDetail();
+
+    const table = document.getElementById('hw-results-table');
+    const tbody = document.getElementById('hw-results-table-body');
+    const empty = document.getElementById('hw-results-empty');
+    const summary = document.getElementById('hw-results-summary');
+
+    if(!currentResultsHwId){
+      table.style.display = 'none';
+      empty.style.display = 'none';
+      summary.style.display = 'none';
+      return;
+    }
+
+    table.style.display = 'table';
+    summary.style.display = 'none';
+    empty.style.display = 'none';
+    tbody.innerHTML = `<tr><td colspan="6">جارٍ التحميل...</td></tr>`;
+
+    // هات أسئلة واختيارات الواجب مرة واحدة، هنستخدمها بعدين لعرض تفاصيل أي محاولة
+    const { data: qData } = await supabaseClient
+      .from('exam_questions').select('id, question_text, order_index').eq('exam_id', currentResultsHwId).order('order_index', { ascending: true });
+
+    const qIds = (qData || []).map(q => q.id);
+    const { data: optData } = qIds.length
+      ? await supabaseClient.from('exam_options').select('id, question_id, option_text, is_correct, order_index').in('question_id', qIds).order('order_index', { ascending: true })
+      : { data: [] };
+
+    currentResultsHwQuestions = (qData || []).map(q => ({
+      ...q,
+      options: (optData || []).filter(o => o.question_id === q.id)
+    }));
+
+    const { data: attempts, error } = await supabaseClient
+      .from('exam_attempts').select('*').eq('exam_id', currentResultsHwId).order('completed_at', { ascending: false });
+
+    if(error || !attempts || attempts.length === 0){
+      table.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+
+    currentResultsHwAttempts = attempts;
+
+    const userIds = [...new Set(attempts.map(a => a.user_id))];
+    const { data: profiles } = await supabaseClient
+      .from('profiles').select('id, full_name, grade').in('id', userIds);
+
+    currentResultsHwProfilesMap = {};
+    (profiles || []).forEach(p => currentResultsHwProfilesMap[p.id] = p);
+
+    const avgPct = Math.round(attempts.reduce((s, a) => s + Number(a.percentage || 0), 0) / attempts.length);
+    summary.style.display = 'block';
+    summary.innerHTML = `عدد المحاولات: <b style="color:var(--bone);">${attempts.length}</b> — متوسط النسبة: <b style="color:var(--green-bright);">${avgPct}%</b>`;
+
+    tbody.innerHTML = attempts.map(a => {
+      const p = currentResultsHwProfilesMap[a.user_id];
+      const pct = Math.round(Number(a.percentage || 0));
+      const date = a.completed_at ? new Date(a.completed_at).toLocaleString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+      return `
+        <tr>
+          <td>${p?.full_name || 'طالب غير معروف'}</td>
+          <td>${p?.grade || '—'}</td>
+          <td>${a.score} / ${a.total_questions}</td>
+          <td><span class="tag ${pct >= 50 ? 'tag-live' : 'tag-hidden'}">${pct}%</span></td>
+          <td>${date}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="viewHwAttemptDetail('${a.id}')">التفاصيل</button></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function viewHwAttemptDetail(attemptId){
+    const attempt = currentResultsHwAttempts.find(a => a.id === attemptId);
+    if(!attempt) return;
+
+    const p = currentResultsHwProfilesMap[attempt.user_id];
+    document.getElementById('hw-attempt-student-name').textContent = p?.full_name || 'طالب غير معروف';
+
+    const answers = attempt.answers || {};
+
+    document.getElementById('hw-attempt-detail-body').innerHTML = currentResultsHwQuestions.map((q, i) => {
+      const chosenId = answers[q.id];
+      const correctOption = q.options.find(o => o.is_correct);
+      const isCorrect = !!(chosenId && correctOption && chosenId === correctOption.id);
+      const statusLabel = chosenId ? (isCorrect ? 'إجابة صح ✓' : 'إجابة غلط ✗') : 'من غير إجابة';
+      const statusColor = chosenId ? (isCorrect ? 'var(--green-bright)' : '#e8a3a4') : 'var(--bone-dim)';
+
+      return `
+        <div class="panel" style="background:var(--navy-deep); padding:16px; margin-bottom:12px;">
+          <div style="font-size:12px; font-weight:700; margin-bottom:6px; color:${statusColor};">سؤال ${i + 1} — ${statusLabel}</div>
+          <div style="font-size:14.5px; font-weight:600; margin-bottom:12px;">${q.question_text}</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${q.options.map(o => {
+              let style = 'border:1.5px solid var(--line);';
+              let mark = '';
+              if(o.is_correct){ style = 'border:1.5px solid var(--green); background:rgba(95,168,43,0.14);'; mark = ' ✓'; }
+              else if(o.id === chosenId){ style = 'border:1.5px solid var(--rose); background:rgba(180,82,83,0.14);'; mark = ' ✗'; }
+              return `<div style="padding:10px 14px; border-radius:10px; font-size:13.5px; ${style}">${o.option_text}${mark}</div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('hw-attempt-detail').style.display = 'block';
+    document.getElementById('hw-attempt-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeHwAttemptDetail(){
+    document.getElementById('hw-attempt-detail').style.display = 'none';
+  }
+
 </script>
 
 </body>
