@@ -175,7 +175,7 @@
       </svg>
       <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
     </div>
-    <a href="dr-rady-exams-page.html" class="link-accent" style="font-size:13px;">→ رجوع للاختبارات</a>
+    <a href="dr-rady-exams-page.html" class="link-accent" style="font-size:13px;" id="back-link-top">→ رجوع للاختبارات</a>
   </div>
 </header>
 
@@ -250,10 +250,7 @@
           <span>إجمالي الأسئلة</span>
         </div>
       </div>
-      <div class="result-actions">
-        <a href="dr-rady-exams-page.html" class="btn">رجوع للاختبارات</a>
-        <button class="btn btn-outline" onclick="location.reload()">إعادة المحاولة</button>
-      </div>
+      <div class="result-actions" id="result-actions"></div>
     </div>
     <div id="review-list"></div>
   </div>
@@ -276,6 +273,7 @@
 <script>
   const params = new URLSearchParams(window.location.search);
   const EXAM_ID = params.get('exam');
+  const REVIEW_MODE = params.get('review') === '1';
 
   let currentUser = null;
   let exam = null;
@@ -313,6 +311,24 @@
     showState('denied');
   }
 
+  function backLinkInfo(){
+    const isHomework = exam && exam.kind === 'homework';
+    return {
+      href: isHomework ? 'dr-rady-assignments-page.html' : 'dr-rady-exams-page.html',
+      label: isHomework ? '→ رجوع للواجبات' : '→ رجوع للاختبارات',
+      labelPlain: isHomework ? 'رجوع للواجبات' : 'رجوع للاختبارات'
+    };
+  }
+
+  function updateBackLinks(){
+    const info = backLinkInfo();
+    const topLink = document.getElementById('back-link-top');
+    topLink.href = info.href;
+    topLink.textContent = info.label;
+    const deniedLink = document.querySelector('#state-denied a.btn');
+    if(deniedLink){ deniedLink.href = info.href; deniedLink.textContent = info.labelPlain; }
+  }
+
   async function init(){
     if(!EXAM_ID){
       denied('رابط غير صحيح ⚠️', 'الرابط ده ناقصه بيانات، ارجع لصفحة الاختبارات واختار من هناك.');
@@ -331,6 +347,7 @@
       return;
     }
     exam = examData;
+    updateBackLinks();
 
     // هل الطالب مشترك في الكورس بتاع الاختبار ده؟
     const { data: enrollment } = await supabaseClient
@@ -338,6 +355,42 @@
 
     if(enrollment?.status !== 'paid'){
       denied('الاختبار ده مقفول 🔒', 'لازم تكون مشترك في الكورس بتاع الاختبار ده عشان تقدر تأديه.');
+      return;
+    }
+
+    // ===== وضع المراجعة: يعرض إجابات محاولة سابقة كاملة بس، من غير ما يبدأ محاولة جديدة =====
+    if(REVIEW_MODE){
+      const { data: reviewAttempt, error: reviewErr } = await supabaseClient
+        .from('exam_attempts')
+        .select('id, score, total_questions, percentage, answers, completed_at')
+        .eq('exam_id', EXAM_ID)
+        .eq('user_id', user.id)
+        .not('completed_at', 'is', null)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if(reviewErr || !reviewAttempt){
+        denied(
+          `لسه معملتش ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده ⚠️`,
+          `لازم ${exam.kind === 'homework' ? 'تعمل الواجب' : 'تمتحن'} الأول قبل ما تقدر تراجع إجاباتك.`
+        );
+        return;
+      }
+
+      const { data: qData } = await supabaseClient
+        .from('exam_questions').select('id, question_text, image_url, order_index').eq('exam_id', EXAM_ID).order('order_index', { ascending: true });
+      const questionIds = (qData || []).map(q => q.id);
+      const { data: optData } = await supabaseClient
+        .from('exam_options').select('id, question_id, option_text, is_correct, order_index').in('question_id', questionIds).order('order_index', { ascending: true });
+
+      questions = (qData || []).map(q => ({
+        ...q,
+        options: (optData || []).filter(o => o.question_id === q.id)
+      }));
+      answers = reviewAttempt.answers || {};
+
+      showResult(reviewAttempt.score, Math.round(reviewAttempt.percentage));
       return;
     }
 
@@ -703,6 +756,20 @@
     document.getElementById('stat-correct').textContent = correctCount;
     document.getElementById('stat-wrong').textContent = wrongCount;
     document.getElementById('stat-total').textContent = total;
+
+    const info = backLinkInfo();
+    const canRetake = exam.allow_retake !== false;
+    let actionsHTML = `<a href="${info.href}" class="btn">${info.labelPlain}</a>`;
+    if(canRetake){
+      actionsHTML += REVIEW_MODE
+        ? `<a href="dr-rady-exam-attempt-page.html?exam=${EXAM_ID}" class="btn btn-outline">جرّب تاني</a>`
+        : `<button class="btn btn-outline" onclick="location.reload()">إعادة المحاولة</button>`;
+    }
+    document.getElementById('result-actions').innerHTML = actionsHTML;
+
+    if(REVIEW_MODE){
+      document.getElementById('result-text').textContent += ' (بتراجع نتيجتك اللي اتسجّلت قبل كده)';
+    }
 
     // مراجعة الإجابات
     document.getElementById('review-list').innerHTML = questions.map((q, i) => {

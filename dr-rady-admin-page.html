@@ -124,6 +124,10 @@
       </select>
     </div>
 
+    <p style="font-size:12px; color:var(--bone-dim); margin:-10px 0 16px;">
+      💡 لأي طلب "قيد الانتظار"، عمود "الكورس" قايمة تقدر تغيّرها — اختار الكورس اللي عايز تقبل الطالب فيه بالظبط قبل ما تدوس "قبول" (مش لازم يكون نفس اللي الطالب طلبه).
+    </p>
+
     <table>
       <thead>
         <tr><th>الطالب</th><th>الصف</th><th>تليفون</th><th>ولي الأمر</th><th>الكورس</th><th>الحالة</th><th></th></tr>
@@ -802,6 +806,13 @@
       (extraCourses || []).forEach(c => coursesTitleMap[c.id] = c.title);
     }
 
+    // قايمة كل الكورسات لعمل الـ dropdown (لو مش محمّلة بعد، هات نسخة سريعة)
+    let coursesForSelect = allCourses;
+    if(coursesForSelect.length === 0){
+      const { data: allCoursesData } = await supabaseClient.from('courses').select('id, title').order('title');
+      coursesForSelect = allCoursesData || [];
+    }
+
     // بيانات الطلاب
     const userIds = [...new Set(enrollments.map(e => e.user_id))];
     const { data: profiles } = await supabaseClient
@@ -814,6 +825,15 @@
 
     tbody.innerHTML = enrollments.map(e => {
       const p = profilesMap[e.user_id] || {};
+
+      // للطلبات المعلّقة: قايمة منسدلة يختار منها الأدمن أنهي كورس بالظبط قبل ما يقبل
+      // (افتراضيًا الكورس اللي الطالب طلبه، بس الأدمن يقدر يغيّره لو حابب)
+      const courseCell = e.status === 'pending'
+        ? `<select id="course-select-${e.id}" style="width:auto; min-width:140px; background:var(--navy-deep); border:1.5px solid var(--line); border-radius:8px; padding:6px 10px; color:var(--bone); font-size:12.5px;">
+             ${coursesForSelect.map(c => `<option value="${c.id}" ${c.id === e.course_id ? 'selected' : ''}>${c.title}</option>`).join('')}
+           </select>`
+        : (coursesTitleMap[e.course_id] || '—');
+
       const actions = e.status === 'pending'
         ? `<button class="btn btn-sm" onclick="approveEnrollment('${e.id}')">✅ قبول</button>
            <button class="btn btn-danger btn-sm" onclick="rejectEnrollment('${e.id}')">❌ رفض</button>`
@@ -825,7 +845,7 @@
           <td>${p.grade || '—'}</td>
           <td>${p.phone || '—'}</td>
           <td>${p.guardian_phone || '—'}</td>
-          <td>${coursesTitleMap[e.course_id] || '—'}</td>
+          <td>${courseCell}</td>
           <td><span class="tag ${statusTag[e.status] || 'tag-hidden'}">${statusLabel[e.status] || e.status}</span></td>
           <td><div class="row-actions">${actions}</div></td>
         </tr>
@@ -847,7 +867,20 @@
   }
 
   async function approveEnrollment(id){
-    const { error } = await supabaseClient.from('enrollments').update({ status: 'paid' }).eq('id', id);
+    // ناخد الكورس المختار من القايمة المنسدلة بتاعة الصف ده (ممكن يكون الأدمن غيّره عن اللي الطالب طلبه)
+    const select = document.getElementById(`course-select-${id}`);
+    const chosenCourseId = select ? select.value : null;
+
+    if(!chosenCourseId){
+      alert('اختار الكورس اللي هتقبل الطالب فيه الأول');
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from('enrollments')
+      .update({ status: 'paid', course_id: chosenCourseId })
+      .eq('id', id);
+
     if(error){ alert('حصل خطأ، حاول تاني'); return; }
     loadEnrollments();
   }
@@ -2259,7 +2292,7 @@
     }));
 
     const { data: attempts, error } = await supabaseClient
-      .from('exam_attempts').select('*').eq('exam_id', currentResultsExamId).order('completed_at', { ascending: false });
+      .from('exam_attempts').select('*').eq('exam_id', currentResultsExamId).not('completed_at', 'is', null).order('completed_at', { ascending: false });
 
     if(error || !attempts || attempts.length === 0){
       table.style.display = 'none';
@@ -2405,7 +2438,7 @@
     }));
 
     const { data: attempts, error } = await supabaseClient
-      .from('exam_attempts').select('*').eq('exam_id', currentResultsHwId).order('completed_at', { ascending: false });
+      .from('exam_attempts').select('*').eq('exam_id', currentResultsHwId).not('completed_at', 'is', null).order('completed_at', { ascending: false });
 
     if(error || !attempts || attempts.length === 0){
       table.style.display = 'none';

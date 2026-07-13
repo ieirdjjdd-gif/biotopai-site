@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الواجبات والدرجات | BioTopia</title>
+<title>الواجبات | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -159,6 +159,10 @@
 
   .skeleton{background:var(--navy-soft); border:1px solid var(--line); border-radius:18px; height:78px; margin-bottom:12px; opacity:.5;}
 
+  .section-block{margin-bottom:34px;}
+  .section-title{font-size:16.5px; color:var(--bone); margin-bottom:4px;}
+  .section-sub{font-size:12.5px; color:var(--bone-dim); margin-bottom:16px;}
+
   @media (max-width:560px){
     .item-card{flex-direction:column; align-items:stretch;}
     .item-card .item-action{justify-content:space-between;}
@@ -250,68 +254,58 @@
   <main>
 
     <div class="topbar">
-      <h1>الواجبات والدرجات</h1>
-      <p>تابع الواجبات المستنياك وشوف نتايجك اللي خلصتها في مكان واحد.</p>
+      <h1>الواجبات</h1>
+      <p>واجباتك بعد كل حصة هتلاقيها هنا.</p>
     </div>
 
-    <!-- ===== TABS ===== -->
-    <div class="tabs">
-      <button class="tab-btn active" id="tab-btn-assignments" onclick="switchTab('assignments')">📝 الواجبات</button>
-      <button class="tab-btn" id="tab-btn-grades" onclick="switchTab('grades')">🏅 الدرجات</button>
+    <div id="assignments-loading">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
     </div>
 
-    <!-- ===== TAB: الواجبات (اختبارات لسه ما اتحلتش) ===== -->
-    <div class="tab-panel active" id="tab-assignments">
-
-      <div id="assignments-loading">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-      </div>
-
-      <div id="assignments-empty" class="panel empty-state" style="display:none;">
-        <div class="ic">🎉</div>
-        <h2>مفيش واجبات مستنياك دلوقتي</h2>
-        <p>خلصت كل الواجبات المتاحة، تابعنا هنضيف واجبات جديدة أول ما تتفتح حصص جديدة.</p>
-        <a href="dr-rady-catalog-page.html" class="btn">استكشف الكورسات</a>
-      </div>
-
-      <div id="assignments-list"></div>
+    <div id="assignments-empty" class="panel empty-state" style="display:none;">
+      <div class="ic">📝</div>
+      <h2>مفيش واجبات متاحة دلوقتي</h2>
+      <p>لسه مفيش واجبات مضافة على كورساتك، تابعنا هيبان هنا أول ما يبقى فيه حاجة جديدة.</p>
+      <a href="dr-rady-catalog-page.html" class="btn">استكشف الكورسات</a>
     </div>
 
-    <!-- ===== TAB: الدرجات (نتايج المحاولات المكتملة) ===== -->
-    <div class="tab-panel" id="tab-grades">
+    <div id="assignments-content" style="display:none;">
 
-      <div class="stats-grid" id="grades-stats" style="display:none;">
-        <div class="stat-card">
-          <div class="stat-ic" style="background:rgba(95,168,43,0.16); color:var(--green-bright);">🏅</div>
-          <b id="stat-avg">—</b>
-          <span>متوسط درجاتك</span>
-        </div>
-        <div class="stat-card">
-          <div class="stat-ic" style="background:rgba(232,196,104,0.16); color:var(--gold);">✅</div>
-          <b id="stat-completed">—</b>
-          <span>اختبارات خلّصتها</span>
-        </div>
-        <div class="stat-card">
-          <div class="stat-ic" style="background:rgba(217,142,75,0.16); color:var(--amber);">🎯</div>
-          <b id="stat-passed">—</b>
-          <span>اختبارات ناجح فيها</span>
+      <!-- ===== لسه ما عملهاش ===== -->
+      <div class="section-block">
+        <h2 class="section-title">📌 لسه ما عملتهاش</h2>
+        <p class="section-sub">ابدأ الواجب من جوه الحصة بتاعته — هنا هتعرف بس هو فين.</p>
+        <div id="pending-list"></div>
+        <div id="pending-empty" class="panel" style="display:none; text-align:center; padding:24px;">
+          <p style="font-size:13.5px; color:var(--bone-dim);">مفيش واجبات مستنياك — خلّصت كل اللي عندك 🎉</p>
         </div>
       </div>
 
-      <div id="grades-loading">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
+      <!-- ===== عملها قبل كده ===== -->
+      <div class="section-block">
+        <h2 class="section-title">✅ عملتها قبل كده</h2>
+        <div class="stats-grid" id="stats-grid" style="display:none;">
+          <div class="stat-card">
+            <b id="stat-avg">—</b>
+            <span>متوسط درجاتك</span>
+          </div>
+          <div class="stat-card">
+            <b id="stat-count">—</b>
+            <span>واجب خلّصته</span>
+          </div>
+          <div class="stat-card">
+            <b id="stat-passed">—</b>
+            <span>ناجح فيهم</span>
+          </div>
+        </div>
+        <div id="completed-list"></div>
+        <div id="completed-empty" class="panel" style="display:none; text-align:center; padding:24px;">
+          <p style="font-size:13.5px; color:var(--bone-dim);">لسه معملتش أي واجب من دول.</p>
+        </div>
       </div>
 
-      <div id="grades-empty" class="panel empty-state" style="display:none;">
-        <div class="ic">🏅</div>
-        <h2>لسه معملتش أي اختبار</h2>
-        <p>أول ما تخلّص أي اختبار، درجتك هتظهر هنا فورًا.</p>
-        <a href="dr-rady-exams-page.html" class="btn">روح للاختبارات</a>
-      </div>
-
-      <div id="grades-list"></div>
     </div>
 
   </main>
@@ -319,13 +313,6 @@
 
 <script>
   let currentUser = null;
-
-  function switchTab(tab){
-    document.getElementById('tab-btn-assignments').classList.toggle('active', tab === 'assignments');
-    document.getElementById('tab-btn-grades').classList.toggle('active', tab === 'grades');
-    document.getElementById('tab-assignments').classList.toggle('active', tab === 'assignments');
-    document.getElementById('tab-grades').classList.toggle('active', tab === 'grades');
-  }
 
   document.querySelectorAll('#mainNav a').forEach(function(a){
     a.addEventListener('click', function(){
@@ -352,18 +339,13 @@
     document.getElementById('sidebar-avatar').textContent = displayName.charAt(0);
     document.getElementById('sidebar-grade').textContent = profile?.grade || '';
 
-    await loadAssignmentsAndGrades();
+    await loadAssignments();
   })();
 
-  async function loadAssignmentsAndGrades(){
-    const assignLoading = document.getElementById('assignments-loading');
-    const assignEmpty = document.getElementById('assignments-empty');
-    const assignList = document.getElementById('assignments-list');
-
-    const gradesLoading = document.getElementById('grades-loading');
-    const gradesEmpty = document.getElementById('grades-empty');
-    const gradesList = document.getElementById('grades-list');
-    const gradesStats = document.getElementById('grades-stats');
+  async function loadAssignments(){
+    const loadingEl = document.getElementById('assignments-loading');
+    const emptyEl = document.getElementById('assignments-empty');
+    const contentEl = document.getElementById('assignments-content');
 
     // 1) الكورسات اللي الطالب مشترك فيها فعليًا
     const { data: enrollments } = await supabaseClient
@@ -375,10 +357,8 @@
     const courseIds = (enrollments || []).map(e => e.course_id);
 
     if(courseIds.length === 0){
-      assignLoading.style.display = 'none';
-      assignEmpty.style.display = 'block';
-      gradesLoading.style.display = 'none';
-      gradesEmpty.style.display = 'block';
+      loadingEl.style.display = 'none';
+      emptyEl.style.display = 'block';
       return;
     }
 
@@ -390,24 +370,23 @@
     const coursesMap = {};
     (courses || []).forEach(c => coursesMap[c.id] = c);
 
-    // 3) الاختبارات المرتبطة بالكورسات دي (هي نفسها اللي بتتحول لواجبات/درجات)
-    const { data: exams, error: examsErr } = await supabaseClient
+    // 3) الواجبات بس (مش الاختبارات) المرتبطة بالكورسات دي
+    const { data: hw, error: hwErr } = await supabaseClient
       .from('exams')
-      .select('id, course_id, lesson_id, title, description, time_limit_minutes, passing_score, order_index')
+      .select('id, course_id, lesson_id, title, time_limit_minutes, passing_score, kind, order_index')
       .in('course_id', courseIds)
+      .eq('kind', 'homework')
       .order('order_index', { ascending: true });
 
-    assignLoading.style.display = 'none';
-    gradesLoading.style.display = 'none';
+    loadingEl.style.display = 'none';
 
-    if(examsErr || !exams || exams.length === 0){
-      assignEmpty.style.display = 'block';
-      gradesEmpty.style.display = 'block';
+    if(hwErr || !hw || hw.length === 0){
+      emptyEl.style.display = 'block';
       return;
     }
 
-    // 4) أسماء الحصص (لو الاختبار مرتبط بحصة معينة)
-    const lessonIds = exams.filter(e => e.lesson_id).map(e => e.lesson_id);
+    // 4) أسماء الحصص (لو الواجب مرتبط بحصة معينة)
+    const lessonIds = hw.filter(e => e.lesson_id).map(e => e.lesson_id);
     let lessonsMap = {};
     if(lessonIds.length > 0){
       const { data: lessons } = await supabaseClient
@@ -415,21 +394,22 @@
       (lessons || []).forEach(l => lessonsMap[l.id] = l.title);
     }
 
-    // 5) عدد أسئلة كل اختبار
-    const examIds = exams.map(e => e.id);
+    // 5) عدد أسئلة كل واجب (واجب من غير أسئلة لسه مش جاهز يتعرض)
+    const hwIds = hw.map(e => e.id);
     const { data: questions } = await supabaseClient
-      .from('exam_questions').select('id, exam_id').in('exam_id', examIds);
+      .from('exam_questions').select('id, exam_id').in('exam_id', hwIds);
     const questionCountMap = {};
     (questions || []).forEach(q => {
       questionCountMap[q.exam_id] = (questionCountMap[q.exam_id] || 0) + 1;
     });
 
-    // 6) كل محاولات الطالب في الاختبارات دي (نستخدمها للواجبات المتبقية وللدرجات)
+    // 6) آخر محاولة مكتملة بس (نتجاهل أي محاولة لسه "جارية")
     const { data: attempts } = await supabaseClient
       .from('exam_attempts')
       .select('exam_id, percentage, completed_at')
       .eq('user_id', currentUser.id)
-      .in('exam_id', examIds)
+      .in('exam_id', hwIds)
+      .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false });
 
     const lastAttemptMap = {};
@@ -437,129 +417,118 @@
       if(!(a.exam_id in lastAttemptMap)) lastAttemptMap[a.exam_id] = a;
     });
 
-    // ============== تبويب الواجبات: اختبارات ليها أسئلة ولسه محدش عملها ==============
-    const pendingExams = exams.filter(e => (questionCountMap[e.id] || 0) > 0 && !lastAttemptMap[e.id]);
+    contentEl.style.display = 'block';
 
-    if(pendingExams.length === 0){
-      assignEmpty.style.display = 'block';
-    } else {
-      const groupedPending = {};
-      pendingExams.forEach(e => {
-        if(!groupedPending[e.course_id]) groupedPending[e.course_id] = [];
-        groupedPending[e.course_id].push(e);
-      });
+    const readyHw = hw.filter(e => (questionCountMap[e.id] || 0) > 0);
+    const pendingHw = readyHw.filter(e => !lastAttemptMap[e.id]);
+    const completedHw = readyHw.filter(e => lastAttemptMap[e.id]);
 
-      assignList.innerHTML = Object.keys(groupedPending).map(courseId => {
-        const course = coursesMap[courseId];
-        if(!course) return '';
-        const coverHTML = course.image_url ? `<img src="${course.image_url}" alt="">` : '📚';
+    renderPending(pendingHw, coursesMap, lessonsMap, questionCountMap);
+    renderCompleted(completedHw, coursesMap, lessonsMap, lastAttemptMap);
+  }
 
-        const itemsHTML = groupedPending[courseId].map(exam => {
-          const qCount = questionCountMap[exam.id] || 0;
-          const lessonLabel = exam.lesson_id ? (lessonsMap[exam.lesson_id] || 'حصة') : 'واجب على الكورس كله';
-          return `
-            <div class="item-card">
-              <div class="item-info">
-                <div class="item-ic">📝</div>
-                <div style="min-width:0;">
-                  <h4>${exam.title}</h4>
-                  <div class="item-meta">
-                    <span>🏷️ ${lessonLabel}</span>
-                    <span>❓ ${qCount} سؤال</span>
-                    ${exam.time_limit_minutes ? `<span>⏱️ ${exam.time_limit_minutes} دقيقة</span>` : ''}
-                  </div>
-                </div>
-              </div>
-              <div class="item-action">
-                <span class="status-pill pending">لسه ما عملتهاش</span>
-                <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn">ابدأ الواجب</a>
+  function locationInfo(hwItem, coursesMap, lessonsMap){
+    const course = coursesMap[hwItem.course_id];
+    if(hwItem.lesson_id && lessonsMap[hwItem.lesson_id]){
+      return {
+        text: `موجود في حصة: ${lessonsMap[hwItem.lesson_id]}`,
+        href: `dr-rady-lesson-page.html?course=${hwItem.course_id}&lesson=${hwItem.lesson_id}`,
+        linkLabel: 'روح للحصة ←'
+      };
+    }
+    return {
+      text: `واجب عام على كورس: ${course ? course.title : ''}`,
+      href: `dr-rady-course-page.html?course=${hwItem.course_id}`,
+      linkLabel: 'روح للكورس ←'
+    };
+  }
+
+  function renderPending(pendingHw, coursesMap, lessonsMap, questionCountMap){
+    const listEl = document.getElementById('pending-list');
+    const emptyEl = document.getElementById('pending-empty');
+
+    if(pendingHw.length === 0){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    listEl.innerHTML = pendingHw.map(hwItem => {
+      const qCount = questionCountMap[hwItem.id] || 0;
+      const loc = locationInfo(hwItem, coursesMap, lessonsMap);
+      return `
+        <div class="item-card">
+          <div class="item-info">
+            <div class="item-ic">📝</div>
+            <div style="min-width:0;">
+              <h4>${hwItem.title}</h4>
+              <div class="item-meta">
+                <span>${loc.text}</span>
+                <span>❓ ${qCount} سؤال</span>
+                ${hwItem.time_limit_minutes ? `<span>⏱️ ${hwItem.time_limit_minutes} دقيقة</span>` : ''}
               </div>
             </div>
-          `;
-        }).join('');
+          </div>
+          <div class="item-action">
+            <a href="${loc.href}" class="btn btn-outline">${loc.linkLabel}</a>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderCompleted(completedHw, coursesMap, lessonsMap, lastAttemptMap){
+    const listEl = document.getElementById('completed-list');
+    const emptyEl = document.getElementById('completed-empty');
+    const statsGrid = document.getElementById('stats-grid');
+
+    if(completedHw.length === 0){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      statsGrid.style.display = 'none';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    statsGrid.style.display = 'grid';
+
+    const percentages = completedHw.map(e => lastAttemptMap[e.id].percentage);
+    const avg = percentages.reduce((a, b) => a + b, 0) / percentages.length;
+    const passedCount = completedHw.filter(e => lastAttemptMap[e.id].percentage >= (e.passing_score || 50)).length;
+
+    document.getElementById('stat-avg').textContent = Math.round(avg) + '%';
+    document.getElementById('stat-count').textContent = completedHw.length;
+    document.getElementById('stat-passed').textContent = passedCount;
+
+    listEl.innerHTML = completedHw
+      .sort((a, b) => new Date(lastAttemptMap[b.id].completed_at) - new Date(lastAttemptMap[a.id].completed_at))
+      .map(hwItem => {
+        const attempt = lastAttemptMap[hwItem.id];
+        const passed = attempt.percentage >= (hwItem.passing_score || 50);
+        const loc = locationInfo(hwItem, coursesMap, lessonsMap);
+        const dateLabel = attempt.completed_at
+          ? new Date(attempt.completed_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })
+          : '';
 
         return `
-          <div class="course-group">
-            <div class="course-group-head">
-              <div class="cover">${coverHTML}</div>
-              <h3>${course.title}</h3>
+          <div class="item-card">
+            <div class="item-info">
+              <div class="item-ic">${passed ? '🏅' : '📉'}</div>
+              <div style="min-width:0;">
+                <h4>${hwItem.title}</h4>
+                <div class="item-meta">
+                  <span>${loc.text}</span>
+                  ${dateLabel ? `<span>📅 ${dateLabel}</span>` : ''}
+                </div>
+              </div>
             </div>
-            ${itemsHTML}
+            <div class="item-action">
+              <span class="status-pill ${passed ? 'pass' : 'fail'}">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>
+              <a href="dr-rady-exam-attempt-page.html?exam=${hwItem.id}&review=1" class="btn">شوف إجاباتك</a>
+            </div>
           </div>
         `;
       }).join('');
-
-      if(assignList.innerHTML.trim() === '') assignEmpty.style.display = 'block';
-    }
-
-    // ============== تبويب الدرجات: الاختبارات اللي ليها محاولة مكتملة ==============
-    const completedExams = exams.filter(e => lastAttemptMap[e.id]);
-
-    if(completedExams.length === 0){
-      gradesEmpty.style.display = 'block';
-    } else {
-      gradesStats.style.display = 'grid';
-
-      const percentages = completedExams.map(e => lastAttemptMap[e.id].percentage);
-      const avg = percentages.reduce((a, b) => a + b, 0) / percentages.length;
-      const passedCount = completedExams.filter(e => lastAttemptMap[e.id].percentage >= (e.passing_score || 50)).length;
-
-      document.getElementById('stat-avg').textContent = Math.round(avg) + '%';
-      document.getElementById('stat-completed').textContent = completedExams.length;
-      document.getElementById('stat-passed').textContent = passedCount;
-
-      const groupedCompleted = {};
-      completedExams.forEach(e => {
-        if(!groupedCompleted[e.course_id]) groupedCompleted[e.course_id] = [];
-        groupedCompleted[e.course_id].push(e);
-      });
-
-      gradesList.innerHTML = Object.keys(groupedCompleted).map(courseId => {
-        const course = coursesMap[courseId];
-        if(!course) return '';
-        const coverHTML = course.image_url ? `<img src="${course.image_url}" alt="">` : '📚';
-
-        const itemsHTML = groupedCompleted[courseId]
-          .sort((a, b) => new Date(lastAttemptMap[b.id].completed_at) - new Date(lastAttemptMap[a.id].completed_at))
-          .map(exam => {
-            const attempt = lastAttemptMap[exam.id];
-            const passed = attempt.percentage >= (exam.passing_score || 50);
-            const lessonLabel = exam.lesson_id ? (lessonsMap[exam.lesson_id] || 'حصة') : 'اختبار وحدة';
-            const dateLabel = attempt.completed_at
-              ? new Date(attempt.completed_at).toLocaleDateString('ar-EG', { day:'numeric', month:'short' })
-              : '';
-
-            return `
-              <div class="item-card">
-                <div class="item-info">
-                  <div class="item-ic">${passed ? '🏅' : '📉'}</div>
-                  <div style="min-width:0;">
-                    <h4>${exam.title}</h4>
-                    <div class="item-meta">
-                      <span>🏷️ ${lessonLabel}</span>
-                      ${dateLabel ? `<span>📅 ${dateLabel}</span>` : ''}
-                    </div>
-                  </div>
-                </div>
-                <div class="item-action">
-                  <span class="status-pill ${passed ? 'pass' : 'fail'}">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>
-                  <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn btn-outline">إعادة المحاولة</a>
-                </div>
-              </div>
-            `;
-          }).join('');
-
-        return `
-          <div class="course-group">
-            <div class="course-group-head">
-              <div class="cover">${coverHTML}</div>
-              <h3>${course.title}</h3>
-            </div>
-            ${itemsHTML}
-          </div>
-        `;
-      }).join('');
-    }
   }
 </script>
 

@@ -361,6 +361,7 @@
           .select('exam_id, percentage')
           .eq('user_id', currentUser.id)
           .in('exam_id', exams.map(e => e.id))
+          .not('completed_at', 'is', null)
           .order('completed_at', { ascending: false });
         attempts = attemptsData || [];
       }

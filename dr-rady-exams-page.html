@@ -164,9 +164,19 @@
 
   .skeleton{background:var(--navy-soft); border:1px solid var(--line); border-radius:18px; height:78px; margin-bottom:12px; opacity:.5;}
 
+  .section-block{margin-bottom:34px;}
+  .section-title{font-size:16.5px; color:var(--bone); margin-bottom:4px;}
+  .section-sub{font-size:12.5px; color:var(--bone-dim); margin-bottom:16px;}
+
+  .stats-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px;}
+  .stat-card{background:var(--navy-soft); border:1px solid var(--line); border-radius:16px; padding:16px; text-align:center;}
+  .stat-card b{display:block; font-family:'Tajawal'; font-size:20px; color:var(--green-bright); margin-bottom:3px;}
+  .stat-card span{font-size:11.5px; color:var(--bone-dim);}
+
   @media (max-width:560px){
     .exam-card{flex-direction:column; align-items:stretch;}
     .exam-card .exam-action{justify-content:space-between;}
+    .stats-grid{grid-template-columns:1fr;}
   }
 
   @media (max-width:900px){
@@ -274,7 +284,42 @@
       <a href="dr-rady-catalog-page.html" class="btn">استكشف الكورسات</a>
     </div>
 
-    <div id="exams-list"></div>
+    <div id="exams-content" style="display:none;">
+
+      <!-- ===== لسه ما امتحنهاش ===== -->
+      <div class="section-block">
+        <h2 class="section-title">📌 لسه ما امتحنتهاش</h2>
+        <p class="section-sub">ابدأ الاختبار من جوه الحصة بتاعته — هنا هتعرف بس هو فين.</p>
+        <div id="pending-list"></div>
+        <div id="pending-empty" class="panel" style="display:none; text-align:center; padding:24px;">
+          <p style="font-size:13.5px; color:var(--bone-dim);">مفيش اختبارات مستنياك — خلّصت كل اللي عندك 🎉</p>
+        </div>
+      </div>
+
+      <!-- ===== امتحنها قبل كده ===== -->
+      <div class="section-block">
+        <h2 class="section-title">✅ امتحنتها قبل كده</h2>
+        <div class="stats-grid" id="stats-grid" style="display:none;">
+          <div class="stat-card">
+            <b id="stat-avg">—</b>
+            <span>متوسط درجاتك</span>
+          </div>
+          <div class="stat-card">
+            <b id="stat-count">—</b>
+            <span>اختبار خلّصته</span>
+          </div>
+          <div class="stat-card">
+            <b id="stat-passed">—</b>
+            <span>ناجح فيهم</span>
+          </div>
+        </div>
+        <div id="completed-list"></div>
+        <div id="completed-empty" class="panel" style="display:none; text-align:center; padding:24px;">
+          <p style="font-size:13.5px; color:var(--bone-dim);">لسه معملتش أي اختبار من دول.</p>
+        </div>
+      </div>
+
+    </div>
 
   </main>
 </div>
@@ -311,7 +356,7 @@
   async function loadExams(){
     const loadingEl = document.getElementById('exams-loading');
     const emptyEl = document.getElementById('exams-empty');
-    const listEl = document.getElementById('exams-list');
+    const contentEl = document.getElementById('exams-content');
 
     // 1) الكورسات اللي الطالب مشترك فيها فعليًا
     const { data: enrollments } = await supabaseClient
@@ -333,12 +378,15 @@
       .from('courses')
       .select('id, title, image_url')
       .in('id', courseIds);
+    const coursesMap = {};
+    (courses || []).forEach(c => coursesMap[c.id] = c);
 
-    // 3) الاختبارات المرتبطة بالكورسات دي
+    // 3) الاختبارات بس (مش الواجبات) المرتبطة بالكورسات دي
     const { data: exams, error: examsErr } = await supabaseClient
       .from('exams')
-      .select('id, course_id, lesson_id, title, description, time_limit_minutes, passing_score, order_index')
+      .select('id, course_id, lesson_id, title, time_limit_minutes, passing_score, kind, order_index')
       .in('course_id', courseIds)
+      .neq('kind', 'homework')
       .order('order_index', { ascending: true });
 
     loadingEl.style.display = 'none';
@@ -357,7 +405,7 @@
       (lessons || []).forEach(l => lessonsMap[l.id] = l.title);
     }
 
-    // 5) عدد أسئلة كل اختبار
+    // 5) عدد أسئلة كل اختبار (اختبار من غير أسئلة لسه مش جاهز يتعرض)
     const examIds = exams.map(e => e.id);
     const { data: questions } = await supabaseClient
       .from('exam_questions').select('id, exam_id').in('exam_id', examIds);
@@ -366,12 +414,13 @@
       questionCountMap[q.exam_id] = (questionCountMap[q.exam_id] || 0) + 1;
     });
 
-    // 6) آخر نتيجة للطالب في كل اختبار
+    // 6) آخر محاولة مكتملة بس (نتجاهل أي محاولة لسه "جارية")
     const { data: attempts } = await supabaseClient
       .from('exam_attempts')
       .select('exam_id, percentage, completed_at')
       .eq('user_id', currentUser.id)
       .in('exam_id', examIds)
+      .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false });
 
     const lastAttemptMap = {};
@@ -379,76 +428,118 @@
       if(!(a.exam_id in lastAttemptMap)) lastAttemptMap[a.exam_id] = a;
     });
 
-    // تجميع الاختبارات حسب الكورس
-    const coursesMap = {};
-    (courses || []).forEach(c => coursesMap[c.id] = c);
+    contentEl.style.display = 'block';
 
-    const grouped = {};
-    exams.forEach(e => {
-      if(!grouped[e.course_id]) grouped[e.course_id] = [];
-      grouped[e.course_id].push(e);
-    });
+    const readyExams = exams.filter(e => (questionCountMap[e.id] || 0) > 0);
+    const pendingExams = readyExams.filter(e => !lastAttemptMap[e.id]);
+    const completedExams = readyExams.filter(e => lastAttemptMap[e.id]);
 
-    listEl.innerHTML = Object.keys(grouped).map(courseId => {
-      const course = coursesMap[courseId];
-      if(!course) return '';
-      const coverHTML = course.image_url
-        ? `<img src="${course.image_url}" alt="">`
-        : '📚';
+    renderPending(pendingExams, coursesMap, lessonsMap, questionCountMap);
+    renderCompleted(completedExams, coursesMap, lessonsMap, lastAttemptMap);
+  }
 
-      const examsHTML = grouped[courseId].map(exam => {
-        const qCount = questionCountMap[exam.id] || 0;
+  function locationInfo(exam, coursesMap, lessonsMap){
+    const course = coursesMap[exam.course_id];
+    if(exam.lesson_id && lessonsMap[exam.lesson_id]){
+      return {
+        text: `موجود في حصة: ${lessonsMap[exam.lesson_id]}`,
+        href: `dr-rady-lesson-page.html?course=${exam.course_id}&lesson=${exam.lesson_id}`,
+        linkLabel: 'روح للحصة ←'
+      };
+    }
+    return {
+      text: `اختبار عام على كورس: ${course ? course.title : ''}`,
+      href: `dr-rady-course-page.html?course=${exam.course_id}`,
+      linkLabel: 'روح للكورس ←'
+    };
+  }
+
+  function renderPending(pendingExams, coursesMap, lessonsMap, questionCountMap){
+    const listEl = document.getElementById('pending-list');
+    const emptyEl = document.getElementById('pending-empty');
+
+    if(pendingExams.length === 0){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    listEl.innerHTML = pendingExams.map(exam => {
+      const qCount = questionCountMap[exam.id] || 0;
+      const loc = locationInfo(exam, coursesMap, lessonsMap);
+      return `
+        <div class="exam-card">
+          <div class="exam-info">
+            <div class="exam-ic">📝</div>
+            <div style="min-width:0;">
+              <h4>${exam.title}</h4>
+              <div class="exam-meta">
+                <span>${loc.text}</span>
+                <span>❓ ${qCount} سؤال</span>
+                ${exam.time_limit_minutes ? `<span>⏱️ ${exam.time_limit_minutes} دقيقة</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="exam-action">
+            <a href="${loc.href}" class="btn btn-outline">${loc.linkLabel}</a>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderCompleted(completedExams, coursesMap, lessonsMap, lastAttemptMap){
+    const listEl = document.getElementById('completed-list');
+    const emptyEl = document.getElementById('completed-empty');
+    const statsGrid = document.getElementById('stats-grid');
+
+    if(completedExams.length === 0){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      statsGrid.style.display = 'none';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    statsGrid.style.display = 'grid';
+
+    const percentages = completedExams.map(e => lastAttemptMap[e.id].percentage);
+    const avg = percentages.reduce((a, b) => a + b, 0) / percentages.length;
+    const passedCount = completedExams.filter(e => lastAttemptMap[e.id].percentage >= (e.passing_score || 50)).length;
+
+    document.getElementById('stat-avg').textContent = Math.round(avg) + '%';
+    document.getElementById('stat-count').textContent = completedExams.length;
+    document.getElementById('stat-passed').textContent = passedCount;
+
+    listEl.innerHTML = completedExams
+      .sort((a, b) => new Date(lastAttemptMap[b.id].completed_at) - new Date(lastAttemptMap[a.id].completed_at))
+      .map(exam => {
         const attempt = lastAttemptMap[exam.id];
-        const lessonLabel = exam.lesson_id ? (lessonsMap[exam.lesson_id] || 'حصة') : 'اختبار وحدة';
-
-        let statusHTML, actionHTML;
-        if(qCount === 0){
-          statusHTML = `<span class="status-pill pending">لسه بيتظبط</span>`;
-          actionHTML = `<button class="btn btn-outline" disabled>مش متاح</button>`;
-        } else if(attempt){
-          const passed = attempt.percentage >= (exam.passing_score || 50);
-          statusHTML = `<span class="status-pill ${passed ? 'pass' : 'fail'}">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>`;
-          actionHTML = `<a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn btn-outline">إعادة المحاولة</a>`;
-        } else {
-          statusHTML = `<span class="status-pill pending">لسه ما بدأتش</span>`;
-          actionHTML = `<a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn">ابدأ الاختبار</a>`;
-        }
+        const passed = attempt.percentage >= (exam.passing_score || 50);
+        const loc = locationInfo(exam, coursesMap, lessonsMap);
+        const dateLabel = attempt.completed_at
+          ? new Date(attempt.completed_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' })
+          : '';
 
         return `
           <div class="exam-card">
             <div class="exam-info">
-              <div class="exam-ic">📝</div>
+              <div class="exam-ic">${passed ? '🏅' : '📉'}</div>
               <div style="min-width:0;">
                 <h4>${exam.title}</h4>
                 <div class="exam-meta">
-                  <span>🏷️ ${lessonLabel}</span>
-                  <span>❓ ${qCount} سؤال</span>
-                  ${exam.time_limit_minutes ? `<span>⏱️ ${exam.time_limit_minutes} دقيقة</span>` : ''}
+                  <span>${loc.text}</span>
+                  ${dateLabel ? `<span>📅 ${dateLabel}</span>` : ''}
                 </div>
               </div>
             </div>
             <div class="exam-action">
-              ${statusHTML}
-              ${actionHTML}
+              <span class="status-pill ${passed ? 'pass' : 'fail'}">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>
+              <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}&review=1" class="btn">شوف إجاباتك</a>
             </div>
           </div>
         `;
       }).join('');
-
-      return `
-        <div class="course-group">
-          <div class="course-group-head">
-            <div class="cover">${coverHTML}</div>
-            <h3>${course.title}</h3>
-          </div>
-          ${examsHTML}
-        </div>
-      `;
-    }).join('');
-
-    if(listEl.innerHTML.trim() === ''){
-      emptyEl.style.display = 'block';
-    }
   }
 </script>
 
