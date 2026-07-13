@@ -345,6 +345,12 @@
           <input type="number" id="exam-passing-score" placeholder="50" value="50">
         </div>
       </div>
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="exam-allow-retake" checked style="accent-color:var(--green); width:16px; height:16px;">
+          السماح للطالب بإعادة المحاولة بعد ما يخلّص (لو مطفي، محاولة واحدة بس وبس)
+        </label>
+      </div>
 
       <input type="hidden" id="exam-edit-id">
       <div style="display:flex; gap:10px;">
@@ -373,6 +379,16 @@
         <div class="field">
           <label>نص السؤال</label>
           <textarea id="question-text" rows="2" placeholder="مثال: العضية المسؤولة عن التنفس الخلوي هي؟"></textarea>
+        </div>
+        <div class="field">
+          <label>صورة السؤال (اختياري)</label>
+          <input type="file" id="question-image-input" accept="image/*" onchange="uploadQuestionImage()">
+          <p id="question-image-progress" style="font-size:12px; color:var(--bone-dim); margin-top:6px; display:none;">جارٍ رفع الصورة...</p>
+          <div id="question-image-preview" style="display:none; margin-top:10px; position:relative; max-width:260px;">
+            <img id="question-image-preview-img" src="" alt="" style="width:100%; border-radius:10px; border:1px solid var(--line);">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeQuestionImage()" style="margin-top:8px;">إزالة الصورة</button>
+          </div>
+          <input type="hidden" id="question-image-url">
         </div>
         <p style="font-size:12px; color:var(--bone-dim); margin-bottom:10px;">اكتب الاختيارات وحدد الإجابة الصح بالراديو. سيب أي خانة فاضية لو محتاج اختيارات أقل من 4.</p>
         <div class="field-row" style="margin-bottom:6px;">
@@ -1083,10 +1099,11 @@
     tbody.innerHTML = exams.map(e => {
       const lessonTitle = e.lesson_id ? (currentExamsCourseLessons.find(l => l.id === e.lesson_id)?.title || '—') : 'اختبار وحدة';
       const kindLabel = e.kind === 'homework' ? '📝 واجب' : '✅ اختبار';
+      const retakeLabel = e.allow_retake === false ? ' <span style="color:var(--rose,#e08182); font-size:11px;">(محاولة واحدة)</span>' : '';
       return `
         <tr>
           <td>${e.title}</td>
-          <td>${kindLabel}</td>
+          <td>${kindLabel}${retakeLabel}</td>
           <td>${lessonTitle}</td>
           <td>${qCountMap[e.id] || 0}</td>
           <td>
@@ -1110,6 +1127,7 @@
     document.getElementById('exam-order').value = '';
     document.getElementById('exam-time-limit').value = '';
     document.getElementById('exam-passing-score').value = '50';
+    document.getElementById('exam-allow-retake').checked = true;
     document.getElementById('exam-form-error').style.display = 'none';
     document.getElementById('save-exam-btn').textContent = 'حفظ الاختبار';
     document.getElementById('cancel-exam-edit').style.display = 'none';
@@ -1127,6 +1145,7 @@
     document.getElementById('exam-order').value = exam.order_index || '';
     document.getElementById('exam-time-limit').value = exam.time_limit_minutes || '';
     document.getElementById('exam-passing-score').value = exam.passing_score ?? 50;
+    document.getElementById('exam-allow-retake').checked = exam.allow_retake !== false;
     document.getElementById('save-exam-btn').textContent = 'حفظ التعديل';
     document.getElementById('cancel-exam-edit').style.display = 'inline-flex';
     window.scrollTo({ top: document.getElementById('exam-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
@@ -1151,7 +1170,8 @@
       description: document.getElementById('exam-desc').value.trim() || null,
       order_index: parseInt(document.getElementById('exam-order').value) || 0,
       time_limit_minutes: document.getElementById('exam-time-limit').value ? parseInt(document.getElementById('exam-time-limit').value) : null,
-      passing_score: parseInt(document.getElementById('exam-passing-score').value) || 50
+      passing_score: parseInt(document.getElementById('exam-passing-score').value) || 50,
+      allow_retake: document.getElementById('exam-allow-retake').checked
     };
 
     const editId = document.getElementById('exam-edit-id').value;
@@ -1205,6 +1225,7 @@
     for(let i = 0; i < 4; i++) document.getElementById(`opt-text-${i}`).value = '';
     document.querySelector('input[name="correct-opt"][value="0"]').checked = true;
     document.getElementById('question-form-error').style.display = 'none';
+    removeQuestionImage();
     document.getElementById('bulk-questions-input').value = '';
     document.getElementById('bulk-preview-area').innerHTML = '';
     document.getElementById('bulk-confirm-btn').style.display = 'none';
@@ -1216,7 +1237,7 @@
     tbody.innerHTML = `<tr><td colspan="4">جارٍ التحميل...</td></tr>`;
 
     const { data: questions, error } = await supabaseClient
-      .from('exam_questions').select('id, question_text, order_index').eq('exam_id', currentQuestionsExamId).order('order_index', { ascending: true });
+      .from('exam_questions').select('id, question_text, image_url, order_index').eq('exam_id', currentQuestionsExamId).order('order_index', { ascending: true });
 
     if(error || !questions || questions.length === 0){
       tbody.innerHTML = `<tr><td colspan="4">مفيش أسئلة مضافة للاختبار ده لسه</td></tr>`;
@@ -1229,10 +1250,11 @@
 
     tbody.innerHTML = questions.map((q, i) => {
       const correctOpt = (options || []).find(o => o.question_id === q.id && o.is_correct);
+      const imgThumb = q.image_url ? `<img src="${q.image_url}" alt="" style="width:36px; height:36px; object-fit:cover; border-radius:6px; margin-inline-end:8px; vertical-align:middle;">` : '';
       return `
         <tr>
           <td>${i + 1}</td>
-          <td>${q.question_text}</td>
+          <td>${imgThumb}${q.question_text}</td>
           <td style="color:var(--green-bright);">${correctOpt ? correctOpt.option_text : '—'}</td>
           <td>
             <div class="row-actions">
@@ -1242,6 +1264,52 @@
         </tr>
       `;
     }).join('');
+  }
+
+  // ===== رفع صورة السؤال =====
+  async function uploadQuestionImage(){
+    const input = document.getElementById('question-image-input');
+    const file = input.files[0];
+    if(!file) return;
+
+    const errEl = document.getElementById('question-form-error');
+    const progressEl = document.getElementById('question-image-progress');
+    errEl.style.display = 'none';
+    progressEl.style.display = 'block';
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_\u0600-\u06FF ]/g, '');
+    const filePath = `${currentQuestionsExamId}/${Date.now()}_${safeName}`;
+
+    const { error: uploadError } = await supabaseClient
+      .storage
+      .from('question-images')
+      .upload(filePath, file);
+
+    progressEl.style.display = 'none';
+
+    if(uploadError){
+      errEl.textContent = 'حصل خطأ أثناء رفع الصورة، حاول تاني (تأكد إن ملف 07-question-images.sql اتشغّل في Supabase)';
+      errEl.style.display = 'block';
+      input.value = '';
+      return;
+    }
+
+    const { data: publicUrlData } = supabaseClient
+      .storage
+      .from('question-images')
+      .getPublicUrl(filePath);
+
+    document.getElementById('question-image-url').value = publicUrlData.publicUrl;
+    document.getElementById('question-image-preview-img').src = publicUrlData.publicUrl;
+    document.getElementById('question-image-preview').style.display = 'block';
+    input.value = '';
+  }
+
+  function removeQuestionImage(){
+    document.getElementById('question-image-url').value = '';
+    document.getElementById('question-image-preview').style.display = 'none';
+    document.getElementById('question-image-preview-img').src = '';
+    document.getElementById('question-image-input').value = '';
   }
 
   async function addQuestion(){
@@ -1272,9 +1340,11 @@
     const btn = document.getElementById('add-question-btn');
     btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
 
+    const imageUrl = document.getElementById('question-image-url').value.trim() || null;
+
     const { data: newQuestion, error: qError } = await supabaseClient
       .from('exam_questions')
-      .insert({ exam_id: currentQuestionsExamId, question_text: questionText, order_index: Math.floor(Date.now() / 1000) })
+      .insert({ exam_id: currentQuestionsExamId, question_text: questionText, image_url: imageUrl, order_index: Math.floor(Date.now() / 1000) })
       .select().single();
 
     if(qError || !newQuestion){

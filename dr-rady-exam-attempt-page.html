@@ -285,8 +285,23 @@
   let currentIndex = 0;
   let timerInterval = null;
   let autoAdvanceTimeout = null;
+  let currentState = 'loading'; // بيتحدث مع كل نداء لـ showState، بنستخدمه عشان نعرف لو الطالب قافل الصفحة وهو لسه بيؤدي
+  let hasSubmitted = false;     // بيبقى true أول ما يتسجل أي محاولة (يدوي أو تلقائي بصفر)
+  let currentAttemptId = null;  // id صف المحاولة اللي بيتسجل أول ما الاختبار يفتح (جارٍ التنفيذ) وبيتحدّث لما يسلّم
+
+  // مهلة السماح قبل ما نعتبر المحاولة "متروكة" ونقفلها بصفر تلقائيًا
+  const UNTIMED_GRACE_MINUTES = 180; // لو الاختبار من غير وقت محدد
+  const GRACE_BUFFER_MINUTES = 10;   // هامش إضافي فوق وقت الاختبار نفسه
+
+  function isPendingAttemptExpired(attempt, examData){
+    if(attempt.completed_at) return false;
+    const graceMinutes = (examData.time_limit_minutes || UNTIMED_GRACE_MINUTES) + GRACE_BUFFER_MINUTES;
+    const startedAt = new Date(attempt.started_at).getTime();
+    return (Date.now() - startedAt) > graceMinutes * 60 * 1000;
+  }
 
   function showState(name){
+    currentState = name;
     ['loading','denied','quiz','result'].forEach(s => {
       document.getElementById('state-' + s).style.display = (s === name ? 'block' : 'none');
     });
@@ -326,8 +341,52 @@
       return;
     }
 
+    // هل الطالب عنده محاولة قبل كده؟ (مكتملة، أو متروكة من غير تسليم)
+    const { data: priorAttempt } = await supabaseClient
+      .from('exam_attempts')
+      .select('id, percentage, score, total_questions, started_at, completed_at')
+      .eq('exam_id', EXAM_ID)
+      .eq('user_id', user.id)
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if(priorAttempt){
+      if(priorAttempt.completed_at){
+        // محاولة اتسلّمت فعلاً
+        if(exam.allow_retake === false){
+          const passed = priorAttempt.percentage >= (exam.passing_score || 50);
+          denied(
+            'خلّصت المحاولة دي قبل كده ✋',
+            `الأدمن مفعّلش إعادة المحاولة في ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده. نتيجتك المسجّلة: ${Math.round(priorAttempt.percentage)}% (${passed ? 'ناجح' : 'راسب'}).`
+          );
+          return;
+        }
+      } else if(isPendingAttemptExpired(priorAttempt, exam)){
+        // محاولة اتسابت من غير تسليم (قفل الموقع بالقوة / النت اتقطع) والمهلة خلصت — تتقفل بصفر
+        await supabaseClient.from('exam_attempts').update({
+          score: 0, percentage: 0, completed_at: new Date().toISOString()
+        }).eq('id', priorAttempt.id);
+
+        if(exam.allow_retake === false){
+          denied(
+            'المحاولة السابقة اتقفلت بصفر ⏳',
+            `فتحت ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده قبل كده ومسلّمتوش، فاتحسبلك صفر تلقائيًا، والأدمن مفعّلش إعادة المحاولة.`
+          );
+          return;
+        }
+      } else {
+        // محاولة لسه في مهلتها — ممكن تكون شغالة دلوقتي في تاب/جهاز تاني
+        denied(
+          'عندك محاولة شغالة دلوقتي ⏳',
+          `يبدو إنك فاتح ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده قبل كده ولسه في المهلة المسموحة. لو قفلت الصفحة بالغلط، استنى شوية وبعد ما المهلة تخلص هيتحسب صفر تلقائي وتقدر تحاول تاني.`
+        );
+        return;
+      }
+    }
+
     const { data: qData, error: qErr } = await supabaseClient
-      .from('exam_questions').select('id, question_text, order_index').eq('exam_id', EXAM_ID).order('order_index', { ascending: true });
+      .from('exam_questions').select('id, question_text, image_url, order_index').eq('exam_id', EXAM_ID).order('order_index', { ascending: true });
 
     if(qErr || !qData || qData.length === 0){
       denied('الاختبار لسه مش جاهز ⚠️', 'الأسئلة لسه بتتضاف، جرب تاني بعدين.');
@@ -342,6 +401,24 @@
       ...q,
       options: (optData || []).filter(o => o.question_id === q.id)
     }));
+
+    // نسجّل صف "جارٍ التنفيذ" دلوقتي، لحظة ما الاختبار يبدأ فعليًا وقت النت شغال أكيد.
+    // لو الطالب خرج بعد كده من غير تسليم (حتى لو قفل الموقع بالقوة أو النت اتقطع)،
+    // الصف ده هيفضل موجود وهيتقفل بصفر تلقائيًا أول ما أي حد يفتح الصفحة تاني.
+    const { data: pendingRow, error: pendingErr } = await supabaseClient
+      .from('exam_attempts')
+      .insert({
+        exam_id: EXAM_ID,
+        user_id: user.id,
+        score: 0,
+        total_questions: questions.length,
+        percentage: 0,
+        answers: {},
+        completed_at: null
+      })
+      .select('id').single();
+
+    if(!pendingErr && pendingRow) currentAttemptId = pendingRow.id;
 
     renderExamHeader();
     renderQNav();
@@ -391,9 +468,12 @@
     const q = questions[index];
     const chosen = answers[q.id];
 
+    const imageHTML = q.image_url ? `<img src="${q.image_url}" alt="" style="width:100%; max-height:320px; object-fit:contain; border-radius:12px; border:1px solid var(--line); margin-bottom:16px; background:var(--ink);">` : '';
+
     document.getElementById('question-holder').innerHTML = `
       <div class="q-card">
         <div class="q-num">سؤال ${index + 1} من ${questions.length}</div>
+        ${imageHTML}
         <div class="q-text">${q.question_text}</div>
         <div class="opt-list" id="opts-${q.id}">
           ${q.options.map(o => `
@@ -495,6 +575,7 @@
   async function submitExam(){
     closeSubmitModal();
     if(timerInterval) clearInterval(timerInterval);
+    hasSubmitted = true; // امنع محاولة الصفر التلقائي إن الطالب بيسلّم دلوقتي
 
     const confirmBtn = document.getElementById('confirm-submit-btn');
     confirmBtn.disabled = true;
@@ -511,7 +592,7 @@
 
     const percentage = Math.round((correctCount / questions.length) * 100);
 
-    const { error } = await supabaseClient.from('exam_attempts').insert({
+    const attemptPayload = {
       exam_id: EXAM_ID,
       user_id: currentUser.id,
       score: correctCount,
@@ -519,18 +600,91 @@
       percentage: percentage,
       answers: answers,
       completed_at: new Date().toISOString()
-    });
+    };
+
+    // لو عندنا صف "جارٍ التنفيذ" اتسجل أول ما الاختبار بدأ، بنحدّثه بدل ما نعمل صف جديد
+    const { error } = currentAttemptId
+      ? await supabaseClient.from('exam_attempts').update(attemptPayload).eq('id', currentAttemptId)
+      : await supabaseClient.from('exam_attempts').insert(attemptPayload);
 
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'أيوه، سلّم';
 
     if(error){
       alert('حصل خطأ في حفظ النتيجة، حاول تاني');
+      hasSubmitted = false;
       return;
     }
 
     showResult(correctCount, percentage);
   }
+
+  /* ===== لو الطالب طلع من غير ما يسلّم: يتحسب صفر تلقائي =====
+     ده مسار "سريع" بس (best effort) — بيحاول يقفل المحاولة بصفر فورًا
+     لحظة الخروج باستخدام fetch مع keepalive. لكن الضمان الحقيقي إن
+     المحاولة هتتحسب صفر حتى لو النت اتقطع أو الموقع اتقفل بالقوة (يعني
+     الطلب ده مانجحش خالص) هو صف "جارٍ التنفيذ" اللي اتسجل من الأول لحظة
+     ما الاختبار بدأ — أي زيارة تانية للصفحة هتكتشف إن المهلة خلصت
+     وتقفله بصفر تلقائيًا (شوف isPendingAttemptExpired و init()). */
+  async function autoZeroSubmit(){
+    if(hasSubmitted) return;
+    if(currentState !== 'quiz') return; // بس وهو بيؤدي فعليًا
+    if(!currentUser || !exam || questions.length === 0) return;
+
+    hasSubmitted = true; // امنع أي محاولة تانية تتبعت في نفس اللحظة
+
+    try{
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const token = session?.access_token;
+      if(!token) return;
+
+      const commonHeaders = {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + token,
+        'Prefer': 'return=minimal'
+      };
+
+      if(currentAttemptId){
+        // حدّث نفس صف "جارٍ التنفيذ" وخليه صفر مكتمل
+        fetch(`${SUPABASE_URL}/rest/v1/exam_attempts?id=eq.${currentAttemptId}`, {
+          method: 'PATCH',
+          keepalive: true,
+          headers: commonHeaders,
+          body: JSON.stringify({ score: 0, percentage: 0, completed_at: new Date().toISOString() })
+        });
+      } else {
+        // احتياطي: لو صف "جارٍ التنفيذ" مانفعش يتسجل من الأساس
+        fetch(`${SUPABASE_URL}/rest/v1/exam_attempts`, {
+          method: 'POST',
+          keepalive: true,
+          headers: commonHeaders,
+          body: JSON.stringify({
+            exam_id: EXAM_ID,
+            user_id: currentUser.id,
+            score: 0,
+            total_questions: questions.length,
+            percentage: 0,
+            answers: answers,
+            completed_at: new Date().toISOString()
+          })
+        });
+      }
+    } catch(err){
+      console.error('auto-zero submit failed:', err);
+    }
+  }
+
+  // لما الطالب يسيب الصفحة فعليًا (يقفل التاب / يرجع للخلف / يفتح رابط تاني)
+  window.addEventListener('pagehide', autoZeroSubmit);
+
+  // تحذير قبل ما يقفل الصفحة وهو لسه بيؤدي الاختبار
+  window.addEventListener('beforeunload', function(e){
+    if(currentState === 'quiz' && !hasSubmitted){
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
 
   function showResult(correctCount, percentage){
     const total = questions.length;
@@ -557,6 +711,7 @@
       return `
         <div class="q-card">
           <div class="q-num">سؤال ${i + 1}</div>
+          ${q.image_url ? `<img src="${q.image_url}" alt="" style="width:100%; max-height:260px; object-fit:contain; border-radius:12px; border:1px solid var(--line); margin-bottom:12px; background:var(--ink);">` : ''}
           <div class="q-text">${q.question_text}</div>
           <div class="opt-list">
             ${q.options.map(o => {
