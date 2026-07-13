@@ -159,6 +159,32 @@
     background:rgba(95,168,43,.18); color:var(--green-bright);
   }
   .lesson-row .lbtn:hover{background:var(--green); color:var(--navy-deep);}
+
+  /* ===== أكورديون كل حصة (فيديو / ملفات / اختبار / واجب) ===== */
+  details.lesson-acc{border-top:1px solid var(--line);}
+  details.lesson-acc summary{
+    list-style:none; cursor:pointer; padding:13px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  details.lesson-acc summary::-webkit-details-marker{display:none;}
+  details.lesson-acc summary .lname{font-size:13.5px; color:var(--bone);}
+  details.lesson-acc summary .lchev{color:var(--green-bright); transition:.2s; flex-shrink:0;}
+  details.lesson-acc[open] summary .lchev{transform:rotate(180deg);}
+  .lesson-acc-body{padding:4px 20px 16px;}
+  .lsub-item{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 12px; margin-top:8px;
+    background:var(--navy-deep); border:1px solid var(--line); border-radius:10px;
+  }
+  .lsub-item .lsub-info{display:flex; align-items:center; gap:10px; min-width:0;}
+  .lsub-item .lsub-ic{font-size:15px; flex-shrink:0;}
+  .lsub-item .lsub-label{font-size:12.5px; color:var(--bone-dim);}
+  .lsub-item .lsub-status{font-size:11px; color:var(--bone-dim); display:block; margin-top:2px;}
+  .lesson-locked-row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:13px 20px; border-top:1px solid var(--line);
+  }
+
   .lesson-row .lfiles-btn{
     padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; white-space:nowrap;
     background:transparent; border:1.5px solid var(--line); color:var(--bone-dim); cursor:pointer;
@@ -437,34 +463,108 @@
       isPaid = enrollment?.status === 'paid';
     }
 
+    // ===== جلب الاختبارات/الواجبات المرتبطة بحصص الكورس ده =====
+    const lessonIds = lessons.map(l => l.id);
+    let examsByLesson = {};
+    let attemptsByExam = {};
+    if(lessonIds.length > 0){
+      const { data: exams } = await supabaseClient
+        .from('exams')
+        .select('id, lesson_id, title, kind, time_limit_minutes, passing_score')
+        .in('lesson_id', lessonIds);
+
+      (exams || []).forEach(e => {
+        if(!examsByLesson[e.lesson_id]) examsByLesson[e.lesson_id] = [];
+        examsByLesson[e.lesson_id].push(e);
+      });
+
+      if(user && exams && exams.length > 0){
+        const examIds = exams.map(e => e.id);
+        const { data: attempts } = await supabaseClient
+          .from('exam_attempts')
+          .select('exam_id, percentage, completed_at')
+          .eq('user_id', user.id)
+          .in('exam_id', examIds)
+          .order('completed_at', { ascending: false });
+        (attempts || []).forEach(a => {
+          if(!(a.exam_id in attemptsByExam)) attemptsByExam[a.exam_id] = a;
+        });
+      }
+    }
+
     listEl.innerHTML = lessons.map((lesson, i) => {
       const num = String(i + 1).padStart(2, '0');
       const unlocked = lesson.is_free_preview || isPaid;
 
       if(!unlocked){
         return `
-          <div class="lesson-row">
+          <div class="lesson-locked-row">
             <span class="lname">🔒 ${num}. ${lesson.title}</span>
             <button class="lbtn" style="background:rgba(243,236,217,0.1); color:var(--bone-dim);" onclick="handleLockedLesson()">مقفولة</button>
           </div>`;
       }
 
       const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
-      const watchBtn = lesson.video_url
-        ? `<a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>`
-        : `<button class="lbtn" disabled style="opacity:.5; cursor:not-allowed;">قريبًا</button>`;
+
+      // ===== عنصر الفيديو =====
+      const videoItem = lesson.video_url
+        ? `<div class="lsub-item">
+             <div class="lsub-info"><span class="lsub-ic">🎬</span><span class="lsub-label">فيديو الشرح</span></div>
+             <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
+           </div>`
+        : `<div class="lsub-item">
+             <div class="lsub-info"><span class="lsub-ic">🎬</span><span class="lsub-label">فيديو الشرح</span></div>
+             <button class="lbtn" disabled style="opacity:.5; cursor:not-allowed;">قريبًا</button>
+           </div>`;
+
+      // ===== عنصر الملفات =====
+      const filesItem = `
+        <div class="lsub-item">
+          <div class="lsub-info"><span class="lsub-ic">📎</span><span class="lsub-label">الملفات</span></div>
+          <button class="lfiles-btn" id="lfiles-btn-${lesson.id}" onclick="toggleLessonFiles('${lesson.id}')">عرض الملفات</button>
+        </div>
+        <div class="lfiles-panel" id="lfiles-panel-${lesson.id}"></div>`;
+
+      // ===== عنصر الاختبار/الواجب (لو موجودين للحصة دي) =====
+      const lessonExams = examsByLesson[lesson.id] || [];
+      const examEntry = lessonExams.find(e => e.kind !== 'homework');
+      const homeworkEntry = lessonExams.find(e => e.kind === 'homework');
+
+      const buildExamItem = (exam, icon, label) => {
+        const attempt = attemptsByExam[exam.id];
+        let statusHTML = '';
+        let actionLabel = label === 'واجب' ? 'ابدأ الواجب' : 'ابدأ الاختبار';
+        if(attempt){
+          const passed = attempt.percentage >= (exam.passing_score || 50);
+          statusHTML = `<span class="lsub-status">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>`;
+          actionLabel = 'إعادة المحاولة';
+        }
+        return `
+          <div class="lsub-item">
+            <div class="lsub-info">
+              <span class="lsub-ic">${icon}</span>
+              <div><span class="lsub-label">${exam.title}</span>${statusHTML}</div>
+            </div>
+            <a class="lbtn" href="dr-rady-exam-attempt-page.html?exam=${exam.id}">${actionLabel}</a>
+          </div>`;
+      };
+
+      const examItem = examEntry ? buildExamItem(examEntry, '✅', 'اختبار') : '';
+      const homeworkItem = homeworkEntry ? buildExamItem(homeworkEntry, '📝', 'واجب') : '';
 
       return `
-        <div>
-          <div class="lesson-row">
+        <details class="lesson-acc">
+          <summary>
             <span class="lname">${num}. ${lesson.title}${previewTag}</span>
-            <div class="lactions">
-              <button class="lfiles-btn" id="lfiles-btn-${lesson.id}" onclick="toggleLessonFiles('${lesson.id}')">📎 ملفات</button>
-              ${watchBtn}
-            </div>
+            <span class="lchev">▾</span>
+          </summary>
+          <div class="lesson-acc-body">
+            ${videoItem}
+            ${filesItem}
+            ${examItem}
+            ${homeworkItem}
           </div>
-          <div class="lfiles-panel" id="lfiles-panel-${lesson.id}"></div>
-        </div>`;
+        </details>`;
     }).join('');
   }
   loadLessons();

@@ -322,6 +322,15 @@
           </select>
         </div>
         <div class="field">
+          <label>نوع الاختبار</label>
+          <select id="exam-kind">
+            <option value="exam">اختبار</option>
+            <option value="homework">واجب</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
           <label>ترتيب الظهور</label>
           <input type="number" id="exam-order" placeholder="1">
         </div>
@@ -345,7 +354,7 @@
 
       <table style="margin-top:20px;">
         <thead>
-          <tr><th>العنوان</th><th>مرتبط بـ</th><th>عدد الأسئلة</th><th></th></tr>
+          <tr><th>العنوان</th><th>النوع</th><th>مرتبط بـ</th><th>عدد الأسئلة</th><th></th></tr>
         </thead>
         <tbody id="exams-table-body">
           <tr><td colspan="4">اختار كورس عشان تشوف اختباراته</td></tr>
@@ -1062,7 +1071,7 @@
 
     const tbody = document.getElementById('exams-table-body');
     if(error || !exams || exams.length === 0){
-      tbody.innerHTML = `<tr><td colspan="4">مفيش اختبارات مضافة للكورس ده لسه</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5">مفيش اختبارات مضافة للكورس ده لسه</td></tr>`;
       return;
     }
 
@@ -1073,9 +1082,11 @@
 
     tbody.innerHTML = exams.map(e => {
       const lessonTitle = e.lesson_id ? (currentExamsCourseLessons.find(l => l.id === e.lesson_id)?.title || '—') : 'اختبار وحدة';
+      const kindLabel = e.kind === 'homework' ? '📝 واجب' : '✅ اختبار';
       return `
         <tr>
           <td>${e.title}</td>
+          <td>${kindLabel}</td>
           <td>${lessonTitle}</td>
           <td>${qCountMap[e.id] || 0}</td>
           <td>
@@ -1095,6 +1106,7 @@
     document.getElementById('exam-title').value = '';
     document.getElementById('exam-desc').value = '';
     document.getElementById('exam-lesson').value = '';
+    document.getElementById('exam-kind').value = 'exam';
     document.getElementById('exam-order').value = '';
     document.getElementById('exam-time-limit').value = '';
     document.getElementById('exam-passing-score').value = '50';
@@ -1111,6 +1123,7 @@
     document.getElementById('exam-title').value = exam.title;
     document.getElementById('exam-desc').value = exam.description || '';
     document.getElementById('exam-lesson').value = exam.lesson_id || '';
+    document.getElementById('exam-kind').value = exam.kind || 'exam';
     document.getElementById('exam-order').value = exam.order_index || '';
     document.getElementById('exam-time-limit').value = exam.time_limit_minutes || '';
     document.getElementById('exam-passing-score').value = exam.passing_score ?? 50;
@@ -1133,6 +1146,7 @@
     const payload = {
       course_id: currentExamsCourseId,
       lesson_id: document.getElementById('exam-lesson').value || null,
+      kind: document.getElementById('exam-kind').value || 'exam',
       title: title,
       description: document.getElementById('exam-desc').value.trim() || null,
       order_index: parseInt(document.getElementById('exam-order').value) || 0,
