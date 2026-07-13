@@ -18,6 +18,7 @@
     --ink:#0c1230;
     --line: rgba(243,236,217,0.14);
     --rose:#b45253;
+    --rose-bright:#e08182;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -38,6 +39,7 @@
   .btn:disabled{opacity:.5; cursor:default; transform:none;}
   .btn-outline{background:transparent; border:1.5px solid var(--line); color:var(--bone); padding:11px 24px;}
   .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+  .btn-sm{padding:9px 18px; font-size:13px;}
   .link-accent{font-weight:700; color:var(--green-bright);}
   .link-accent:hover{text-decoration:underline;}
 
@@ -61,17 +63,40 @@
   .state-box p{font-size:13.5px; color:var(--bone-dim); max-width:420px; margin:0 auto 24px;}
 
   /* ===== هيدر الاختبار ===== */
-  .exam-top{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:22px 24px; margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; position:sticky; top:80px; z-index:10;}
-  .exam-top h1{font-size:18px; margin-bottom:4px;}
+  .exam-top{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:20px 22px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; position:sticky; top:80px; z-index:10;}
+  .exam-top h1{font-size:17px; margin-bottom:4px;}
   .exam-top p{font-size:12.5px; color:var(--bone-dim);}
+  .exam-top-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
   .timer{
     display:flex; align-items:center; gap:8px; background:var(--navy-deep); border:1px solid var(--line);
     border-radius:100px; padding:9px 18px; font-weight:800; font-family:'Tajawal'; font-size:15px; color:var(--green-bright);
   }
   .timer.low{color:#e8a3a4; border-color:rgba(180,82,83,0.5);}
 
-  /* ===== الأسئلة ===== */
-  .q-card{background:var(--navy-soft); border:1px solid var(--line); border-radius:18px; padding:22px; margin-bottom:16px;}
+  /* ===== شريط أرقام الأسئلة ===== */
+  .qnav-wrap{background:var(--navy-soft); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:18px; position:sticky; top:172px; z-index:9;}
+  .qnav-label{font-size:11.5px; color:var(--bone-dim); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+  .qnav-legend{display:flex; gap:12px; font-size:11px;}
+  .qnav-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .dot.d-answered{background:var(--green);}
+  .dot.d-skipped{background:var(--rose);}
+  .dot.d-default{background:var(--line); border:1px solid var(--bone-dim);}
+  .qnav{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin;}
+  .qnav::-webkit-scrollbar{height:5px;}
+  .qnav::-webkit-scrollbar-thumb{background:var(--line); border-radius:10px;}
+  .qnum-btn{
+    flex:0 0 auto; width:36px; height:36px; border-radius:10px; border:1.5px solid var(--line);
+    background:var(--navy-deep); color:var(--bone-dim); font-family:'Tajawal'; font-weight:800; font-size:13.5px;
+    display:flex; align-items:center; justify-content:center; transition:.15s;
+  }
+  .qnum-btn:hover{border-color:var(--green-bright);}
+  .qnum-btn.current{border-color:var(--bone); box-shadow:0 0 0 2px rgba(243,236,217,0.25);}
+  .qnum-btn.answered{background:rgba(95,168,43,0.22); border-color:var(--green); color:var(--green-bright);}
+  .qnum-btn.skipped{background:rgba(180,82,83,0.2); border-color:var(--rose); color:#f0b5b6;}
+
+  /* ===== سؤال واحد ===== */
+  .q-card{background:var(--navy-soft); border:1px solid var(--line); border-radius:18px; padding:22px; margin-bottom:18px;}
   .q-card .q-num{font-size:12px; color:var(--green-bright); font-weight:700; margin-bottom:8px;}
   .q-card .q-text{font-size:15.5px; color:var(--bone); margin-bottom:16px; font-weight:600;}
   .opt-list{display:flex; flex-direction:column; gap:10px;}
@@ -85,7 +110,21 @@
   .opt.correct{border-color:var(--green); background:rgba(95,168,43,0.16);}
   .opt.wrong{border-color:var(--rose); background:rgba(180,82,83,0.14);}
 
-  .submit-bar{display:flex; justify-content:center; margin-top:10px;}
+  /* ===== أزرار التنقل تحت السؤال ===== */
+  .quiz-footer{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:6px;}
+  .quiz-footer .progress-txt{font-size:12.5px; color:var(--bone-dim); text-align:center; flex:1;}
+
+  /* ===== نافذة تأكيد التسليم ===== */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(12,18,48,0.72); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:30px 26px; max-width:380px; width:100%; text-align:center;}
+  .modal-box .ic{width:48px; height:48px; border-radius:14px; background:rgba(95,168,43,0.16); display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 14px;}
+  .modal-box h3{font-size:17px; margin-bottom:8px;}
+  .modal-box p{font-size:13px; color:var(--bone-dim); margin-bottom:20px;}
+  .modal-actions{display:flex; gap:10px; justify-content:center;}
 
   /* ===== نتيجة الاختبار ===== */
   .result-box{background:var(--navy-soft); border:1px solid var(--line); border-radius:22px; padding:40px 30px; text-align:center; margin-bottom:24px;}
@@ -99,11 +138,19 @@
   .result-ring span{font-size:11px; color:var(--bone-dim);}
   .result-box h2{font-size:20px; margin-bottom:8px;}
   .result-box p{font-size:13.5px; color:var(--bone-dim); margin-bottom:22px;}
+  .result-stats{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;}
+  .result-stat{background:var(--navy-deep); border:1px solid var(--line); border-radius:14px; padding:14px 20px; min-width:96px;}
+  .result-stat b{display:block; font-family:'Tajawal'; font-size:20px; margin-bottom:2px;}
+  .result-stat.correct b{color:var(--green-bright);}
+  .result-stat.wrong b{color:var(--rose-bright);}
+  .result-stat span{font-size:11px; color:var(--bone-dim);}
   .result-actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
 
   @media (max-width:640px){
     .exam-top{position:static;}
+    .qnav-wrap{position:static;}
     .nav{padding:14px 18px;}
+    .quiz-footer{flex-wrap:wrap;}
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -153,13 +200,30 @@
         <h1 id="exam-title"></h1>
         <p id="exam-sub"></p>
       </div>
-      <div id="timer-box" class="timer" style="display:none;">⏱️ <span id="timer-text">--:--</span></div>
+      <div class="exam-top-right">
+        <div id="timer-box" class="timer" style="display:none;">⏱️ <span id="timer-text">--:--</span></div>
+        <button class="btn btn-sm" id="submit-btn" onclick="openSubmitModal()">تسليم الاختبار ✓</button>
+      </div>
     </div>
 
-    <div id="questions-list"></div>
+    <div class="qnav-wrap">
+      <div class="qnav-label">
+        <span>انتقل مباشرة لأي سؤال</span>
+        <span class="qnav-legend">
+          <span><i class="dot d-answered"></i> اتحل</span>
+          <span><i class="dot d-skipped"></i> اتخطى</span>
+          <span><i class="dot d-default"></i> لسه</span>
+        </span>
+      </div>
+      <div class="qnav" id="qnav"></div>
+    </div>
 
-    <div class="submit-bar">
-      <button class="btn" id="submit-btn" onclick="submitExam()">تسليم الاختبار ✓</button>
+    <div id="question-holder"></div>
+
+    <div class="quiz-footer">
+      <button class="btn btn-outline btn-sm" id="prev-btn" onclick="goPrev()">→ السابق</button>
+      <div class="progress-txt" id="progress-txt"></div>
+      <button class="btn btn-sm" id="next-btn" onclick="goNext()">التالي ←</button>
     </div>
   </div>
 
@@ -172,6 +236,20 @@
       </div>
       <h2 id="result-title">النتيجة</h2>
       <p id="result-text"></p>
+      <div class="result-stats">
+        <div class="result-stat correct">
+          <b id="stat-correct">0</b>
+          <span>سؤال صح</span>
+        </div>
+        <div class="result-stat wrong">
+          <b id="stat-wrong">0</b>
+          <span>سؤال غلط</span>
+        </div>
+        <div class="result-stat">
+          <b id="stat-total">0</b>
+          <span>إجمالي الأسئلة</span>
+        </div>
+      </div>
       <div class="result-actions">
         <a href="dr-rady-exams-page.html" class="btn">رجوع للاختبارات</a>
         <button class="btn btn-outline" onclick="location.reload()">إعادة المحاولة</button>
@@ -182,6 +260,19 @@
 
 </main>
 
+<!-- ===== نافذة تأكيد التسليم ===== -->
+<div class="modal-overlay" id="submit-modal">
+  <div class="modal-box">
+    <div class="ic">📝</div>
+    <h3>تسليم الاختبار</h3>
+    <p id="submit-modal-text">هل انت متأكد إنك عايز تسلم الاختبار؟ مش هتقدر تعدل إجاباتك بعد كده.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeSubmitModal()">لا، رجوع</button>
+      <button class="btn" id="confirm-submit-btn" onclick="submitExam()">أيوه، سلّم</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const params = new URLSearchParams(window.location.search);
   const EXAM_ID = params.get('exam');
@@ -190,7 +281,10 @@
   let exam = null;
   let questions = [];   // [{id, question_text, options:[{id, option_text, is_correct}]}]
   let answers = {};     // {question_id: option_id}
+  let visited = new Set(); // question indexes the student has moved away from
+  let currentIndex = 0;
   let timerInterval = null;
+  let autoAdvanceTimeout = null;
 
   function showState(name){
     ['loading','denied','quiz','result'].forEach(s => {
@@ -249,7 +343,9 @@
       options: (optData || []).filter(o => o.question_id === q.id)
     }));
 
-    renderQuiz();
+    renderExamHeader();
+    renderQNav();
+    renderQuestion(0);
     showState('quiz');
 
     if(exam.time_limit_minutes){
@@ -257,33 +353,108 @@
     }
   }
 
-  function renderQuiz(){
+  function renderExamHeader(){
     document.getElementById('exam-title').textContent = exam.title;
     document.getElementById('exam-sub').textContent = exam.description || `${questions.length} سؤال — اختار الإجابة الصح لكل سؤال`;
+  }
 
-    document.getElementById('questions-list').innerHTML = questions.map((q, i) => `
+  /* ===== شريط أرقام الأسئلة ===== */
+  function renderQNav(){
+    document.getElementById('qnav').innerHTML = questions.map((q, i) => `
+      <button type="button" class="qnum-btn" id="qnum-${i}" onclick="jumpTo(${i})">${i + 1}</button>
+    `).join('');
+    refreshQNavStates();
+  }
+
+  function statusOf(i){
+    const q = questions[i];
+    if(answers[q.id]) return 'answered';
+    if(visited.has(i)) return 'skipped';
+    return 'default';
+  }
+
+  function refreshQNavStates(){
+    questions.forEach((q, i) => {
+      const btn = document.getElementById(`qnum-${i}`);
+      btn.classList.remove('answered', 'skipped', 'current');
+      const status = statusOf(i);
+      if(status === 'answered') btn.classList.add('answered');
+      else if(status === 'skipped') btn.classList.add('skipped');
+      if(i === currentIndex) btn.classList.add('current');
+    });
+  }
+
+  /* ===== عرض سؤال واحد ===== */
+  function renderQuestion(index){
+    if(autoAdvanceTimeout){ clearTimeout(autoAdvanceTimeout); autoAdvanceTimeout = null; }
+    currentIndex = index;
+    const q = questions[index];
+    const chosen = answers[q.id];
+
+    document.getElementById('question-holder').innerHTML = `
       <div class="q-card">
-        <div class="q-num">سؤال ${i + 1} من ${questions.length}</div>
+        <div class="q-num">سؤال ${index + 1} من ${questions.length}</div>
         <div class="q-text">${q.question_text}</div>
         <div class="opt-list" id="opts-${q.id}">
           ${q.options.map(o => `
-            <label class="opt" id="opt-${o.id}" onclick="selectAnswer('${q.id}', '${o.id}')">
-              <input type="radio" name="q-${q.id}" value="${o.id}">
+            <label class="opt ${chosen === o.id ? 'selected' : ''}" id="opt-${o.id}" onclick="selectAnswer('${q.id}', '${o.id}')">
+              <input type="radio" name="q-${q.id}" value="${o.id}" ${chosen === o.id ? 'checked' : ''}>
               <span>${o.option_text}</span>
             </label>
           `).join('')}
         </div>
       </div>
-    `).join('');
+    `;
+
+    document.getElementById('prev-btn').disabled = (index === 0);
+    document.getElementById('next-btn').textContent = (index === questions.length - 1) ? 'تسليم الاختبار ✓' : 'التالي ←';
+    document.getElementById('next-btn').onclick = (index === questions.length - 1) ? openSubmitModal : goNext;
+
+    const answeredCount = Object.keys(answers).length;
+    document.getElementById('progress-txt').textContent = `اتجاوب ${answeredCount} من ${questions.length}`;
+
+    refreshQNavStates();
   }
 
   function selectAnswer(questionId, optionId){
     answers[questionId] = optionId;
+
     document.querySelectorAll(`#opts-${questionId} .opt`).forEach(el => el.classList.remove('selected'));
-    document.getElementById(`opt-${optionId}`).classList.add('selected');
-    document.getElementById(`opt-${optionId}`).querySelector('input').checked = true;
+    const chosenEl = document.getElementById(`opt-${optionId}`);
+    chosenEl.classList.add('selected');
+    chosenEl.querySelector('input').checked = true;
+
+    refreshQNavStates();
+    document.getElementById('progress-txt').textContent = `اتجاوب ${Object.keys(answers).length} من ${questions.length}`;
+
+    // كل ما يختار إجابة يخش على السؤال اللي بعده تلقائي
+    if(currentIndex < questions.length - 1){
+      if(autoAdvanceTimeout) clearTimeout(autoAdvanceTimeout);
+      autoAdvanceTimeout = setTimeout(() => {
+        goNext();
+      }, 350);
+    }
   }
 
+  function goNext(){
+    if(currentIndex >= questions.length - 1) return;
+    visited.add(currentIndex);
+    renderQuestion(currentIndex + 1);
+  }
+
+  function goPrev(){
+    if(currentIndex <= 0) return;
+    visited.add(currentIndex);
+    renderQuestion(currentIndex - 1);
+  }
+
+  function jumpTo(index){
+    if(index === currentIndex) return;
+    visited.add(currentIndex);
+    renderQuestion(index);
+  }
+
+  /* ===== المؤقت ===== */
   function startTimer(totalSeconds){
     let remaining = totalSeconds;
     const box = document.getElementById('timer-box');
@@ -306,11 +477,28 @@
     timerInterval = setInterval(tick, 1000);
   }
 
+  /* ===== تأكيد التسليم ===== */
+  function openSubmitModal(){
+    if(autoAdvanceTimeout){ clearTimeout(autoAdvanceTimeout); autoAdvanceTimeout = null; }
+    const answeredCount = Object.keys(answers).length;
+    const unanswered = questions.length - answeredCount;
+    document.getElementById('submit-modal-text').textContent = unanswered > 0
+      ? `لسه فاضلك ${unanswered} سؤال من غير إجابة. متأكد إنك عايز تسلم الاختبار؟ مش هتقدر تعدل إجاباتك بعد كده.`
+      : 'هل انت متأكد إنك عايز تسلم الاختبار؟ مش هتقدر تعدل إجاباتك بعد كده.';
+    document.getElementById('submit-modal').classList.add('show');
+  }
+
+  function closeSubmitModal(){
+    document.getElementById('submit-modal').classList.remove('show');
+  }
+
   async function submitExam(){
+    closeSubmitModal();
     if(timerInterval) clearInterval(timerInterval);
-    const btn = document.getElementById('submit-btn');
-    btn.disabled = true;
-    btn.textContent = 'جارٍ التصحيح...';
+
+    const confirmBtn = document.getElementById('confirm-submit-btn');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'جارٍ التصحيح...';
 
     let correctCount = 0;
     questions.forEach(q => {
@@ -333,10 +521,11 @@
       completed_at: new Date().toISOString()
     });
 
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'أيوه، سلّم';
+
     if(error){
       alert('حصل خطأ في حفظ النتيجة، حاول تاني');
-      btn.disabled = false;
-      btn.textContent = 'تسليم الاختبار ✓';
       return;
     }
 
@@ -344,16 +533,22 @@
   }
 
   function showResult(correctCount, percentage){
+    const total = questions.length;
+    const wrongCount = total - correctCount;
     const passed = percentage >= (exam.passing_score || 50);
 
     const ring = document.getElementById('result-ring');
     ring.classList.add(passed ? 'pass' : 'fail');
     document.getElementById('result-percentage').textContent = percentage + '%';
-    document.getElementById('result-fraction').textContent = `${correctCount} / ${questions.length}`;
+    document.getElementById('result-fraction').textContent = `${correctCount} / ${total}`;
     document.getElementById('result-title').textContent = passed ? 'مبروك، نجحت في الاختبار 🎉' : 'محتاج تراجع الحصة تاني';
     document.getElementById('result-text').textContent = passed
       ? 'أداء كويس! تقدر تكمل باقي الاختبارات أو تراجع أي سؤال غلطت فيه تحت.'
       : `محتاج نسبة ${exam.passing_score || 50}% عشان تعدي، راجع الحصة وجرب تاني.`;
+
+    document.getElementById('stat-correct').textContent = correctCount;
+    document.getElementById('stat-wrong').textContent = wrongCount;
+    document.getElementById('stat-total').textContent = total;
 
     // مراجعة الإجابات
     document.getElementById('review-list').innerHTML = questions.map((q, i) => {
