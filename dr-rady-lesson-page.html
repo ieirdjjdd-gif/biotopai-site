@@ -72,13 +72,100 @@
 
   .player-wrap{
     background:#000; border-radius:18px; overflow:hidden; border:1px solid var(--line);
-    aspect-ratio:16/9; position:relative;
+    aspect-ratio:16/9; position:relative; user-select:none; -webkit-user-select:none;
   }
-  .player-wrap iframe, .player-wrap video{width:100%; height:100%; border:none; display:block;}
+  .player-wrap iframe, .player-wrap video{
+    width:100%; height:100%; border:none; display:block; pointer-events:none; /* كل التفاعل عن طريق الشريط المخصّص */
+  }
   .player-empty{
     height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
     color:var(--bone-dim); gap:8px; font-size:13.5px;
   }
+
+  /* ===== مشغّل الفيديو المخصّص ===== */
+  .cp{position:absolute; inset:0;}
+  .cp-surface{position:absolute; inset:0;}
+  .cp-catcher{position:absolute; inset:0; z-index:4; cursor:pointer; background:transparent;}
+  .cp-center-play{
+    position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
+    background:rgba(16,28,70,0.28); opacity:0; pointer-events:none; transition:opacity .18s;
+  }
+  .cp-center-play.show{opacity:1; pointer-events:none;}
+  .cp-center-play svg{width:64px; height:64px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));}
+  .cp-spinner{
+    position:absolute; inset:0; z-index:6; display:none; align-items:center; justify-content:center;
+  }
+  .cp-spinner.show{display:flex;}
+  .cp-spinner .ring{
+    width:38px; height:38px; border-radius:50%; border:3px solid rgba(243,236,217,0.25);
+    border-top-color:var(--green-bright); animation:cpspin .8s linear infinite;
+  }
+  @keyframes cpspin{to{transform:rotate(360deg);}}
+
+  .cp-bar{
+    position:absolute; left:0; right:0; bottom:0; z-index:10;
+    background:linear-gradient(transparent, rgba(0,0,0,0.88) 55%);
+    padding:26px 14px 10px; opacity:0; transform:translateY(4px);
+    transition:opacity .2s, transform .2s; pointer-events:none;
+  }
+  .cp:hover .cp-bar, .cp.active .cp-bar, .cp.paused-ui .cp-bar{opacity:1; transform:none; pointer-events:auto;}
+
+  .cp-seek{position:relative; height:14px; display:flex; align-items:center; cursor:pointer; margin-bottom:6px;}
+  .cp-seek-track{position:relative; width:100%; height:4px; border-radius:4px; background:rgba(243,236,217,0.25); overflow:hidden;}
+  .cp-seek-buffered{position:absolute; inset:0; width:0%; background:rgba(243,236,217,0.35);}
+  .cp-seek-fill{position:absolute; inset:0; width:0%; background:var(--green-bright);}
+  .cp-seek-handle{
+    position:absolute; top:50%; width:12px; height:12px; border-radius:50%; background:var(--green-bright);
+    transform:translate(-50%,-50%); left:0%; box-shadow:0 0 0 3px rgba(95,168,43,0.25);
+    opacity:0; transition:opacity .15s;
+  }
+  .cp-seek:hover .cp-seek-handle{opacity:1;}
+
+  .cp-row{display:flex; align-items:center; gap:4px;}
+  .cp-btn{
+    background:transparent; border:none; color:var(--bone); width:34px; height:34px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:.15s;
+  }
+  .cp-btn:hover{background:rgba(243,236,217,0.12); color:var(--green-bright);}
+  .cp-btn svg{width:19px; height:19px;}
+  .cp-time{font-size:12px; color:var(--bone-dim); white-space:nowrap; padding:0 6px; font-variant-numeric:tabular-nums;}
+  .cp-spacer{flex:1;}
+
+  .cp-vol{display:flex; align-items:center; gap:4px;}
+  .cp-vol input[type=range]{
+    width:0; opacity:0; transition:width .18s, opacity .18s; accent-color:var(--green-bright); cursor:pointer;
+  }
+  .cp-vol:hover input[type=range], .cp-vol.active input[type=range]{width:64px; opacity:1;}
+
+  .cp-menu-wrap{position:relative;}
+  .cp-menu{
+    position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+    background:rgba(16,20,42,0.97); border:1px solid var(--line); border-radius:10px;
+    min-width:110px; padding:6px; display:none; flex-direction:column; gap:2px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4); z-index:20;
+  }
+  .cp-menu.open{display:flex;}
+  .cp-menu button{
+    background:transparent; border:none; color:var(--bone-dim); font-size:12.5px; text-align:center;
+    padding:7px 8px; border-radius:6px; white-space:nowrap;
+  }
+  .cp-menu button:hover{background:rgba(95,168,43,0.16); color:var(--green-bright);}
+  .cp-menu button.active{color:var(--green-bright); font-weight:700;}
+
+  /* شارة العلامة المائية - رقم الطالب/إيميله يتحرك فوق الفيديو */
+  .cp-watermark{
+    position:absolute; z-index:3; pointer-events:none; color:rgba(243,236,217,0.16);
+    font-size:12px; font-weight:700; white-space:nowrap; font-family:'Cairo', sans-serif;
+    transition:top 1.2s ease, left 1.2s ease;
+  }
+
+  /* غطاء يظهر لو المستخدم بدّل التاب/الشباك وقت التشغيل */
+  .cp-focus-guard{
+    position:absolute; inset:0; z-index:30; display:none; flex-direction:column; align-items:center;
+    justify-content:center; gap:10px; background:rgba(10,16,40,0.92); text-align:center; padding:20px;
+  }
+  .cp-focus-guard.show{display:flex;}
+  .cp-focus-guard p{font-size:13px; color:var(--bone-dim); max-width:280px;}
 
   .lesson-head{
     margin-top:20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
@@ -169,7 +256,7 @@
 
     <!-- ===== المحتوى الرئيسي ===== -->
     <div>
-      <div class="player-wrap" id="player-wrap">
+      <div class="player-wrap" id="player-wrap" oncontextmenu="return false;">
         <div class="player-empty">جارٍ تحميل الفيديو...</div>
       </div>
 
@@ -229,27 +316,371 @@
     showState('denied');
   }
 
-  // ===== بناء رابط تضمين الفيديو حسب مصدره (يوتيوب / فيميو / رابط مباشر) =====
-  function buildPlayerHTML(url){
-    if(!url){
-      return `<div class="player-empty">لسه مفيش فيديو مضاف للحصة دي</div>`;
-    }
-    // يوتيوب
+  // ============================================================
+  // مشغّل الفيديو المخصّص: بيغلّف يوتيوب/ملف مباشر بشريط تحكم خاص
+  // بالمنصة (بدون أي شعار يوتيوب ظاهر)، وبيدعم فيميو/أي إمبيد تاني
+  // كمشغّل احتياطي بسيط. + طبقات حماية أساسية (مش بديل عن DRM حقيقي).
+  // ============================================================
+  let ytApiPromise = null;
+  function loadYouTubeAPI(){
+    if(ytApiPromise) return ytApiPromise;
+    ytApiPromise = new Promise((resolve) => {
+      if(window.YT && window.YT.Player){ resolve(window.YT); return; }
+      window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    });
+    return ytApiPromise;
+  }
+
+  function parseVideoSource(url){
+    if(!url) return { type:'none' };
     let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
-    if(m){
-      return `<iframe src="https://www.youtube.com/embed/${m[1]}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-    }
-    // فيميو
+    if(m) return { type:'youtube', id:m[1] };
     m = url.match(/vimeo\.com\/(\d+)/);
-    if(m){
-      return `<iframe src="https://player.vimeo.com/video/${m[1]}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+    if(m) return { type:'vimeo', id:m[1] };
+    if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) return { type:'html5', src:url };
+    return { type:'embed', src:url };
+  }
+
+  function fmtTime(s){
+    if(!isFinite(s) || s < 0) s = 0;
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
+    const mm = h > 0 ? String(m).padStart(2,'0') : m;
+    const ss = String(sec).padStart(2,'0');
+    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
+  function buildSkinMarkup(){
+    return `
+      <div class="cp-surface" data-role="surface"></div>
+      <div class="cp-catcher" data-role="catcher"></div>
+      <div class="cp-center-play show" data-role="centerplay">
+        <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="31" fill="rgba(16,28,70,0.55)" stroke="#8fd155" stroke-width="2"/><polygon points="26,20 46,32 26,44" fill="#f3ecd9"/></svg>
+      </div>
+      <div class="cp-focus-guard" data-role="focusguard">
+        <div style="font-size:26px;">⏸</div>
+        <p>الفيديو اتوقف مؤقتًا لإنك خرجت من التاب.<br>ارجع هنا واضغط تشغيل عشان تكمل.</p>
+      </div>
+      <div class="cp-bar" data-role="bar">
+        <div class="cp-seek" data-role="seek">
+          <div class="cp-seek-track">
+            <div class="cp-seek-buffered" data-role="buffered"></div>
+            <div class="cp-seek-fill" data-role="fill"></div>
+          </div>
+          <div class="cp-seek-handle" data-role="handle"></div>
+        </div>
+        <div class="cp-row">
+          <button type="button" class="cp-btn" data-role="playbtn" title="تشغيل/إيقاف">▶</button>
+          <div class="cp-vol" data-role="volwrap">
+            <button type="button" class="cp-btn" data-role="mutebtn" title="الصوت">🔊</button>
+            <input type="range" min="0" max="100" value="100" data-role="volslider">
+          </div>
+          <span class="cp-time" data-role="time">0:00 / 0:00</span>
+          <div class="cp-spacer"></div>
+          <div class="cp-menu-wrap">
+            <button type="button" class="cp-btn" data-role="speedbtn" title="سرعة التشغيل" style="width:auto; padding:0 8px; font-size:12.5px;">1x</button>
+            <div class="cp-menu" data-role="speedmenu"></div>
+          </div>
+          <div class="cp-menu-wrap" data-role="qualitywrap" style="display:none;">
+            <button type="button" class="cp-btn" data-role="qualitybtn" title="جودة الفيديو" style="width:auto; padding:0 8px; font-size:12.5px;">Auto</button>
+            <div class="cp-menu" data-role="qualitymenu"></div>
+          </div>
+          <button type="button" class="cp-btn" data-role="fsbtn" title="ملء الشاشة">⛶</button>
+        </div>
+      </div>
+    `;
+  }
+
+  async function mountYouTube(surface, videoId){
+    const YT = await loadYouTubeAPI();
+    const target = document.createElement('div');
+    target.style.cssText = 'width:100%;height:100%;pointer-events:none;';
+    surface.appendChild(target);
+
+    const listeners = { timeupdate:[], ended:[], play:[], pause:[] };
+    let readyResolve;
+    const readyPromise = new Promise(res => readyResolve = res);
+
+    const ytPlayer = new YT.Player(target, {
+      videoId,
+      host: 'https://www.youtube-nocookie.com', // نسخة الخصوصية: بدون كوكيز يوتيوب وبدون واجهة/شعار
+      playerVars: {
+        controls: 0, disablekb: 1, modestbranding: 1, rel: 0, showinfo: 0,
+        iv_load_policy: 3, fs: 0, playsinline: 1, origin: window.location.origin
+      },
+      events: {
+        onReady: () => readyResolve(),
+        onStateChange: (e) => {
+          if(e.data === YT.PlayerState.PLAYING) listeners.play.forEach(cb => cb());
+          else if(e.data === YT.PlayerState.PAUSED) listeners.pause.forEach(cb => cb());
+          else if(e.data === YT.PlayerState.ENDED) listeners.ended.forEach(cb => cb());
+        }
+      }
+    });
+    await readyPromise;
+
+    const pollTimer = setInterval(() => listeners.timeupdate.forEach(cb => cb()), 250);
+
+    return {
+      type:'youtube',
+      play: () => ytPlayer.playVideo(),
+      pause: () => ytPlayer.pauseVideo(),
+      togglePlay(){ this.isPaused() ? this.play() : this.pause(); },
+      isPaused: () => ytPlayer.getPlayerState() !== 1,
+      getCurrentTime: () => ytPlayer.getCurrentTime() || 0,
+      getDuration: () => ytPlayer.getDuration() || 0,
+      getBuffered: () => ytPlayer.getVideoLoadedFraction ? ytPlayer.getVideoLoadedFraction() : 0,
+      seekTo: (t) => ytPlayer.seekTo(t, true),
+      setVolume: (v) => ytPlayer.setVolume(v),
+      getVolume: () => ytPlayer.getVolume(),
+      setMuted: (m) => m ? ytPlayer.mute() : ytPlayer.unMute(),
+      isMuted: () => ytPlayer.isMuted(),
+      setRate: (r) => ytPlayer.setPlaybackRate(r),
+      getRate: () => ytPlayer.getPlaybackRate(),
+      getAvailableRates: () => ytPlayer.getAvailablePlaybackRates(),
+      getQualities(){
+        // ملاحظة: يوتيوب بقى غالبًا بيدير الجودة أوتوماتيك، فالمستويات
+        // المتاحة هنا بتعتمد على الفيديو نفسه وممكن ترجع "auto" بس
+        const levels = ytPlayer.getAvailableQualityLevels ? ytPlayer.getAvailableQualityLevels() : [];
+        return (levels && levels.length > 1) ? levels : null;
+      },
+      getQuality: () => ytPlayer.getPlaybackQuality(),
+      setQuality: (q) => ytPlayer.setPlaybackQuality(q),
+      on(evt, cb){ if(listeners[evt]) listeners[evt].push(cb); },
+      destroy(){ clearInterval(pollTimer); ytPlayer.destroy(); }
+    };
+  }
+
+  function mountHtml5(surface, url){
+    const video = document.createElement('video');
+    video.src = url;
+    video.style.cssText = 'width:100%;height:100%;pointer-events:none;';
+    video.preload = 'metadata';
+    video.setAttribute('playsinline', '');
+    video.setAttribute('controlsList', 'nodownload noremoteplayback');
+    video.disablePictureInPicture = true;
+    surface.appendChild(video);
+
+    const listeners = { timeupdate:[], ended:[], play:[], pause:[] };
+    video.addEventListener('timeupdate', () => listeners.timeupdate.forEach(cb => cb()));
+    video.addEventListener('ended', () => listeners.ended.forEach(cb => cb()));
+    video.addEventListener('play', () => listeners.play.forEach(cb => cb()));
+    video.addEventListener('pause', () => listeners.pause.forEach(cb => cb()));
+
+    return {
+      type:'html5',
+      play: () => video.play(),
+      pause: () => video.pause(),
+      togglePlay(){ video.paused ? video.play() : video.pause(); },
+      isPaused: () => video.paused,
+      getCurrentTime: () => video.currentTime || 0,
+      getDuration: () => video.duration || 0,
+      getBuffered(){
+        if(!video.buffered.length || !video.duration) return 0;
+        return video.buffered.end(video.buffered.length - 1) / video.duration;
+      },
+      seekTo: (t) => { video.currentTime = t; },
+      setVolume: (v) => { video.volume = Math.min(1, Math.max(0, v/100)); },
+      getVolume: () => video.volume * 100,
+      setMuted: (m) => { video.muted = m; },
+      isMuted: () => video.muted,
+      setRate: (r) => { video.playbackRate = r; },
+      getRate: () => video.playbackRate,
+      getAvailableRates: () => [0.5,0.75,1,1.25,1.5,1.75,2],
+      getQualities: () => null,
+      on(evt, cb){ if(listeners[evt]) listeners[evt].push(cb); },
+      destroy(){ video.pause(); video.src=''; }
+    };
+  }
+
+  function wireControls(cp, adapter){
+    const q = role => cp.querySelector(`[data-role="${role}"]`);
+    const catcher = q('catcher'), centerPlay = q('centerplay');
+    const playBtn = q('playbtn'), muteBtn = q('mutebtn'), volSlider = q('volslider');
+    const timeEl = q('time'), seek = q('seek'), fillEl = q('fill'), bufferedEl = q('buffered'), handleEl = q('handle');
+    const speedBtn = q('speedbtn'), speedMenu = q('speedmenu');
+    const qualityWrap = q('qualitywrap'), qualityBtn = q('qualitybtn'), qualityMenu = q('qualitymenu');
+    const fsBtn = q('fsbtn');
+    const container = cp.parentElement;
+
+    let seeking = false;
+
+    function setPlayIcon(){
+      const paused = adapter.isPaused();
+      playBtn.textContent = paused ? '▶' : '❚❚';
+      centerPlay.classList.toggle('show', paused);
+      cp.classList.toggle('paused-ui', paused);
     }
-    // ملف فيديو مباشر
-    if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)){
-      return `<video controls src="${url}"></video>`;
+
+    function updateProgress(){
+      if(seeking) return;
+      const dur = adapter.getDuration();
+      const cur = adapter.getCurrentTime();
+      if(dur > 0){
+        const pct = Math.min(100, (cur/dur)*100);
+        fillEl.style.width = pct + '%';
+        handleEl.style.left = pct + '%';
+      }
+      const buf = adapter.getBuffered ? adapter.getBuffered() : 0;
+      bufferedEl.style.width = (buf*100) + '%';
+      timeEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
     }
-    // أي مصدر تاني (زي Bunny.net iframe embed) بيتحط في iframe مباشرة
-    return `<iframe src="${url}" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+
+    adapter.on('timeupdate', updateProgress);
+    adapter.on('play', setPlayIcon);
+    adapter.on('pause', setPlayIcon);
+    adapter.on('ended', setPlayIcon);
+
+    catcher.addEventListener('click', () => adapter.togglePlay());
+    playBtn.addEventListener('click', () => adapter.togglePlay());
+
+    function seekFromEvent(e){
+      const rect = seek.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      return Math.min(1, Math.max(0, x / rect.width));
+    }
+    seek.addEventListener('mousedown', (e) => {
+      seeking = true;
+      const move = (ev) => {
+        const p = seekFromEvent(ev);
+        fillEl.style.width = (p*100) + '%';
+        handleEl.style.left = (p*100) + '%';
+      };
+      const up = (ev) => {
+        const p = seekFromEvent(ev);
+        adapter.seekTo(p * adapter.getDuration());
+        seeking = false;
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      };
+      move(e);
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+
+    volSlider.value = adapter.getVolume ? adapter.getVolume() : 100;
+    function refreshMuteIcon(){
+      const vol = adapter.getVolume ? adapter.getVolume() : 100;
+      const muted = adapter.isMuted && adapter.isMuted();
+      muteBtn.textContent = (muted || vol === 0) ? '🔇' : (vol < 50 ? '🔈' : '🔊');
+    }
+    refreshMuteIcon();
+    muteBtn.addEventListener('click', () => {
+      const muted = adapter.isMuted && adapter.isMuted();
+      adapter.setMuted(!muted);
+      refreshMuteIcon();
+    });
+    volSlider.addEventListener('input', () => {
+      adapter.setVolume(Number(volSlider.value));
+      if(Number(volSlider.value) > 0 && adapter.isMuted && adapter.isMuted()) adapter.setMuted(false);
+      refreshMuteIcon();
+    });
+
+    const rates = (adapter.getAvailableRates && adapter.getAvailableRates()) || [0.5,0.75,1,1.25,1.5,1.75,2];
+    speedMenu.innerHTML = rates.map(r => `<button type="button" data-rate="${r}">${r}x</button>`).join('');
+    function refreshSpeedLabel(){
+      const r = adapter.getRate ? adapter.getRate() : 1;
+      speedBtn.textContent = `${r}x`;
+      speedMenu.querySelectorAll('button').forEach(b => b.classList.toggle('active', Number(b.dataset.rate) === r));
+    }
+    refreshSpeedLabel();
+    function closeAllMenus(){ cp.querySelectorAll('.cp-menu').forEach(m => m.classList.remove('open')); }
+    speedBtn.addEventListener('click', (e) => { e.stopPropagation(); const open = speedMenu.classList.contains('open'); closeAllMenus(); if(!open) speedMenu.classList.add('open'); });
+    speedMenu.addEventListener('click', (e) => {
+      const btn = e.target.closest('button'); if(!btn) return;
+      adapter.setRate(Number(btn.dataset.rate));
+      refreshSpeedLabel();
+      speedMenu.classList.remove('open');
+    });
+
+    const qualities = adapter.getQualities ? adapter.getQualities() : null;
+    const qualityLabels = { hd2160:'4K', hd1440:'1440p', hd1080:'1080p', hd720:'720p', large:'480p', medium:'360p', small:'240p', tiny:'144p', auto:'تلقائي' };
+    if(qualities && qualities.length){
+      qualityWrap.style.display = '';
+      qualityMenu.innerHTML = qualities.map(qq => `<button type="button" data-q="${qq}">${qualityLabels[qq] || qq}</button>`).join('');
+      function refreshQualityLabel(){
+        const cur = adapter.getQuality ? adapter.getQuality() : 'auto';
+        qualityBtn.textContent = qualityLabels[cur] || 'تلقائي';
+        qualityMenu.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.q === cur));
+      }
+      refreshQualityLabel();
+      qualityBtn.addEventListener('click', (e) => { e.stopPropagation(); const open = qualityMenu.classList.contains('open'); closeAllMenus(); if(!open) qualityMenu.classList.add('open'); });
+      qualityMenu.addEventListener('click', (e) => {
+        const btn = e.target.closest('button'); if(!btn) return;
+        adapter.setQuality(btn.dataset.q);
+        setTimeout(refreshQualityLabel, 400);
+        qualityMenu.classList.remove('open');
+      });
+    }
+    document.addEventListener('click', closeAllMenus);
+
+    fsBtn.addEventListener('click', () => {
+      if(document.fullscreenElement){ document.exitFullscreen(); }
+      else if(container.requestFullscreen){ container.requestFullscreen(); }
+    });
+
+    setPlayIcon();
+    updateProgress();
+  }
+
+  function mountWatermark(container){
+    const wm = document.createElement('div');
+    wm.className = 'cp-watermark';
+    wm.textContent = currentUser ? (currentUser.email || currentUser.id || '') : '';
+    container.appendChild(wm);
+    function reposition(){
+      wm.style.top = (8 + Math.random()*76) + '%';
+      wm.style.left = (8 + Math.random()*66) + '%';
+    }
+    reposition();
+    setInterval(reposition, 20000);
+  }
+
+  function wireFocusGuard(cp, adapter){
+    const guard = cp.querySelector('[data-role="focusguard"]');
+    document.addEventListener('visibilitychange', () => {
+      if(document.hidden && adapter && !adapter.isPaused()){
+        adapter.pause();
+        guard.classList.add('show');
+      }
+    });
+    guard.addEventListener('click', () => guard.classList.remove('show'));
+  }
+
+  async function mountPlayer(container, videoUrl){
+    container.innerHTML = '';
+    const src = parseVideoSource(videoUrl);
+
+    if(src.type === 'none'){
+      container.innerHTML = `<div class="player-empty">لسه مفيش فيديو مضاف للحصة دي</div>`;
+      return;
+    }
+
+    // فيميو/أي إمبيد خارجي تاني: مفيش API موحّد نقدر نبني بيه شريط تحكم
+    // مخصص بشكل موثوق، فبنسيب المشغل الأصلي بتاعه شغال عادي
+    if(src.type === 'vimeo' || src.type === 'embed'){
+      const iframe = document.createElement('iframe');
+      iframe.src = src.type === 'vimeo' ? `https://player.vimeo.com/video/${src.id}` : src.src;
+      iframe.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen';
+      iframe.allowFullscreen = true;
+      iframe.style.pointerEvents = 'auto';
+      container.appendChild(iframe);
+      mountWatermark(container);
+      return;
+    }
+
+    const cp = document.createElement('div');
+    cp.className = 'cp';
+    cp.innerHTML = buildSkinMarkup();
+    container.appendChild(cp);
+    const surface = cp.querySelector('[data-role="surface"]');
+
+    const adapter = (src.type === 'youtube') ? await mountYouTube(surface, src.id) : mountHtml5(surface, src.src);
+    wireControls(cp, adapter);
+    wireFocusGuard(cp, adapter);
+    mountWatermark(container);
   }
 
   async function init(){
@@ -311,7 +742,7 @@
     const idx = allLessons.findIndex(l => l.id === currentLesson.id);
     document.getElementById('lesson-num-tag').textContent = `الحصة ${idx + 1} من ${allLessons.length}`;
     document.getElementById('lesson-title').textContent = currentLesson.title;
-    document.getElementById('player-wrap').innerHTML = buildPlayerHTML(currentLesson.video_url);
+    mountPlayer(document.getElementById('player-wrap'), currentLesson.video_url);
 
     // التنقل بين الحصص
     const prevLesson = allLessons[idx - 1];
