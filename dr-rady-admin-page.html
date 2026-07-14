@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js?v=2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --navy-deep:#101c46; --navy-base:#1c2f72; --navy-soft:#26398c;
@@ -353,6 +355,18 @@
         </label>
       </div>
 
+      <div class="field">
+        <label>ملف تحليل الإجابات (اختياري — بيظهر للطالب قبل ما يبدأ)</label>
+        <input type="file" id="exam-analysis-file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" onchange="uploadExamAnalysisFile()">
+        <div id="exam-analysis-file-progress" style="display:none; font-size:12.5px; color:var(--bone-dim); margin-top:6px;">جارٍ الرفع...</div>
+        <div id="exam-analysis-file-preview" style="display:none; margin-top:8px; align-items:center; gap:10px;">
+          <span id="exam-analysis-file-name" style="font-size:13px; color:var(--bone-dim);"></span>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removeExamAnalysisFile()">إزالة الملف</button>
+        </div>
+        <input type="hidden" id="exam-analysis-file-url">
+        <input type="hidden" id="exam-analysis-file-name-input">
+      </div>
+
       <input type="hidden" id="exam-edit-id">
       <div style="display:flex; gap:10px;">
         <button class="btn" id="save-exam-btn" onclick="saveExam()">حفظ الاختبار</button>
@@ -438,6 +452,16 @@
 - إجابة غلط
 - إجابة غلط</code>
           </p>
+
+          <div style="background:var(--navy-base); border:1px dashed var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+            <label style="display:block; font-size:12.5px; color:var(--bone-dim); margin-bottom:8px; line-height:1.9;">
+              أو ارفع ملف <b style="color:var(--green-bright);">Word (.docx)</b> بنفس شكل النص فوق، أو ملف <b style="color:var(--green-bright);">Excel (.xlsx)</b> بالأعمدة دي بالترتيب: <br>
+              <code style="font-size:11px;">السؤال | اختيار 1 | اختيار 2 | اختيار 3 | اختيار 4 | رقم الإجابة الصح (1-4)</code>
+            </label>
+            <input type="file" id="bulk-file-input" accept=".docx,.xlsx,.xls" onchange="handleBulkFile(event, 'exam')">
+            <div id="bulk-file-status" style="display:none; margin-top:8px; font-size:12.5px;"></div>
+          </div>
+
           <textarea id="bulk-questions-input" rows="8" placeholder="الصق كل الأسئلة هنا..." style="font-family:monospace; font-size:12.5px;"></textarea>
           <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn btn-outline" id="bulk-preview-btn" onclick="previewBulkQuestions()">معاينة الأسئلة</button>
@@ -556,6 +580,18 @@
         </label>
       </div>
 
+      <div class="field">
+        <label>ملف تحليل الإجابات (اختياري — بيظهر للطالب قبل ما يبدأ)</label>
+        <input type="file" id="hw-analysis-file-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" onchange="uploadHwAnalysisFile()">
+        <div id="hw-analysis-file-progress" style="display:none; font-size:12.5px; color:var(--bone-dim); margin-top:6px;">جارٍ الرفع...</div>
+        <div id="hw-analysis-file-preview" style="display:none; margin-top:8px; align-items:center; gap:10px;">
+          <span id="hw-analysis-file-name" style="font-size:13px; color:var(--bone-dim);"></span>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removeHwAnalysisFile()">إزالة الملف</button>
+        </div>
+        <input type="hidden" id="hw-analysis-file-url">
+        <input type="hidden" id="hw-analysis-file-name-input">
+      </div>
+
       <input type="hidden" id="hw-edit-id">
       <div style="display:flex; gap:10px;">
         <button class="btn" id="save-hw-btn" onclick="saveHw()">حفظ الواجب</button>
@@ -641,6 +677,16 @@
 - إجابة غلط
 - إجابة غلط</code>
           </p>
+
+          <div style="background:var(--navy-base); border:1px dashed var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px;">
+            <label style="display:block; font-size:12.5px; color:var(--bone-dim); margin-bottom:8px; line-height:1.9;">
+              أو ارفع ملف <b style="color:var(--green-bright);">Word (.docx)</b> بنفس شكل النص فوق، أو ملف <b style="color:var(--green-bright);">Excel (.xlsx)</b> بالأعمدة دي بالترتيب: <br>
+              <code style="font-size:11px;">السؤال | اختيار 1 | اختيار 2 | اختيار 3 | اختيار 4 | رقم الإجابة الصح (1-4)</code>
+            </label>
+            <input type="file" id="hw-bulk-file-input" accept=".docx,.xlsx,.xls" onchange="handleBulkFile(event, 'hw')">
+            <div id="hw-bulk-file-status" style="display:none; margin-top:8px; font-size:12.5px;"></div>
+          </div>
+
           <textarea id="hw-bulk-questions-input" rows="8" placeholder="الصق كل الأسئلة هنا..." style="font-family:monospace; font-size:12.5px;"></textarea>
           <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn btn-outline" id="hw-bulk-preview-btn" onclick="previewBulkHwQuestions()">معاينة الأسئلة</button>
@@ -1372,6 +1418,10 @@
     document.getElementById('exam-passing-score').value = '50';
     document.getElementById('exam-allow-retake').checked = true;
     document.getElementById('exam-published').checked = false;
+    document.getElementById('exam-analysis-file-url').value = '';
+    document.getElementById('exam-analysis-file-name-input').value = '';
+    document.getElementById('exam-analysis-file-preview').style.display = 'none';
+    document.getElementById('exam-analysis-file-input').value = '';
     document.getElementById('exam-form-error').style.display = 'none';
     document.getElementById('save-exam-btn').textContent = 'حفظ الاختبار';
     document.getElementById('cancel-exam-edit').style.display = 'none';
@@ -1390,6 +1440,12 @@
     document.getElementById('exam-passing-score').value = exam.passing_score ?? 50;
     document.getElementById('exam-allow-retake').checked = exam.allow_retake !== false;
     document.getElementById('exam-published').checked = !!exam.is_published;
+    if(exam.analysis_file_url){
+      document.getElementById('exam-analysis-file-url').value = exam.analysis_file_url;
+      document.getElementById('exam-analysis-file-name-input').value = exam.analysis_file_name || '';
+      document.getElementById('exam-analysis-file-name').textContent = exam.analysis_file_name || 'ملف مرفوع';
+      document.getElementById('exam-analysis-file-preview').style.display = 'flex';
+    }
     document.getElementById('save-exam-btn').textContent = 'حفظ التعديل';
     document.getElementById('cancel-exam-edit').style.display = 'inline-flex';
     window.scrollTo({ top: document.getElementById('exam-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
@@ -1416,7 +1472,9 @@
       time_limit_minutes: document.getElementById('exam-time-limit').value ? parseInt(document.getElementById('exam-time-limit').value) : null,
       passing_score: parseInt(document.getElementById('exam-passing-score').value) || 50,
       allow_retake: document.getElementById('exam-allow-retake').checked,
-      is_published: document.getElementById('exam-published').checked
+      is_published: document.getElementById('exam-published').checked,
+      analysis_file_url: document.getElementById('exam-analysis-file-url').value || null,
+      analysis_file_name: document.getElementById('exam-analysis-file-name-input').value || null
     };
 
     const editId = document.getElementById('exam-edit-id').value;
@@ -1438,6 +1496,52 @@
 
     resetExamForm();
     refreshExamsTable();
+  }
+
+  async function uploadExamAnalysisFile(){
+    const input = document.getElementById('exam-analysis-file-input');
+    const file = input.files[0];
+    if(!file) return;
+
+    const errEl = document.getElementById('exam-form-error');
+    const progressEl = document.getElementById('exam-analysis-file-progress');
+    errEl.style.display = 'none';
+    progressEl.style.display = 'block';
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_\u0600-\u06FF ]/g, '');
+    const filePath = `${currentExamsCourseId || 'general'}/${Date.now()}_${safeName}`;
+
+    const { error: uploadError } = await supabaseClient
+      .storage
+      .from('exam-analysis-files')
+      .upload(filePath, file);
+
+    progressEl.style.display = 'none';
+
+    if(uploadError){
+      errEl.textContent = 'حصل خطأ أثناء رفع الملف، حاول تاني (تأكد إن ملف 09-exam-analysis-files.sql اتشغّل في Supabase)';
+      errEl.style.display = 'block';
+      input.value = '';
+      return;
+    }
+
+    const { data: publicUrlData } = supabaseClient
+      .storage
+      .from('exam-analysis-files')
+      .getPublicUrl(filePath);
+
+    document.getElementById('exam-analysis-file-url').value = publicUrlData.publicUrl;
+    document.getElementById('exam-analysis-file-name-input').value = file.name;
+    document.getElementById('exam-analysis-file-name').textContent = file.name;
+    document.getElementById('exam-analysis-file-preview').style.display = 'flex';
+    input.value = '';
+  }
+
+  function removeExamAnalysisFile(){
+    document.getElementById('exam-analysis-file-url').value = '';
+    document.getElementById('exam-analysis-file-name-input').value = '';
+    document.getElementById('exam-analysis-file-preview').style.display = 'none';
+    document.getElementById('exam-analysis-file-input').value = '';
   }
 
   async function deleteExam(id){
@@ -1475,6 +1579,7 @@
     document.getElementById('bulk-questions-input').value = '';
     document.getElementById('bulk-preview-area').innerHTML = '';
     document.getElementById('bulk-confirm-btn').style.display = 'none';
+    document.getElementById('bulk-file-status').style.display = 'none';
     parsedBulkQuestions = [];
     document.getElementById('add-question-btn').textContent = 'إضافة السؤال';
     document.getElementById('cancel-question-edit').style.display = 'none';
@@ -1687,6 +1792,91 @@
 
   // ===== استيراد أسئلة دفعة واحدة (لصق نص) =====
   let parsedBulkQuestions = [];
+
+  // ============================================
+  // استيراد الأسئلة من ملف Word (.docx) أو Excel (.xlsx)
+  // بيحول محتوى الملف لنفس صيغة النص المتوقعة، وبعدين يعرض معاينة زي المعتاد
+  // ============================================
+  async function handleBulkFile(event, mode){
+    const file = event.target.files[0];
+    if(!file) return;
+
+    const isHw = mode === 'hw';
+    const textareaId = isHw ? 'hw-bulk-questions-input' : 'bulk-questions-input';
+    const statusEl = document.getElementById(isHw ? 'hw-bulk-file-status' : 'bulk-file-status');
+
+    statusEl.className = 'msg msg-success';
+    statusEl.textContent = 'جارٍ قراءة الملف...';
+    statusEl.style.display = 'block';
+
+    try {
+      const name = file.name.toLowerCase();
+      let text = '';
+
+      if(name.endsWith('.docx')){
+        if(typeof mammoth === 'undefined') throw new Error('mammoth-missing');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        text = result.value;
+      } else if(name.endsWith('.xlsx') || name.endsWith('.xls')){
+        if(typeof XLSX === 'undefined') throw new Error('xlsx-missing');
+        const arrayBuffer = await file.arrayBuffer();
+        const wb = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        text = rowsToBulkText(rows);
+      } else {
+        statusEl.className = 'msg msg-error';
+        statusEl.textContent = 'الملف لازم يكون Word (.docx) أو Excel (.xlsx)';
+        return;
+      }
+
+      if(!text.trim()){
+        statusEl.className = 'msg msg-error';
+        statusEl.textContent = 'مالقتش أي أسئلة في الملف، تأكد إن شكله مطابق للمثال فوق';
+        return;
+      }
+
+      document.getElementById(textareaId).value = text.trim();
+      statusEl.style.display = 'none';
+      if(isHw) previewBulkHwQuestions(); else previewBulkQuestions();
+    } catch(err){
+      statusEl.className = 'msg msg-error';
+      statusEl.textContent = 'حصل خطأ في قراءة الملف، تأكد إنه بالشكل المطلوب وجرب تاني';
+    } finally {
+      event.target.value = '';
+    }
+  }
+
+  // بيحول صفوف ملف الإكسيل (السؤال | اختيار1..4 | رقم الإجابة الصح) لنفس صيغة النص
+  function rowsToBulkText(rows){
+    const arabicMap = { 'أ': 0, 'ا': 0, 'ب': 1, 'ج': 2, 'د': 3 };
+    const blocks = [];
+
+    (rows || []).forEach(row => {
+      if(!row || row.length === 0) return;
+      const question = String(row[0] || '').trim();
+      if(!question) return;
+      if(/^(السؤال|سؤال|question)$/i.test(question)) return; // تجاهل صف العناوين
+
+      const options = [row[1], row[2], row[3], row[4]]
+        .map(o => String(o || '').trim())
+        .filter(o => o !== '');
+      if(options.length < 2) return;
+
+      const correctRaw = String(row[5] || '').trim();
+      let correctIndex = -1;
+      if(/^[1-4]$/.test(correctRaw)) correctIndex = parseInt(correctRaw) - 1;
+      else if(/^[A-Da-d]$/.test(correctRaw)) correctIndex = correctRaw.toUpperCase().charCodeAt(0) - 65;
+      else if(arabicMap[correctRaw] !== undefined) correctIndex = arabicMap[correctRaw];
+
+      const lines = [question];
+      options.forEach((opt, i) => lines.push(`${i === correctIndex ? '*' : '-'} ${opt}`));
+      blocks.push(lines.join('\n'));
+    });
+
+    return blocks.join('\n\n');
+  }
 
   function previewBulkQuestions(){
     const raw = document.getElementById('bulk-questions-input').value;
@@ -1903,6 +2093,10 @@
     document.getElementById('hw-passing-score').value = '50';
     document.getElementById('hw-allow-retake').checked = true;
     document.getElementById('hw-published').checked = false;
+    document.getElementById('hw-analysis-file-url').value = '';
+    document.getElementById('hw-analysis-file-name-input').value = '';
+    document.getElementById('hw-analysis-file-preview').style.display = 'none';
+    document.getElementById('hw-analysis-file-input').value = '';
     document.getElementById('hw-form-error').style.display = 'none';
     document.getElementById('save-hw-btn').textContent = 'حفظ الواجب';
     document.getElementById('cancel-hw-edit').style.display = 'none';
@@ -1921,6 +2115,12 @@
     document.getElementById('hw-passing-score').value = exam.passing_score ?? 50;
     document.getElementById('hw-allow-retake').checked = exam.allow_retake !== false;
     document.getElementById('hw-published').checked = !!exam.is_published;
+    if(exam.analysis_file_url){
+      document.getElementById('hw-analysis-file-url').value = exam.analysis_file_url;
+      document.getElementById('hw-analysis-file-name-input').value = exam.analysis_file_name || '';
+      document.getElementById('hw-analysis-file-name').textContent = exam.analysis_file_name || 'ملف مرفوع';
+      document.getElementById('hw-analysis-file-preview').style.display = 'flex';
+    }
     document.getElementById('save-hw-btn').textContent = 'حفظ التعديل';
     document.getElementById('cancel-hw-edit').style.display = 'inline-flex';
     window.scrollTo({ top: document.getElementById('hw-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
@@ -1947,7 +2147,9 @@
       time_limit_minutes: document.getElementById('hw-time-limit').value ? parseInt(document.getElementById('hw-time-limit').value) : null,
       passing_score: parseInt(document.getElementById('hw-passing-score').value) || 50,
       allow_retake: document.getElementById('hw-allow-retake').checked,
-      is_published: document.getElementById('hw-published').checked
+      is_published: document.getElementById('hw-published').checked,
+      analysis_file_url: document.getElementById('hw-analysis-file-url').value || null,
+      analysis_file_name: document.getElementById('hw-analysis-file-name-input').value || null
     };
 
     const editId = document.getElementById('hw-edit-id').value;
@@ -1969,6 +2171,52 @@
 
     resetHwForm();
     refreshHwTable();
+  }
+
+  async function uploadHwAnalysisFile(){
+    const input = document.getElementById('hw-analysis-file-input');
+    const file = input.files[0];
+    if(!file) return;
+
+    const errEl = document.getElementById('hw-form-error');
+    const progressEl = document.getElementById('hw-analysis-file-progress');
+    errEl.style.display = 'none';
+    progressEl.style.display = 'block';
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_\u0600-\u06FF ]/g, '');
+    const filePath = `${currentHwCourseId || 'general'}/${Date.now()}_${safeName}`;
+
+    const { error: uploadError } = await supabaseClient
+      .storage
+      .from('exam-analysis-files')
+      .upload(filePath, file);
+
+    progressEl.style.display = 'none';
+
+    if(uploadError){
+      errEl.textContent = 'حصل خطأ أثناء رفع الملف، حاول تاني (تأكد إن ملف 09-exam-analysis-files.sql اتشغّل في Supabase)';
+      errEl.style.display = 'block';
+      input.value = '';
+      return;
+    }
+
+    const { data: publicUrlData } = supabaseClient
+      .storage
+      .from('exam-analysis-files')
+      .getPublicUrl(filePath);
+
+    document.getElementById('hw-analysis-file-url').value = publicUrlData.publicUrl;
+    document.getElementById('hw-analysis-file-name-input').value = file.name;
+    document.getElementById('hw-analysis-file-name').textContent = file.name;
+    document.getElementById('hw-analysis-file-preview').style.display = 'flex';
+    input.value = '';
+  }
+
+  function removeHwAnalysisFile(){
+    document.getElementById('hw-analysis-file-url').value = '';
+    document.getElementById('hw-analysis-file-name-input').value = '';
+    document.getElementById('hw-analysis-file-preview').style.display = 'none';
+    document.getElementById('hw-analysis-file-input').value = '';
   }
 
   async function deleteHw(id){
@@ -2006,6 +2254,7 @@
     document.getElementById('hw-bulk-questions-input').value = '';
     document.getElementById('hw-bulk-preview-area').innerHTML = '';
     document.getElementById('hw-bulk-confirm-btn').style.display = 'none';
+    document.getElementById('hw-bulk-file-status').style.display = 'none';
     parsedBulkHwQuestions = [];
     document.getElementById('add-hw-question-btn').textContent = 'إضافة السؤال';
     document.getElementById('cancel-hw-question-edit').style.display = 'none';

@@ -413,6 +413,25 @@
     return '📄';
   }
 
+  function forceDownload(url, filename){
+    fetch(url)
+      .then(res => res.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename || 'file';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      })
+      .catch(() => {
+        // لو الفتش فشل لأي سبب، افتح الملف في تاب جديد كحل بديل
+        window.open(url, '_blank', 'noopener');
+      });
+  }
+
   async function loadFiles(){
     const listEl = document.getElementById('files-list');
     const { data: files, error } = await supabaseClient
@@ -426,11 +445,14 @@
       return;
     }
 
-    listEl.innerHTML = files.map(f => `
+    listEl.innerHTML = files.map((f, i) => `
       <div class="file-row">
         <div class="file-ic">${fileIcon(f.file_name)}</div>
         <span class="fname">${f.file_name}</span>
-        <a href="${f.file_url}" target="_blank" rel="noopener" class="btn btn-sm">تحميل</a>
+        <div style="display:flex; gap:8px;">
+          <a href="${f.file_url}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">عرض</a>
+          <button type="button" class="btn btn-sm" onclick="forceDownload('${f.file_url}', '${(f.file_name || 'file').replace(/'/g, "")}')">تحميل</button>
+        </div>
       </div>
     `).join('');
   }

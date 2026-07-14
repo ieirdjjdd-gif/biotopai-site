@@ -193,6 +193,32 @@
     <a href="dr-rady-exams-page.html" class="btn">رجوع للاختبارات</a>
   </div>
 
+  <!-- ===== حالة الشاشة التمهيدية قبل بدء الاختبار/الواجب ===== -->
+  <div id="state-intro" style="display:none; max-width:560px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:24px;">
+      <h1 id="intro-title" style="font-size:24px; margin-bottom:10px;"></h1>
+      <p id="intro-desc" style="color:var(--bone-dim); font-size:14px;"></p>
+      <p id="intro-meta" style="color:var(--bone-dim); font-size:13px; margin-top:10px;"></p>
+    </div>
+
+    <div id="intro-prior-attempt" style="display:none; background:var(--navy-base); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:16px; text-align:center;">
+      <p id="intro-prior-text" style="font-size:14px;"></p>
+    </div>
+
+    <div id="intro-analysis-file" style="display:none; background:var(--navy-base); border:1px dashed var(--line); border-radius:12px; padding:16px 18px; margin-bottom:20px;">
+      <p style="font-size:13.5px; color:var(--bone-dim); margin-bottom:10px;">📊 متاح ملف تحليل الإجابات:</p>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span id="intro-analysis-file-name" style="font-size:13px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+        <a id="intro-analysis-view-link" href="#" target="_blank" rel="noopener" class="btn btn-outline btn-sm">عرض</a>
+        <button type="button" class="btn btn-sm" onclick="downloadIntroAnalysisFile()">تحميل</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn" id="intro-start-btn" onclick="startAttempt()">ابدأ</button>
+    </div>
+  </div>
+
   <!-- ===== حالة أداء الاختبار ===== -->
   <div id="state-quiz" style="display:none;">
     <div class="exam-top">
@@ -300,7 +326,7 @@
 
   function showState(name){
     currentState = name;
-    ['loading','denied','quiz','result'].forEach(s => {
+    ['loading','denied','intro','quiz','result'].forEach(s => {
       document.getElementById('state-' + s).style.display = (s === name ? 'block' : 'none');
     });
   }
@@ -419,6 +445,8 @@
           );
           return;
         }
+        showIntro(priorAttempt);
+        return;
       } else if(isPendingAttemptExpired(priorAttempt, exam)){
         // محاولة اتسابت من غير تسليم (قفل الموقع بالقوة / النت اتقطع) والمهلة خلصت — تتقفل بصفر
         await supabaseClient.from('exam_attempts').update({
@@ -432,6 +460,8 @@
           );
           return;
         }
+        showIntro(null);
+        return;
       } else {
         // محاولة لسه في مهلتها — ممكن تكون شغالة دلوقتي في تاب/جهاز تاني
         denied(
@@ -441,6 +471,68 @@
         return;
       }
     }
+
+    showIntro(null);
+  }
+
+  function showIntro(priorAttempt){
+    const isHw = exam.kind === 'homework';
+    document.getElementById('intro-title').textContent = exam.title;
+    document.getElementById('intro-desc').textContent = exam.description || '';
+
+    const metaParts = [];
+    metaParts.push(`${isHw ? 'واجب' : 'اختبار'}`);
+    if(exam.time_limit_minutes) metaParts.push(`⏱️ ${exam.time_limit_minutes} دقيقة`);
+    document.getElementById('intro-meta').textContent = metaParts.join(' • ');
+
+    const priorBox = document.getElementById('intro-prior-attempt');
+    if(priorAttempt && priorAttempt.completed_at){
+      const passed = priorAttempt.percentage >= (exam.passing_score || 50);
+      document.getElementById('intro-prior-text').textContent =
+        `آخر نتيجة ليك: ${Math.round(priorAttempt.percentage)}% (${passed ? 'ناجح ✓' : 'راسب'}) — تقدر تعمل محاولة جديدة`;
+      priorBox.style.display = 'block';
+    } else {
+      priorBox.style.display = 'none';
+    }
+
+    const analysisBox = document.getElementById('intro-analysis-file');
+    if(exam.analysis_file_url){
+      document.getElementById('intro-analysis-file-name').textContent = exam.analysis_file_name || 'ملف تحليل الإجابات';
+      document.getElementById('intro-analysis-view-link').href = exam.analysis_file_url;
+      analysisBox.style.display = 'block';
+    } else {
+      analysisBox.style.display = 'none';
+    }
+
+    document.getElementById('intro-start-btn').textContent = isHw ? 'ابدأ الواجب' : 'ابدأ الاختبار';
+    document.getElementById('intro-start-btn').disabled = false;
+
+    showState('intro');
+  }
+
+  function downloadIntroAnalysisFile(){
+    if(!exam || !exam.analysis_file_url) return;
+    const url = exam.analysis_file_url;
+    const filename = exam.analysis_file_name || 'تحليل-الإجابات';
+    fetch(url)
+      .then(res => res.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      })
+      .catch(() => window.open(url, '_blank', 'noopener'));
+  }
+
+  async function startAttempt(){
+    const btn = document.getElementById('intro-start-btn');
+    btn.disabled = true;
+    btn.textContent = 'جارٍ التجهيز...';
 
     const { data: qData, error: qErr } = await supabaseClient
       .from('exam_questions').select('id, question_text, image_url, order_index').eq('exam_id', EXAM_ID).order('order_index', { ascending: true });
@@ -466,7 +558,7 @@
       .from('exam_attempts')
       .insert({
         exam_id: EXAM_ID,
-        user_id: user.id,
+        user_id: currentUser.id,
         score: 0,
         total_questions: questions.length,
         percentage: 0,
