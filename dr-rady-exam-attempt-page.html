@@ -314,15 +314,15 @@
   let hasSubmitted = false;     // بيبقى true أول ما يتسجل أي محاولة (يدوي أو تلقائي بصفر)
   let currentAttemptId = null;  // id صف المحاولة اللي بيتسجل أول ما الاختبار يفتح (جارٍ التنفيذ) وبيتحدّث لما يسلّم
 
-  // مهلة السماح قبل ما نعتبر المحاولة "متروكة" ونقفلها بصفر تلقائيًا
-  const UNTIMED_GRACE_MINUTES = 180; // لو الاختبار من غير وقت محدد
-  const GRACE_BUFFER_MINUTES = 10;   // هامش إضافي فوق وقت الاختبار نفسه
+  // مهلة السماح قبل ما نعتبر المحاولة "متروكة" ونقفلها بصفر تلقائيًا.
+  // ثابتة 7 دقايق من لحظة بداية المحاولة، بغض النظر عن مدة الاختبار نفسه:
+  // لو الطالب مرجعش خلال 7 دقايق (قفل الموقع / قطع نت / طلع بدون تسليم)، تتقفل بصفر.
+  const PENDING_ATTEMPT_GRACE_MINUTES = 7;
 
   function isPendingAttemptExpired(attempt, examData){
     if(attempt.completed_at) return false;
-    const graceMinutes = (examData.time_limit_minutes || UNTIMED_GRACE_MINUTES) + GRACE_BUFFER_MINUTES;
     const startedAt = new Date(attempt.started_at).getTime();
-    return (Date.now() - startedAt) > graceMinutes * 60 * 1000;
+    return (Date.now() - startedAt) > PENDING_ATTEMPT_GRACE_MINUTES * 60 * 1000;
   }
 
   function showState(name){
