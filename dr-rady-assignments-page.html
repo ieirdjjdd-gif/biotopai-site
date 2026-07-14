@@ -376,6 +376,7 @@
       .select('id, course_id, lesson_id, title, time_limit_minutes, passing_score, kind, order_index')
       .in('course_id', courseIds)
       .eq('kind', 'homework')
+      .eq('is_published', true)
       .order('order_index', { ascending: true });
 
     loadingEl.style.display = 'none';

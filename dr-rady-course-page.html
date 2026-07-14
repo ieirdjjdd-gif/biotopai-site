@@ -471,7 +471,8 @@
       const { data: exams } = await supabaseClient
         .from('exams')
         .select('id, lesson_id, title, kind, time_limit_minutes, passing_score')
-        .in('lesson_id', lessonIds);
+        .in('lesson_id', lessonIds)
+        .eq('is_published', true);
 
       (exams || []).forEach(e => {
         if(!examsByLesson[e.lesson_id]) examsByLesson[e.lesson_id] = [];

@@ -346,6 +346,12 @@
           السماح للطالب بإعادة المحاولة بعد ما يخلّص (لو مطفي، محاولة واحدة بس وبس)
         </label>
       </div>
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="exam-published" style="accent-color:var(--green); width:16px; height:16px;">
+          منشور وظاهر للطلاب (سيبه مطفي لحد ما تخلّص إضافة الأسئلة وتراجعها)
+        </label>
+      </div>
 
       <input type="hidden" id="exam-edit-id">
       <div style="display:flex; gap:10px;">
@@ -406,7 +412,11 @@
             <input type="text" id="opt-text-3" placeholder="نص الاختيار الرابع (اختياري)">
           </div>
         </div>
-        <button class="btn" id="add-question-btn" onclick="addQuestion()">إضافة السؤال</button>
+        <input type="hidden" id="question-edit-id">
+        <div style="display:flex; gap:10px;">
+          <button class="btn" id="add-question-btn" onclick="addQuestion()">إضافة السؤال</button>
+          <button class="btn btn-outline" id="cancel-question-edit" style="display:none;" onclick="resetQuestionForm()">إلغاء التعديل</button>
+        </div>
 
         <div style="display:flex; align-items:center; gap:10px; margin:22px 0; color:var(--bone-dim); font-size:12px;">
           <div style="flex:1; height:1px; background:var(--line);"></div>
@@ -539,6 +549,12 @@
           السماح للطالب بإعادة المحاولة بعد ما يخلّص (لو مطفي، محاولة واحدة بس وبس)
         </label>
       </div>
+      <div class="field">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="hw-published" style="accent-color:var(--green); width:16px; height:16px;">
+          منشور وظاهر للطلاب (سيبه مطفي لحد ما تخلّص إضافة الأسئلة وتراجعها)
+        </label>
+      </div>
 
       <input type="hidden" id="hw-edit-id">
       <div style="display:flex; gap:10px;">
@@ -599,7 +615,11 @@
             <input type="text" id="hw-opt-text-3" placeholder="نص الاختيار الرابع (اختياري)">
           </div>
         </div>
-        <button class="btn" id="add-hw-question-btn" onclick="addHwQuestion()">إضافة السؤال</button>
+        <input type="hidden" id="hw-question-edit-id">
+        <div style="display:flex; gap:10px;">
+          <button class="btn" id="add-hw-question-btn" onclick="addHwQuestion()">إضافة السؤال</button>
+          <button class="btn btn-outline" id="cancel-hw-question-edit" style="display:none;" onclick="resetHwQuestionForm()">إلغاء التعديل</button>
+        </div>
 
         <div style="display:flex; align-items:center; gap:10px; margin:22px 0; color:var(--bone-dim); font-size:12px;">
           <div style="flex:1; height:1px; background:var(--line);"></div>
@@ -1327,7 +1347,7 @@
       const retakeLabel = e.allow_retake === false ? ' <span style="color:var(--rose,#e08182); font-size:11px;">(محاولة واحدة)</span>' : '';
       return `
         <tr>
-          <td>${e.title}${retakeLabel}</td>
+          <td>${e.title}${retakeLabel}<br><span class="tag ${e.is_published ? 'tag-live' : 'tag-hidden'}">${e.is_published ? 'منشور' : 'مسودة'}</span></td>
           <td>${lessonTitle}</td>
           <td>${qCountMap[e.id] || 0}</td>
           <td>
@@ -1351,6 +1371,7 @@
     document.getElementById('exam-time-limit').value = '';
     document.getElementById('exam-passing-score').value = '50';
     document.getElementById('exam-allow-retake').checked = true;
+    document.getElementById('exam-published').checked = false;
     document.getElementById('exam-form-error').style.display = 'none';
     document.getElementById('save-exam-btn').textContent = 'حفظ الاختبار';
     document.getElementById('cancel-exam-edit').style.display = 'none';
@@ -1368,6 +1389,7 @@
     document.getElementById('exam-time-limit').value = exam.time_limit_minutes || '';
     document.getElementById('exam-passing-score').value = exam.passing_score ?? 50;
     document.getElementById('exam-allow-retake').checked = exam.allow_retake !== false;
+    document.getElementById('exam-published').checked = !!exam.is_published;
     document.getElementById('save-exam-btn').textContent = 'حفظ التعديل';
     document.getElementById('cancel-exam-edit').style.display = 'inline-flex';
     window.scrollTo({ top: document.getElementById('exam-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
@@ -1393,7 +1415,8 @@
       order_index: parseInt(document.getElementById('exam-order').value) || 0,
       time_limit_minutes: document.getElementById('exam-time-limit').value ? parseInt(document.getElementById('exam-time-limit').value) : null,
       passing_score: parseInt(document.getElementById('exam-passing-score').value) || 50,
-      allow_retake: document.getElementById('exam-allow-retake').checked
+      allow_retake: document.getElementById('exam-allow-retake').checked,
+      is_published: document.getElementById('exam-published').checked
     };
 
     const editId = document.getElementById('exam-edit-id').value;
@@ -1443,6 +1466,7 @@
   }
 
   function resetQuestionForm(){
+    document.getElementById('question-edit-id').value = '';
     document.getElementById('question-text').value = '';
     for(let i = 0; i < 4; i++) document.getElementById(`opt-text-${i}`).value = '';
     document.querySelector('input[name="correct-opt"][value="0"]').checked = true;
@@ -1452,6 +1476,38 @@
     document.getElementById('bulk-preview-area').innerHTML = '';
     document.getElementById('bulk-confirm-btn').style.display = 'none';
     parsedBulkQuestions = [];
+    document.getElementById('add-question-btn').textContent = 'إضافة السؤال';
+    document.getElementById('cancel-question-edit').style.display = 'none';
+  }
+
+  async function editQuestion(id){
+    const { data: q, error } = await supabaseClient
+      .from('exam_questions').select('id, question_text, image_url').eq('id', id).single();
+    if(error || !q) return;
+
+    const { data: options } = await supabaseClient
+      .from('exam_options').select('option_text, is_correct, order_index').eq('question_id', id).order('order_index', { ascending: true });
+
+    resetQuestionForm();
+    document.getElementById('question-edit-id').value = q.id;
+    document.getElementById('question-text').value = q.question_text;
+
+    (options || []).forEach(o => {
+      if(o.order_index >= 0 && o.order_index <= 3){
+        document.getElementById(`opt-text-${o.order_index}`).value = o.option_text;
+        if(o.is_correct) document.querySelector(`input[name="correct-opt"][value="${o.order_index}"]`).checked = true;
+      }
+    });
+
+    if(q.image_url){
+      document.getElementById('question-image-url').value = q.image_url;
+      document.getElementById('question-image-preview-img').src = q.image_url;
+      document.getElementById('question-image-preview').style.display = 'block';
+    }
+
+    document.getElementById('add-question-btn').textContent = 'حفظ التعديل';
+    document.getElementById('cancel-question-edit').style.display = 'inline-flex';
+    document.getElementById('question-text').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   async function loadQuestionsForExam(){
@@ -1480,6 +1536,7 @@
           <td style="color:var(--green-bright);">${correctOpt ? correctOpt.option_text : '—'}</td>
           <td>
             <div class="row-actions">
+              <button class="btn btn-outline btn-sm" onclick="editQuestion('${q.id}')">تعديل</button>
               <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${q.id}')">حذف</button>
             </div>
           </td>
@@ -1559,25 +1616,46 @@
       return;
     }
 
+    const editId = document.getElementById('question-edit-id').value;
     const btn = document.getElementById('add-question-btn');
-    btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
+    btn.disabled = true; btn.textContent = editId ? 'جارٍ الحفظ...' : 'جارٍ الإضافة...';
 
     const imageUrl = document.getElementById('question-image-url').value.trim() || null;
 
-    const { data: newQuestion, error: qError } = await supabaseClient
-      .from('exam_questions')
-      .insert({ exam_id: currentQuestionsExamId, question_text: questionText, image_url: imageUrl, order_index: Math.floor(Date.now() / 1000) })
-      .select().single();
+    let questionId = editId;
 
-    if(qError || !newQuestion){
-      errEl.textContent = 'حصل خطأ في إضافة السؤال، حاول تاني';
-      errEl.style.display = 'block';
-      btn.disabled = false; btn.textContent = 'إضافة السؤال';
-      return;
+    if(editId){
+      const { error: updError } = await supabaseClient
+        .from('exam_questions')
+        .update({ question_text: questionText, image_url: imageUrl })
+        .eq('id', editId);
+
+      if(updError){
+        errEl.textContent = 'حصل خطأ في حفظ التعديل، حاول تاني';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'حفظ التعديل';
+        return;
+      }
+
+      // نمسح الاختيارات القديمة ونحط الجديدة بدل ما نحاول نطابقها واحد واحد
+      await supabaseClient.from('exam_options').delete().eq('question_id', editId);
+    } else {
+      const { data: newQuestion, error: qError } = await supabaseClient
+        .from('exam_questions')
+        .insert({ exam_id: currentQuestionsExamId, question_text: questionText, image_url: imageUrl, order_index: Math.floor(Date.now() / 1000) })
+        .select().single();
+
+      if(qError || !newQuestion){
+        errEl.textContent = 'حصل خطأ في إضافة السؤال، حاول تاني';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'إضافة السؤال';
+        return;
+      }
+      questionId = newQuestion.id;
     }
 
     const optionsPayload = filledOptions.map(o => ({
-      question_id: newQuestion.id,
+      question_id: questionId,
       option_text: o.text,
       is_correct: o.i === correctIndex,
       order_index: o.i
@@ -1585,10 +1663,10 @@
 
     const { error: optError } = await supabaseClient.from('exam_options').insert(optionsPayload);
 
-    btn.disabled = false; btn.textContent = 'إضافة السؤال';
+    btn.disabled = false; btn.textContent = editId ? 'حفظ التعديل' : 'إضافة السؤال';
 
     if(optError){
-      errEl.textContent = 'اتضاف السؤال بس حصل خطأ في الاختيارات، احذف السؤال وجرب تاني';
+      errEl.textContent = editId ? 'اتحفظ السؤال بس حصل خطأ في الاختيارات، افتح تعديله تاني وجرب' : 'اتضاف السؤال بس حصل خطأ في الاختيارات، احذف السؤال وجرب تاني';
       errEl.style.display = 'block';
       loadQuestionsForExam();
       return;
@@ -1800,7 +1878,7 @@
       const retakeLabel = e.allow_retake === false ? ' <span style="color:var(--rose,#e08182); font-size:11px;">(محاولة واحدة)</span>' : '';
       return `
         <tr>
-          <td>${e.title}${retakeLabel}</td>
+          <td>${e.title}${retakeLabel}<br><span class="tag ${e.is_published ? 'tag-live' : 'tag-hidden'}">${e.is_published ? 'منشور' : 'مسودة'}</span></td>
           <td>${lessonTitle}</td>
           <td>${qCountMap[e.id] || 0}</td>
           <td>
@@ -1824,6 +1902,7 @@
     document.getElementById('hw-time-limit').value = '';
     document.getElementById('hw-passing-score').value = '50';
     document.getElementById('hw-allow-retake').checked = true;
+    document.getElementById('hw-published').checked = false;
     document.getElementById('hw-form-error').style.display = 'none';
     document.getElementById('save-hw-btn').textContent = 'حفظ الواجب';
     document.getElementById('cancel-hw-edit').style.display = 'none';
@@ -1841,6 +1920,7 @@
     document.getElementById('hw-time-limit').value = exam.time_limit_minutes || '';
     document.getElementById('hw-passing-score').value = exam.passing_score ?? 50;
     document.getElementById('hw-allow-retake').checked = exam.allow_retake !== false;
+    document.getElementById('hw-published').checked = !!exam.is_published;
     document.getElementById('save-hw-btn').textContent = 'حفظ التعديل';
     document.getElementById('cancel-hw-edit').style.display = 'inline-flex';
     window.scrollTo({ top: document.getElementById('hw-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
@@ -1866,7 +1946,8 @@
       order_index: parseInt(document.getElementById('hw-order').value) || 0,
       time_limit_minutes: document.getElementById('hw-time-limit').value ? parseInt(document.getElementById('hw-time-limit').value) : null,
       passing_score: parseInt(document.getElementById('hw-passing-score').value) || 50,
-      allow_retake: document.getElementById('hw-allow-retake').checked
+      allow_retake: document.getElementById('hw-allow-retake').checked,
+      is_published: document.getElementById('hw-published').checked
     };
 
     const editId = document.getElementById('hw-edit-id').value;
@@ -1916,6 +1997,7 @@
   }
 
   function resetHwQuestionForm(){
+    document.getElementById('hw-question-edit-id').value = '';
     document.getElementById('hw-question-text').value = '';
     for(let i = 0; i < 4; i++) document.getElementById(`hw-opt-text-${i}`).value = '';
     document.querySelector('input[name="hw-correct-opt"][value="0"]').checked = true;
@@ -1925,6 +2007,38 @@
     document.getElementById('hw-bulk-preview-area').innerHTML = '';
     document.getElementById('hw-bulk-confirm-btn').style.display = 'none';
     parsedBulkHwQuestions = [];
+    document.getElementById('add-hw-question-btn').textContent = 'إضافة السؤال';
+    document.getElementById('cancel-hw-question-edit').style.display = 'none';
+  }
+
+  async function editHwQuestion(id){
+    const { data: q, error } = await supabaseClient
+      .from('exam_questions').select('id, question_text, image_url').eq('id', id).single();
+    if(error || !q) return;
+
+    const { data: options } = await supabaseClient
+      .from('exam_options').select('option_text, is_correct, order_index').eq('question_id', id).order('order_index', { ascending: true });
+
+    resetHwQuestionForm();
+    document.getElementById('hw-question-edit-id').value = q.id;
+    document.getElementById('hw-question-text').value = q.question_text;
+
+    (options || []).forEach(o => {
+      if(o.order_index >= 0 && o.order_index <= 3){
+        document.getElementById(`hw-opt-text-${o.order_index}`).value = o.option_text;
+        if(o.is_correct) document.querySelector(`input[name="hw-correct-opt"][value="${o.order_index}"]`).checked = true;
+      }
+    });
+
+    if(q.image_url){
+      document.getElementById('hw-question-image-url').value = q.image_url;
+      document.getElementById('hw-question-image-preview-img').src = q.image_url;
+      document.getElementById('hw-question-image-preview').style.display = 'block';
+    }
+
+    document.getElementById('add-hw-question-btn').textContent = 'حفظ التعديل';
+    document.getElementById('cancel-hw-question-edit').style.display = 'inline-flex';
+    document.getElementById('hw-question-text').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   async function loadHwQuestions(){
@@ -1953,6 +2067,7 @@
           <td style="color:var(--green-bright);">${correctOpt ? correctOpt.option_text : '—'}</td>
           <td>
             <div class="row-actions">
+              <button class="btn btn-outline btn-sm" onclick="editHwQuestion('${q.id}')">تعديل</button>
               <button class="btn btn-danger btn-sm" onclick="deleteHwQuestion('${q.id}')">حذف</button>
             </div>
           </td>
@@ -2032,25 +2147,45 @@
       return;
     }
 
+    const editId = document.getElementById('hw-question-edit-id').value;
     const btn = document.getElementById('add-hw-question-btn');
-    btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
+    btn.disabled = true; btn.textContent = editId ? 'جارٍ الحفظ...' : 'جارٍ الإضافة...';
 
     const imageUrl = document.getElementById('hw-question-image-url').value.trim() || null;
 
-    const { data: newQuestion, error: qError } = await supabaseClient
-      .from('exam_questions')
-      .insert({ exam_id: currentQuestionsHwId, question_text: questionText, image_url: imageUrl, order_index: Math.floor(Date.now() / 1000) })
-      .select().single();
+    let questionId = editId;
 
-    if(qError || !newQuestion){
-      errEl.textContent = 'حصل خطأ في إضافة السؤال، حاول تاني';
-      errEl.style.display = 'block';
-      btn.disabled = false; btn.textContent = 'إضافة السؤال';
-      return;
+    if(editId){
+      const { error: updError } = await supabaseClient
+        .from('exam_questions')
+        .update({ question_text: questionText, image_url: imageUrl })
+        .eq('id', editId);
+
+      if(updError){
+        errEl.textContent = 'حصل خطأ في حفظ التعديل، حاول تاني';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'حفظ التعديل';
+        return;
+      }
+
+      await supabaseClient.from('exam_options').delete().eq('question_id', editId);
+    } else {
+      const { data: newQuestion, error: qError } = await supabaseClient
+        .from('exam_questions')
+        .insert({ exam_id: currentQuestionsHwId, question_text: questionText, image_url: imageUrl, order_index: Math.floor(Date.now() / 1000) })
+        .select().single();
+
+      if(qError || !newQuestion){
+        errEl.textContent = 'حصل خطأ في إضافة السؤال، حاول تاني';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'إضافة السؤال';
+        return;
+      }
+      questionId = newQuestion.id;
     }
 
     const optionsPayload = filledOptions.map(o => ({
-      question_id: newQuestion.id,
+      question_id: questionId,
       option_text: o.text,
       is_correct: o.i === correctIndex,
       order_index: o.i
@@ -2058,10 +2193,10 @@
 
     const { error: optError } = await supabaseClient.from('exam_options').insert(optionsPayload);
 
-    btn.disabled = false; btn.textContent = 'إضافة السؤال';
+    btn.disabled = false; btn.textContent = editId ? 'حفظ التعديل' : 'إضافة السؤال';
 
     if(optError){
-      errEl.textContent = 'اتضاف السؤال بس حصل خطأ في الاختيارات، احذف السؤال وجرب تاني';
+      errEl.textContent = editId ? 'اتحفظ السؤال بس حصل خطأ في الاختيارات، افتح تعديله تاني وجرب' : 'اتضاف السؤال بس حصل خطأ في الاختيارات، احذف السؤال وجرب تاني';
       errEl.style.display = 'block';
       loadHwQuestions();
       return;

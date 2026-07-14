@@ -346,6 +346,10 @@
       denied('الاختبار مش موجود ⚠️', 'الاختبار ده اتشال أو الرابط غلط.');
       return;
     }
+    if(!examData.is_published){
+      denied('الاختبار لسه مش متاح ⚠️', 'الاختبار ده لسه تحت الإعداد، هيتفتح لما يخلص المدرّس منه.');
+      return;
+    }
     exam = examData;
     updateBackLinks();
 
