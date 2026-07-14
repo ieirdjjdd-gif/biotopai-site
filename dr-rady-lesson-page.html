@@ -88,12 +88,14 @@
   .cp-catcher{position:absolute; inset:0; z-index:4; cursor:pointer; background:transparent;}
   .cp-center-play{
     position:absolute; inset:0; z-index:5; display:flex; align-items:center; justify-content:center;
-    background:rgba(16,28,70,0.28); opacity:0; pointer-events:none; transition:opacity .18s;
+    background:rgba(9,14,36,0.94); opacity:0; pointer-events:none; transition:opacity .18s;
   }
-  .cp-center-play.show{opacity:1; pointer-events:none;}
+  .cp-center-play.show{opacity:1; pointer-events:auto;}
   .cp-center-play svg{width:64px; height:64px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));}
+  .cp-poster-title{position:absolute; bottom:22%; left:0; right:0; text-align:center; color:var(--bone-dim); font-size:13px; padding:0 20px;}
   .cp-spinner{
     position:absolute; inset:0; z-index:6; display:none; align-items:center; justify-content:center;
+    background:rgba(9,14,36,0.94);
   }
   .cp-spinner.show{display:flex;}
   .cp-spinner .ring{
@@ -101,6 +103,20 @@
     border-top-color:var(--green-bright); animation:cpspin .8s linear infinite;
   }
   @keyframes cpspin{to{transform:rotate(360deg);}}
+
+  .cp-flash{
+    position:absolute; top:0; bottom:0; width:50%; z-index:7; display:flex; align-items:center;
+    justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .cp-flash.show{opacity:1;}
+  .cp-flash-left{left:0;}
+  .cp-flash-right{right:0;}
+  .cp-flash-badge{
+    width:62px; height:62px; border-radius:50%; background:rgba(16,28,70,0.7);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    color:var(--bone); font-size:11.5px; font-weight:700;
+  }
+  .cp-flash-badge span:first-child{font-size:19px;}
 
   .cp-bar{
     position:absolute; left:0; right:0; bottom:0; z-index:10;
@@ -154,8 +170,9 @@
 
   /* شارة العلامة المائية - رقم الطالب/إيميله يتحرك فوق الفيديو */
   .cp-watermark{
-    position:absolute; z-index:3; pointer-events:none; color:rgba(243,236,217,0.16);
-    font-size:12px; font-weight:700; white-space:nowrap; font-family:'Cairo', sans-serif;
+    position:absolute; z-index:8; pointer-events:none; color:rgba(243,236,217,0.5);
+    font-size:13px; font-weight:800; white-space:nowrap; font-family:'Cairo', sans-serif;
+    text-shadow:0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
     transition:top 1.2s ease, left 1.2s ease;
   }
 
@@ -356,6 +373,8 @@
     return `
       <div class="cp-surface" data-role="surface"></div>
       <div class="cp-catcher" data-role="catcher"></div>
+      <div class="cp-flash cp-flash-left" data-role="flashleft"><div class="cp-flash-badge"><span>«</span><span>10 ثواني</span></div></div>
+      <div class="cp-flash cp-flash-right" data-role="flashright"><div class="cp-flash-badge"><span>»</span><span>10 ثواني</span></div></div>
       <div class="cp-center-play show" data-role="centerplay">
         <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="31" fill="rgba(16,28,70,0.55)" stroke="#8fd155" stroke-width="2"/><polygon points="26,20 46,32 26,44" fill="#f3ecd9"/></svg>
       </div>
@@ -393,7 +412,7 @@
     `;
   }
 
-  async function mountYouTube(surface, videoId){
+  async function mountYouTube(surface, videoId, autoplay){
     const YT = await loadYouTubeAPI();
     const target = document.createElement('div');
     target.style.cssText = 'width:100%;height:100%;pointer-events:none;';
@@ -408,10 +427,18 @@
       host: 'https://www.youtube-nocookie.com', // نسخة الخصوصية: بدون كوكيز يوتيوب وبدون واجهة/شعار
       playerVars: {
         controls: 0, disablekb: 1, modestbranding: 1, rel: 0, showinfo: 0,
-        iv_load_policy: 3, fs: 0, playsinline: 1, origin: window.location.origin
+        iv_load_policy: 3, cc_load_policy: 0, autoplay: autoplay ? 1 : 0,
+        fs: 0, playsinline: 1, origin: window.location.origin
       },
       events: {
-        onReady: () => readyResolve(),
+        onReady: () => {
+          // إيقاف الترجمة إجباريًا حتى لو حساب المستخدم على يوتيوب مفعّل عنده ترجمة تلقائية
+          try{
+            if(ytPlayer.unloadModule) ytPlayer.unloadModule('captions');
+            if(ytPlayer.setOption) ytPlayer.setOption('captions', 'track', {});
+          }catch(err){}
+          readyResolve();
+        },
         onStateChange: (e) => {
           if(e.data === YT.PlayerState.PLAYING) listeners.play.forEach(cb => cb());
           else if(e.data === YT.PlayerState.PAUSED) listeners.pause.forEach(cb => cb());
@@ -533,7 +560,35 @@
     adapter.on('pause', setPlayIcon);
     adapter.on('ended', setPlayIcon);
 
-    catcher.addEventListener('click', () => adapter.togglePlay());
+    // ===== تشغيل/إيقاف بضغطة، وتقديم/ترجيع 10 ثواني بضغطتين على نص الشاشة (زي يوتيوب) =====
+    const flashLeft = q('flashleft'), flashRight = q('flashright');
+    function flashSeek(side){
+      const el = side === 'right' ? flashRight : flashLeft;
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 550);
+    }
+    let lastTapTime = 0, lastTapSide = null, singleClickTimer = null;
+    catcher.addEventListener('click', (e) => {
+      const rect = catcher.getBoundingClientRect();
+      const side = (e.clientX - rect.left) < rect.width / 2 ? 'left' : 'right';
+      const now = Date.now();
+      if(side === lastTapSide && (now - lastTapTime) < 350){
+        clearTimeout(singleClickTimer);
+        lastTapTime = 0; lastTapSide = null;
+        const dur = adapter.getDuration();
+        const delta = side === 'right' ? 10 : -10;
+        adapter.seekTo(Math.max(0, Math.min(dur || Infinity, adapter.getCurrentTime() + delta)));
+        flashSeek(side);
+      } else {
+        lastTapTime = now; lastTapSide = side;
+        clearTimeout(singleClickTimer);
+        singleClickTimer = setTimeout(() => { adapter.togglePlay(); lastTapSide = null; }, 300);
+      }
+    });
+    centerPlay.addEventListener('click', () => adapter.togglePlay());
     playBtn.addEventListener('click', () => adapter.togglePlay());
 
     function seekFromEvent(e){
@@ -595,11 +650,12 @@
       speedMenu.classList.remove('open');
     });
 
-    const qualities = adapter.getQualities ? adapter.getQualities() : null;
     const qualityLabels = { hd2160:'4K', hd1440:'1440p', hd1080:'1080p', hd720:'720p', large:'480p', medium:'360p', small:'240p', tiny:'144p', auto:'تلقائي' };
-    if(qualities && qualities.length){
+    if(adapter.type === 'youtube'){
+      const reported = adapter.getQualities ? adapter.getQualities() : null;
+      const list = (reported && reported.length) ? reported : ['hd1080','hd720','large','medium','small','auto'];
       qualityWrap.style.display = '';
-      qualityMenu.innerHTML = qualities.map(qq => `<button type="button" data-q="${qq}">${qualityLabels[qq] || qq}</button>`).join('');
+      qualityMenu.innerHTML = list.map(qq => `<button type="button" data-q="${qq}">${qualityLabels[qq] || qq}</button>`).join('');
       function refreshQualityLabel(){
         const cur = adapter.getQuality ? adapter.getQuality() : 'auto';
         qualityBtn.textContent = qualityLabels[cur] || 'تلقائي';
@@ -631,7 +687,7 @@
     wm.textContent = currentUser ? (currentUser.email || currentUser.id || '') : '';
     container.appendChild(wm);
     function reposition(){
-      wm.style.top = (8 + Math.random()*76) + '%';
+      wm.style.top = (8 + Math.random()*58) + '%';
       wm.style.left = (8 + Math.random()*66) + '%';
     }
     reposition();
@@ -676,11 +732,34 @@
     cp.innerHTML = buildSkinMarkup();
     container.appendChild(cp);
     const surface = cp.querySelector('[data-role="surface"]');
+    mountWatermark(container); // العلامة المائية تظهر من أول لحظة، حتى قبل تشغيل الفيديو
 
-    const adapter = (src.type === 'youtube') ? await mountYouTube(surface, src.id) : mountHtml5(surface, src.src);
+    if(src.type === 'youtube'){
+      // بنأجّل تحميل يوتيوب لحد ما الطالب يضغط تشغيل فعليًا، عشان صورة
+      // العنوان/القناة اللي يوتيوب بيحطها تلقائيًا قبل التشغيل ما تظهرش خالص
+      const centerPlay = cp.querySelector('[data-role="centerplay"]');
+      const catcher = cp.querySelector('[data-role="catcher"]');
+      const startLoading = async () => {
+        catcher.removeEventListener('click', startLoading);
+        centerPlay.removeEventListener('click', startLoading);
+        centerPlay.classList.remove('show');
+        const spinner = document.createElement('div');
+        spinner.className = 'cp-spinner show';
+        spinner.innerHTML = '<div class="ring"></div>';
+        cp.appendChild(spinner);
+        const adapter = await mountYouTube(surface, src.id, true);
+        spinner.remove();
+        wireControls(cp, adapter);
+        wireFocusGuard(cp, adapter);
+      };
+      catcher.addEventListener('click', startLoading);
+      centerPlay.addEventListener('click', startLoading);
+      return;
+    }
+
+    const adapter = mountHtml5(surface, src.src);
     wireControls(cp, adapter);
     wireFocusGuard(cp, adapter);
-    mountWatermark(container);
   }
 
   async function init(){
