@@ -205,15 +205,6 @@
       <p id="intro-prior-text" style="font-size:14px;"></p>
     </div>
 
-    <div id="intro-analysis-file" style="display:none; background:var(--navy-base); border:1px dashed var(--line); border-radius:12px; padding:16px 18px; margin-bottom:20px;">
-      <p style="font-size:13.5px; color:var(--bone-dim); margin-bottom:10px;">📊 متاح ملف تحليل الإجابات:</p>
-      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-        <span id="intro-analysis-file-name" style="font-size:13px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
-        <a id="intro-analysis-view-link" href="#" target="_blank" rel="noopener" class="btn btn-outline btn-sm">عرض</a>
-        <button type="button" class="btn btn-sm" onclick="downloadIntroAnalysisFile()">تحميل</button>
-      </div>
-    </div>
-
     <div style="text-align:center;">
       <button class="btn" id="intro-start-btn" onclick="startAttempt()">ابدأ</button>
     </div>
@@ -278,6 +269,16 @@
       </div>
       <div class="result-actions" id="result-actions"></div>
     </div>
+
+    <div id="result-analysis-file" style="display:none; background:var(--navy-base); border:1px dashed var(--line); border-radius:12px; padding:16px 18px; margin:20px auto; max-width:520px;">
+      <p style="font-size:13.5px; color:var(--bone-dim); margin-bottom:10px;">📊 متاح ملف تحليل الإجابات:</p>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <span id="result-analysis-file-name" style="font-size:13px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+        <a id="result-analysis-view-link" href="#" target="_blank" rel="noopener" class="btn btn-outline btn-sm">عرض</a>
+        <button type="button" class="btn btn-sm" onclick="downloadResultAnalysisFile()">تحميل</button>
+      </div>
+    </div>
+
     <div id="review-list"></div>
   </div>
 
@@ -495,22 +496,13 @@
       priorBox.style.display = 'none';
     }
 
-    const analysisBox = document.getElementById('intro-analysis-file');
-    if(exam.analysis_file_url){
-      document.getElementById('intro-analysis-file-name').textContent = exam.analysis_file_name || 'ملف تحليل الإجابات';
-      document.getElementById('intro-analysis-view-link').href = exam.analysis_file_url;
-      analysisBox.style.display = 'block';
-    } else {
-      analysisBox.style.display = 'none';
-    }
-
     document.getElementById('intro-start-btn').textContent = isHw ? 'ابدأ الواجب' : 'ابدأ الاختبار';
     document.getElementById('intro-start-btn').disabled = false;
 
     showState('intro');
   }
 
-  function downloadIntroAnalysisFile(){
+  function downloadResultAnalysisFile(){
     if(!exam || !exam.analysis_file_url) return;
     const url = exam.analysis_file_url;
     const filename = exam.analysis_file_name || 'تحليل-الإجابات';
@@ -862,6 +854,15 @@
         : `<button class="btn btn-outline" onclick="location.reload()">إعادة المحاولة</button>`;
     }
     document.getElementById('result-actions').innerHTML = actionsHTML;
+
+    const analysisBox = document.getElementById('result-analysis-file');
+    if(exam.analysis_file_url){
+      document.getElementById('result-analysis-file-name').textContent = exam.analysis_file_name || 'ملف تحليل الإجابات';
+      document.getElementById('result-analysis-view-link').href = exam.analysis_file_url;
+      analysisBox.style.display = 'block';
+    } else {
+      analysisBox.style.display = 'none';
+    }
 
     if(REVIEW_MODE){
       document.getElementById('result-text').textContent += ' (بتراجع نتيجتك اللي اتسجّلت قبل كده)';
