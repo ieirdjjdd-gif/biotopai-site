@@ -783,9 +783,13 @@
       document.title = course.title + ' | BioTopia';
     }
 
-    // كل حصص الكورس
+    // ملحوظة أمان: مبنجيبش video_url هنا لكل حصص الكورس. لو جبناه هنا،
+    // أي مستخدم مسجل دخول (حتى لو مش مشترك في الكورس) هيقدر يشوف
+    // روابط فيديوهات كل الحصص المدفوعة من الـ Network tab، حتى لو الواجهة
+    // مش عارضاها. بنجيب بس البيانات اللي مالهاش حساسية هنا، وهنجيب
+    // video_url لحصة واحدة بس بعد ما نتأكد إن المستخدم فعلاً مشترك.
     const { data: lessons, error: lessonsErr } = await supabaseClient
-      .from('lessons').select('*').eq('course_id', COURSE_ID).order('order_index', { ascending: true });
+      .from('lessons_public').select('id, course_id, title, order_index, is_free_preview').eq('course_id', COURSE_ID).order('order_index', { ascending: true });
 
     if(lessonsErr || !lessons || lessons.length === 0){
       denied('حصل خطأ ⚠️', 'مقدرناش نجيب حصص الكورس ده دلوقتي.');
@@ -809,6 +813,12 @@
       denied('الحصة دي مقفولة 🔒', 'لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.');
       return;
     }
+
+    // دلوقتي بس، وبعد ما اتأكدنا إن المستخدم يستحق يشوف الحصة دي، نجيب
+    // video_url بتاعها هي بس (مش باقي حصص الكورس).
+    const { data: unlockedLesson } = await supabaseClient
+      .from('lessons').select('video_url').eq('id', currentLesson.id).single();
+    currentLesson.video_url = unlockedLesson?.video_url || null;
 
     renderLesson();
     renderSidebar();
