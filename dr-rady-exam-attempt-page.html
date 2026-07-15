@@ -535,8 +535,11 @@
     }
 
     const questionIds = qData.map(q => q.id);
+    // ملحوظة أمان: متجيبش عمود is_correct هنا. الامتحان لسه ما بدأش
+    // فعليًا، فمينفعش الإجابات الصح توصل للمتصفح قبل التسليم.
+    // التصحيح بقى بالكامل في Edge Function (submit-exam) على السيرفر.
     const { data: optData } = await supabaseClient
-      .from('exam_options').select('id, question_id, option_text, is_correct, order_index').in('question_id', questionIds).order('order_index', { ascending: true });
+      .from('exam_options').select('id, question_id, option_text, order_index').in('question_id', questionIds).order('order_index', { ascending: true });
 
     questions = qData.map(q => ({
       ...q,
@@ -722,42 +725,28 @@
     confirmBtn.disabled = true;
     confirmBtn.textContent = 'جارٍ التصحيح...';
 
-    let correctCount = 0;
-    questions.forEach(q => {
-      const chosenOptionId = answers[q.id];
-      const correctOption = q.options.find(o => o.is_correct);
-      if(chosenOptionId && correctOption && chosenOptionId === correctOption.id){
-        correctCount++;
-      }
+    // ملحوظة أمان: التصحيح مبيحصلش هنا خالص. بنبعت اختيارات الطالب بس
+    // (question_id -> option_id) لـ Edge Function اسمها submit-exam، وهي
+    // اللي بتقارن بالإجابات الصح وتحسب الدرجة وتحفظها — كل ده على
+    // السيرفر، عشان الطالب ميقدرش يشوف الإجابات الصح أو يزوّر درجته.
+    const { data, error } = await supabaseClient.functions.invoke('hyper-api', {
+      body: { examId: EXAM_ID, attemptId: currentAttemptId, answers }
     });
-
-    const percentage = Math.round((correctCount / questions.length) * 100);
-
-    const attemptPayload = {
-      exam_id: EXAM_ID,
-      user_id: currentUser.id,
-      score: correctCount,
-      total_questions: questions.length,
-      percentage: percentage,
-      answers: answers,
-      completed_at: new Date().toISOString()
-    };
-
-    // لو عندنا صف "جارٍ التنفيذ" اتسجل أول ما الاختبار بدأ، بنحدّثه بدل ما نعمل صف جديد
-    const { error } = currentAttemptId
-      ? await supabaseClient.from('exam_attempts').update(attemptPayload).eq('id', currentAttemptId)
-      : await supabaseClient.from('exam_attempts').insert(attemptPayload);
 
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'أيوه، سلّم';
 
-    if(error){
+    if(error || !data || data.error){
       alert('حصل خطأ في حفظ النتيجة، حاول تاني');
       hasSubmitted = false;
       return;
     }
 
-    showResult(correctCount, percentage);
+    if(data.timeExpired){
+      alert('الوقت انتهى قبل ما تسلّم، فاتسجلت النتيجة صفر ⏱️');
+    }
+
+    showResult(data.score, data.percentage);
   }
 
   /* ===== لو الطالب طلع من غير ما يسلّم: يتحسب صفر تلقائي =====
