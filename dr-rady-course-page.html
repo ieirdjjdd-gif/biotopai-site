@@ -436,9 +436,14 @@
       return;
     }
 
+    // ملحوظة أمان: الصفحة دي عامة وأي حد يقدر يفتحها من غير تسجيل دخول
+    // خالص. لو جبنا video_url هنا، أي حد (حتى لو مش مسجل) هيقدر ياخد
+    // روابط فيديوهات كل الحصص المدفوعة من الـ Network tab من غير ما
+    // يدفع أو يسجّل دخول أصلًا. الرابط الفعلي بيتجاب بس من صفحة الحصة
+    // نفسها (dr-rady-lesson-page.html) وبعد التأكد من الاشتراك.
     const { data: lessons, error } = await supabaseClient
-      .from('lessons')
-      .select('*')
+      .from('lessons_public')
+      .select('id, course_id, title, order_index, is_free_preview')
       .eq('course_id', COURSE_ID)
       .order('order_index', { ascending: true });
 
@@ -508,15 +513,14 @@
       const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
 
       // ===== عنصر الفيديو =====
-      const videoItem = lesson.video_url
-        ? `<div class="lsub-item">
-             <div class="lsub-info"><span class="lsub-ic">🎬</span><span class="lsub-label">فيديو الشرح</span></div>
-             <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
-           </div>`
-        : `<div class="lsub-item">
-             <div class="lsub-info"><span class="lsub-ic">🎬</span><span class="lsub-label">فيديو الشرح</span></div>
-             <button class="lbtn" disabled style="opacity:.5; cursor:not-allowed;">قريبًا</button>
-           </div>`;
+      // ملحوظة: مبقاش عندنا video_url هنا (شوف ملحوظة الأمان فوق)، فبنسيب
+      // زرار "مشاهدة" ظاهر دايمًا للحصص المفتوحة؛ لو مفيش فيديو فعلاً،
+      // صفحة الحصة نفسها هتعرض رسالة "لسه مفيش فيديو مضاف".
+      const videoItem = `
+        <div class="lsub-item">
+          <div class="lsub-info"><span class="lsub-ic">🎬</span><span class="lsub-label">فيديو الشرح</span></div>
+          <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
+        </div>`;
 
       // ===== عنصر الملفات =====
       const filesItem = `
