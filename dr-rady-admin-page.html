@@ -72,6 +72,20 @@
   .tag-live{background:rgba(95,168,43,0.18); color:var(--green-bright);}
   .tag-hidden{background:rgba(217,142,75,0.18); color:var(--amber);}
   .tag-free{background:rgba(95,168,43,0.18); color:var(--green-bright);}
+  .tag-unread{background:rgba(180,82,83,0.18); color:#e8a3a4;}
+
+  /* ===== شات رسائل الطلاب ===== */
+  .thread-messages{max-height:420px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:6px 4px; margin-bottom:16px;}
+  .thread-bubble{max-width:75%; padding:10px 14px; border-radius:14px; font-size:13.5px; white-space:pre-wrap; word-break:break-word;}
+  .thread-bubble-admin{align-self:flex-start; background:var(--navy-deep); border:1px solid var(--line); border-bottom-right-radius:4px;}
+  .thread-bubble-student{align-self:flex-end; background:rgba(95,168,43,0.16); border:1px solid rgba(95,168,43,0.4); border-bottom-left-radius:4px;}
+  .thread-bubble .time{font-size:10.5px; color:var(--bone-dim); margin-top:4px;}
+  .thread-reply-form{display:flex; gap:10px;}
+  .thread-reply-form input{
+    flex:1; background:var(--navy-deep); border:1.5px solid var(--line); border-radius:100px;
+    padding:12px 18px; color:var(--bone); font-family:'Cairo'; font-size:14px; outline:none;
+  }
+  .thread-reply-form input:focus{border-color:var(--green);}
 
   .msg{font-size:13px; padding:10px 14px; border-radius:10px; margin-bottom:14px; display:none;}
   .msg-error{background:rgba(220,80,80,0.14); border:1px solid rgba(220,80,80,0.4); color:#ffb3b3;}
@@ -113,6 +127,35 @@
 <div id="app-content" class="wrap">
   <h1 class="page-title">لوحة تحكم د. راضي</h1>
   <p class="page-sub">إضافة وتعديل الكورسات والحصص من غير ما تدخل SQL Editor.</p>
+
+  <!-- ===== رسائل الطلاب (تواصل معانا) ===== -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>💬 رسائل الطلاب <span id="unread-msgs-badge" class="tag tag-unread" style="display:none;"></span></h2>
+      <button class="btn btn-outline btn-sm" onclick="loadSupportThreads()">تحديث</button>
+    </div>
+    <table>
+      <thead>
+        <tr><th>الطالب</th><th>آخر رسالة</th><th>الوقت</th><th>الحالة</th><th></th></tr>
+      </thead>
+      <tbody id="threads-table-body">
+        <tr><td colspan="5">جارٍ التحميل...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== تفاصيل محادثة طالب ===== -->
+  <div class="panel" id="thread-detail" style="display:none;">
+    <div class="panel-head">
+      <h2>محادثة مع: <span id="thread-student-name" style="color:var(--green-bright);"></span></h2>
+      <button class="btn btn-outline btn-sm" onclick="closeThreadDetail()">إغلاق</button>
+    </div>
+    <div class="thread-messages" id="thread-messages"></div>
+    <form class="thread-reply-form" id="thread-reply-form">
+      <input type="text" id="thread-reply-input" placeholder="اكتب ردك هنا..." maxlength="2000" autocomplete="off">
+      <button type="submit" class="btn">إرسال</button>
+    </form>
+  </div>
 
   <!-- ===== طلبات الاشتراك ===== -->
   <div class="panel">
@@ -778,7 +821,193 @@
     document.getElementById('app-content').style.display = 'block';
     loadCourses();
     loadEnrollments();
+    loadSupportThreads();
+    subscribeToSupportMessages();
   })();
+
+  // ===== HTML-escape بسيط عشان الرسائل متكسرش الصفحة ولا تعمل XSS =====
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // ===== رسائل الطلاب (تواصل معانا) =====
+  let currentThreadUserId = null;
+
+  async function loadSupportThreads(){
+    const tbody = document.getElementById('threads-table-body');
+
+    const { data: msgs, error } = await supabaseClient
+      .from('support_messages')
+      .select('id, user_id, sender_role, body, created_at, read_by_admin')
+      .order('created_at', { ascending: false });
+
+    if(error){
+      console.error('loadSupportThreads error:', error);
+      tbody.innerHTML = `<tr><td colspan="5">حصل خطأ في تحميل الرسائل</td></tr>`;
+      return;
+    }
+
+    if(!msgs || msgs.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5">مفيش رسائل لسه</td></tr>`;
+      document.getElementById('unread-msgs-badge').style.display = 'none';
+      return;
+    }
+
+    // نمسك آخر رسالة لكل طالب بس (الرسائل جاية مرتبة تنازليًا فآخر ظهور لكل user_id هو الأحدث)
+    const byUser = {};
+    for(const m of msgs){
+      if(!byUser[m.user_id]) byUser[m.user_id] = m;
+    }
+    const userIds = Object.keys(byUser);
+
+    const { data: profiles } = await supabaseClient
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', userIds);
+
+    const nameById = {};
+    (profiles || []).forEach(p => nameById[p.id] = p.full_name || 'طالب');
+
+    let unreadCount = 0;
+    tbody.innerHTML = userIds.map(uid => {
+      const last = byUser[uid];
+      const hasUnread = last.sender_role === 'student' && !last.read_by_admin;
+      if(hasUnread) unreadCount++;
+      const time = new Date(last.created_at).toLocaleString('ar-EG', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+      const name = nameById[uid] || 'طالب';
+      const preview = (last.sender_role === 'admin' ? 'انت: ' : '') + last.body;
+      return `
+        <tr>
+          <td>${escapeHtml(name)}</td>
+          <td style="max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(preview)}</td>
+          <td>${time}</td>
+          <td>${hasUnread ? '<span class="tag tag-unread">رسالة جديدة</span>' : ''}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="openThreadDetail('${uid}')">فتح المحادثة</button></td>
+        </tr>
+      `;
+    }).join('');
+
+    // نخزن الأسماء عشان نستخدمها لما نفتح محادثة من غير ما نطلبها تاني
+    window.__bt_names_by_id = nameById;
+
+    const badge = document.getElementById('unread-msgs-badge');
+    if(unreadCount > 0){
+      badge.textContent = unreadCount + ' جديدة';
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  async function openThreadDetail(userId){
+    currentThreadUserId = userId;
+    const name = (window.__bt_names_by_id && window.__bt_names_by_id[userId]) || 'طالب';
+    document.getElementById('thread-student-name').textContent = name;
+    document.getElementById('thread-detail').style.display = 'block';
+    document.getElementById('thread-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    await renderThreadMessages();
+
+    // علّم كل رسائل الطالب ده كمقروءة من الأدمن
+    await supabaseClient
+      .from('support_messages')
+      .update({ read_by_admin: true })
+      .eq('user_id', userId)
+      .eq('sender_role', 'student')
+      .eq('read_by_admin', false);
+
+    loadSupportThreads();
+  }
+
+  async function renderThreadMessages(){
+    const box = document.getElementById('thread-messages');
+
+    const { data: msgs, error } = await supabaseClient
+      .from('support_messages')
+      .select('sender_role, body, created_at')
+      .eq('user_id', currentThreadUserId)
+      .order('created_at', { ascending: true });
+
+    if(error){
+      console.error('renderThreadMessages error:', error);
+      box.innerHTML = `<p style="color:var(--bone-dim); font-size:13px;">حصل خطأ في تحميل المحادثة</p>`;
+      return;
+    }
+
+    if(!msgs || msgs.length === 0){
+      box.innerHTML = `<p style="color:var(--bone-dim); font-size:13px;">لسه مفيش رسائل في المحادثة دي</p>`;
+      return;
+    }
+
+    box.innerHTML = msgs.map(m => {
+      const isAdmin = m.sender_role === 'admin';
+      const time = new Date(m.created_at).toLocaleString('ar-EG', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+      return `
+        <div class="thread-bubble ${isAdmin ? 'thread-bubble-admin' : 'thread-bubble-student'}">
+          <div>${escapeHtml(m.body)}</div>
+          <div class="time">${isAdmin ? 'انت' : 'الطالب'} · ${time}</div>
+        </div>
+      `;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function closeThreadDetail(){
+    document.getElementById('thread-detail').style.display = 'none';
+    currentThreadUserId = null;
+  }
+
+  document.getElementById('thread-reply-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(!currentThreadUserId) return;
+
+    const input = document.getElementById('thread-reply-input');
+    const body = input.value.trim();
+    if(!body) return;
+
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    const { error } = await supabaseClient
+      .from('support_messages')
+      .insert({
+        user_id: currentThreadUserId,
+        sender_id: user.id,
+        sender_role: 'admin',
+        body,
+        read_by_admin: true,
+        read_by_student: false,
+      });
+
+    btn.disabled = false;
+
+    if(error){
+      console.error('admin reply error:', error);
+      alert('حصل خطأ في إرسال الرد: ' + error.message);
+      return;
+    }
+
+    input.value = '';
+    await renderThreadMessages();
+    loadSupportThreads();
+  });
+
+  // ===== تحديث لحظي: أي رسالة جديدة (من أي طالب) تحدّث الجدول فورًا =====
+  function subscribeToSupportMessages(){
+    supabaseClient
+      .channel('admin-support-messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_messages' }, (payload) => {
+        loadSupportThreads();
+        if(currentThreadUserId && payload.new.user_id === currentThreadUserId){
+          renderThreadMessages();
+        }
+      })
+      .subscribe();
+  }
 
   // ===== تحميل الكورسات =====
   async function loadCourses(){

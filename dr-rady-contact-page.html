@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تواصل معانا | BioTopia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#e2d8bd;
+    --ink:#0c1230;
+    --line: rgba(243,236,217,0.14);
+    --rose:#b45253;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+  }
+  h1,h2,h3,h4{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  img,svg{display:block; max-width:100%;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 22px; border-radius:100px; font-weight:700; font-size:13.5px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .btn:disabled{opacity:.6; cursor:default; transform:none;}
+  .btn-outline{background:transparent; border:1.5px solid var(--line); color:var(--bone); padding:10px 20px;}
+  .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+  .link-accent{font-weight:700; color:var(--green-bright);}
+  .link-accent:hover{text-decoration:underline;}
+
+  /* ===== SHELL ===== */
+  .shell{display:grid; grid-template-columns:250px 1fr; min-height:calc(100vh - 71px);}
+  .sidebar{
+    background:var(--navy-deep); border-left:1px solid var(--line);
+    padding:24px 18px; display:flex; flex-direction:column; gap:26px;
+    position:sticky; top:71px; height:calc(100vh - 71px);
+  }
+  header{
+    position:sticky; top:0; z-index:60;
+    background:rgba(16,28,70,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto;}
+  .nav .brand{display:flex; align-items:center; gap:10px;}
+  .nav .brand .logo-mark{width:38px; height:38px;}
+  .nav .brand-text{font-family:'Tajawal'; font-weight:800; font-size:20px; color:var(--green-bright);}
+  .nav .brand-text span{color:var(--bone);}
+  .nav ul{list-style:none; display:flex; gap:34px;}
+  .nav ul a{font-size:15px; font-weight:600; color:var(--bone-dim); transition:.2s;}
+  .nav ul a:hover{color:var(--green-bright);}
+  .nav ul a.active{color:var(--green-bright);}
+  .menu-toggle{display:none; font-size:26px; background:none; border:none; color:var(--bone); cursor:pointer;}
+  .header-user{display:flex; align-items:center; gap:10px;}
+  .header-user .avatar{
+    width:36px; height:36px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+    font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:13px;
+  }
+  .header-user b{font-size:13.5px; color:var(--bone);}
+
+  /* ===== SIDEBAR ===== */
+  .side-nav{display:flex; flex-direction:column; gap:4px;}
+  .side-link{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
+    font-size:14px; font-weight:600; color:var(--bone-dim); transition:.2s;
+  }
+  .side-link .ic{font-size:16px; width:20px; text-align:center;}
+  .side-link:hover{background:rgba(243,236,217,0.05); color:var(--bone);}
+  .side-link.active{background:rgba(95,168,43,0.16); color:var(--green-bright);}
+  .side-link .side-badge{
+    margin-right:auto; background:var(--rose); color:#fff; font-size:10.5px; font-weight:800;
+    border-radius:100px; padding:1px 7px; display:none;
+  }
+  .side-foot{margin-top:auto; padding-top:16px; border-top:1px solid var(--line);}
+  .user-chip{display:flex; align-items:center; gap:10px; padding:8px 6px;}
+  .user-chip .avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--navy-soft);
+    display:flex; align-items:center; justify-content:center; border:1.5px solid var(--green);
+    font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:14px;
+  }
+  .user-chip b{display:block; font-size:13.5px;}
+  .user-chip span{font-size:11.5px; color:var(--bone-dim);}
+
+  /* ===== MAIN ===== */
+  main{padding:32px 36px 60px; max-width:760px;}
+  .topbar{margin-bottom:28px;}
+  .topbar h1{font-size:24px; color:var(--bone);}
+  .topbar p{font-size:13.5px; color:var(--bone-dim); margin-top:4px;}
+
+  .panel{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:26px; margin-bottom:22px;}
+  .panel-head{margin-bottom:20px;}
+  .panel-head h2{font-size:16.5px; color:var(--bone); display:flex; align-items:center; gap:8px;}
+  .panel-head p{font-size:12.5px; color:var(--bone-dim); margin-top:4px;}
+
+  /* ===== تواصل مباشر ===== */
+  .direct-row{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px;}
+  .direct-btn{
+    flex:1; min-width:190px; display:flex; align-items:center; gap:12px;
+    padding:16px 18px; border-radius:16px; border:1.5px solid var(--line);
+    background:var(--navy-deep); transition:.2s;
+  }
+  .direct-btn:hover{border-color:var(--green-bright); transform:translateY(-2px);}
+  .direct-btn .ic{
+    width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:rgba(95,168,43,0.16); flex-shrink:0;
+  }
+  .direct-btn .ic svg{width:22px; height:22px;}
+  .direct-btn b{display:block; font-size:14px;}
+  .direct-btn span{font-size:11.5px; color:var(--bone-dim);}
+
+  .social-row{display:flex; align-items:center; gap:12px;}
+  .social-icon{
+    width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--navy-deep); border:1.5px solid var(--line); transition:.2s;
+  }
+  .social-icon:hover{background:var(--green); border-color:var(--green); transform:translateY(-3px);}
+  .social-icon svg{width:17px; height:17px;}
+  .social-icon:hover svg path, .social-icon:hover svg rect, .social-icon:hover svg circle{fill:var(--navy-deep) !important;}
+
+  /* ===== شات ===== */
+  .chat-box{
+    height:420px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;
+    padding:6px 4px; margin-bottom:16px;
+  }
+  .chat-empty{color:var(--bone-dim); font-size:13px; text-align:center; margin:auto;}
+  .bubble{max-width:78%; padding:10px 14px; border-radius:14px; font-size:13.5px; white-space:pre-wrap; word-break:break-word;}
+  .bubble-student{align-self:flex-end; background:rgba(95,168,43,0.16); border:1px solid rgba(95,168,43,0.4); border-bottom-left-radius:4px;}
+  .bubble-admin{align-self:flex-start; background:var(--navy-deep); border:1px solid var(--line); border-bottom-right-radius:4px;}
+  .bubble .time{font-size:10.5px; color:var(--bone-dim); margin-top:5px;}
+  .chat-form{display:flex; gap:10px;}
+  .chat-form input{
+    flex:1; background:var(--navy-deep); border:1.5px solid var(--line); border-radius:100px;
+    padding:12px 18px; color:var(--bone); font-family:'Cairo'; font-size:14px; outline:none; transition:.2s;
+  }
+  .chat-form input:focus{border-color:var(--green);}
+  .chat-note{font-size:11.5px; color:var(--bone-dim); margin-top:10px;}
+
+  @media (max-width:900px){
+    .menu-toggle{display:block;}
+    .header-user b{display:none;}
+    .nav ul{
+      display:none; position:absolute; top:100%; right:0; left:0;
+      background:var(--navy-deep); flex-direction:column; gap:0;
+      border-top:1px solid var(--line); padding:6px 28px 14px;
+    }
+    .nav ul.mobile-open{display:flex;}
+    .nav ul li{width:100%;}
+    .nav ul li a{display:block; padding:13px 0; border-bottom:1px solid var(--line);}
+    .nav ul li:last-child a{border-bottom:none;}
+  }
+  @media (max-width:980px){
+    .shell{grid-template-columns:1fr; min-height:auto;}
+    .sidebar{position:static; height:auto; flex-direction:row; align-items:center; overflow-x:auto;}
+    .side-nav{flex-direction:row;}
+    .side-foot{display:none;}
+    main{padding:24px 18px 48px; max-width:100%;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js?v=2"></script>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
+    </div>
+    <nav>
+      <ul id="mainNav">
+        <li><a href="dr-rady-dashboard-page.html">الرئيسية</a></li>
+        <li><a href="dr-rady-catalog-page.html">الكورسات</a></li>
+        <li><a href="dr-rady-contact-page.html" class="active">تواصل معنا</a></li>
+      </ul>
+    </nav>
+    <div style="display:flex; gap:16px; align-items:center;">
+      <div class="header-user">
+        <div class="avatar" id="user-avatar">؟</div>
+        <b id="user-name">جارٍ التحميل...</b>
+      </div>
+      <a href="#" class="link-accent" style="font-size:13px;" onclick="signOut(); return false;">تسجيل خروج</a>
+      <button class="menu-toggle" onclick="document.getElementById('mainNav').classList.toggle('mobile-open')">☰</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <nav class="side-nav">
+      <a href="dr-rady-dashboard-page.html" class="side-link"><span class="ic">🏠</span> لوحتي</a>
+      <a href="dr-rady-catalog-page.html" class="side-link"><span class="ic">📚</span> كورساتي</a>
+      <a href="dr-rady-assignments-page.html" class="side-link"><span class="ic">📝</span> الواجبات</a>
+      <a href="dr-rady-exams-page.html" class="side-link"><span class="ic">✅</span> الاختبارات</a>
+      <a href="dr-rady-achievements-page.html" class="side-link"><span class="ic">🏆</span> الإنجازات</a>
+      <a href="dr-rady-contact-page.html" class="side-link active"><span class="ic">💬</span> تواصل معانا</a>
+      <a href="dr-rady-settings-page.html" class="side-link"><span class="ic">⚙️</span> الإعدادات</a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="user-chip">
+        <div class="avatar" id="sidebar-avatar">؟</div>
+        <div><b id="sidebar-name">جارٍ التحميل...</b><span id="sidebar-grade"></span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+
+    <div class="topbar">
+      <h1>تواصل معانا</h1>
+      <p>عندك سؤال أو مشكلة؟ راسلنا مباشرة أو ابعتلنا في الشات وهنرد عليك أول ما نشوف الرسالة.</p>
+    </div>
+
+    <!-- ===== تواصل مباشر ===== -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>📞 تواصل مباشر</h2>
+        <p>لأي حاجة عاجلة، كلمنا على طول من هنا.</p>
+      </div>
+
+      <div class="direct-row">
+        <a href="https://wa.me/201017852442" target="_blank" rel="noopener" class="direct-btn">
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2z" stroke="#8fd155" stroke-width="1.6"/><path d="M8.5 8.3c.2-.6.6-.6 1-.6h.6c.2 0 .5 0 .7.5.2.5.7 1.7.8 1.8.1.2.1.4 0 .6-.1.2-.2.3-.3.5-.2.2-.3.3-.1.6.2.3 1 1.6 2.1 2.6 1.4 1.3 2.6 1.7 2.9 1.9.3.2.5.1.7-.1.2-.2.8-.9 1-1.2.2-.3.4-.2.7-.1.3.1 1.9.9 2.2 1 .3.2.5.2.6.4.1.2.1 1-.3 1.9-.4.9-2 1.7-2.9 1.8-.8.1-1.7.1-2.7-.2-1-.3-2.3-.7-3.9-1.9-1.9-1.5-3.2-3.4-3.6-4-.3-.6-1-1.7-1-3.2 0-1.5.8-2.2 1-2.5z" fill="#8fd155"/></svg>
+          </div>
+          <div><b>واتساب</b><span>01017852442</span></div>
+        </a>
+      </div>
+
+      <div class="social-row">
+        <a href="https://www.instagram.com/mahmoudrady439?igsh=MTI3MTgya3djc3lvbQ==" target="_blank" rel="noopener" class="social-icon" aria-label="إنستجرام">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="6" stroke="#f3ecd9" stroke-width="1.8"/>
+            <circle cx="12" cy="12" r="4.5" stroke="#f3ecd9" stroke-width="1.8"/>
+            <circle cx="17.3" cy="6.7" r="1.2" fill="#f3ecd9"/>
+          </svg>
+        </a>
+        <a href="https://www.facebook.com/share/18wnLsZUDx/" target="_blank" rel="noopener" class="social-icon" aria-label="فيسبوك">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 8.5h2.2V5.2h-2.5c-2.6 0-4.2 1.6-4.2 4.2v2.1H8.3v3.3h2.2V22h3.4v-7.2h2.4l.4-3.3h-2.8V9.6c0-.8.4-1.1 1.1-1.1z" fill="#f3ecd9"/>
+          </svg>
+        </a>
+        <a href="https://youtube.com/@dr.rady439?si=0r6qso9O4jjrRngc" target="_blank" rel="noopener" class="social-icon" aria-label="يوتيوب">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="5.5" width="20" height="13" rx="4" stroke="#f3ecd9" stroke-width="1.8"/>
+            <path d="M10.5 9.5l5 2.5-5 2.5z" fill="#f3ecd9"/>
+          </svg>
+        </a>
+        <a href="https://t.me/Rady439" target="_blank" rel="noopener" class="social-icon" aria-label="تليجرام">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M21 4L2.5 11.3c-1 .4-1 1.6.1 1.9l4.6 1.4 1.8 5.6c.3.9 1.4 1.1 2 .4l2.6-2.8 4.7 3.5c.8.6 2 .2 2.2-.8L23 5c.2-1-.9-1.7-2-1z" stroke="#f3ecd9" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M8 14.6l9.5-7.4-8 6.9" stroke="#f3ecd9" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="https://vt.tiktok.com/ZSXu8xsAs/" target="_blank" rel="noopener" class="social-icon" aria-label="تيك توك">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M16.5 2c.3 2.2 1.9 3.9 4.1 4.2v3.1a7.3 7.3 0 0 1-4.1-1.3v6.8a5.7 5.7 0 1 1-5.7-5.7c.3 0 .6 0 .9.1v3.1a2.6 2.6 0 1 0 1.9 2.5V2h2.9z" fill="#f3ecd9"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- ===== شات مع الدعم ===== -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>💬 راسلنا من هنا</h2>
+        <p>ابعتلنا سؤالك وهيرد عليك د. راضي أو فريق الدعم في أقرب وقت.</p>
+      </div>
+
+      <div class="chat-box" id="chat-box">
+        <div class="chat-empty">جارٍ تحميل المحادثة...</div>
+      </div>
+
+      <form class="chat-form" id="chat-form">
+        <input type="text" id="chat-input" placeholder="اكتب رسالتك هنا..." maxlength="2000" autocomplete="off">
+        <button type="submit" class="btn">إرسال</button>
+      </form>
+      <div class="chat-note">الرسايل هنا بتوصل لفريق الدعم مباشرة، مش شات فوري لايف — لو محتاج رد سريع جدًا استخدم واتساب فوق.</div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let currentUser = null;
+  let chatChannel = null;
+  const renderedMessageIds = new Set(); // عشان منعرضش نفس الرسالة مرتين (مرة فوري + مرة عن طريق realtime)
+
+  // ===== حماية الصفحة: لازم تسجيل دخول =====
+  (async function initContact(){
+    const user = await requireAuth();
+    if(!user) return;
+    currentUser = user;
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('full_name, grade')
+      .eq('id', user.id)
+      .single();
+
+    if(error){
+      console.error('load profile error:', error);
+    }
+
+    const displayName = profile?.full_name || user.email;
+    document.getElementById('user-name').textContent = displayName;
+    document.getElementById('user-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-name').textContent = displayName;
+    document.getElementById('sidebar-avatar').textContent = displayName.charAt(0);
+    document.getElementById('sidebar-grade').textContent = profile?.grade || '';
+
+    await loadChatMessages();
+    subscribeToChat();
+  })();
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function renderMessage(m){
+    const isStudent = m.sender_role === 'student';
+    const time = new Date(m.created_at).toLocaleString('ar-EG', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' });
+    return `
+      <div class="bubble ${isStudent ? 'bubble-student' : 'bubble-admin'}">
+        <div>${escapeHtml(m.body)}</div>
+        <div class="time">${isStudent ? 'انت' : 'الدعم'} · ${time}</div>
+      </div>
+    `;
+  }
+
+  async function loadChatMessages(){
+    const box = document.getElementById('chat-box');
+
+    const { data: msgs, error } = await supabaseClient
+      .from('support_messages')
+      .select('id, sender_role, body, created_at')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: true });
+
+    if(error){
+      console.error('load chat error:', error);
+      box.innerHTML = `<div class="chat-empty">حصل خطأ في تحميل المحادثة، حاول تحدّث الصفحة.</div>`;
+      return;
+    }
+
+    (msgs || []).forEach(m => renderedMessageIds.add(m.id));
+
+    if(!msgs || msgs.length === 0){
+      box.innerHTML = `<div class="chat-empty">لسه معملتش أي رسالة. ابعتلنا سؤالك تحت 👇</div>`;
+    } else {
+      box.innerHTML = msgs.map(renderMessage).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // علّم رسائل الدعم اللي اتشافت دلوقتي كمقروءة
+    await supabaseClient
+      .from('support_messages')
+      .update({ read_by_student: true })
+      .eq('user_id', currentUser.id)
+      .eq('sender_role', 'admin')
+      .eq('read_by_student', false);
+  }
+
+  function subscribeToChat(){
+    if(chatChannel) return;
+    chatChannel = supabaseClient
+      .channel('student-support-chat-' + currentUser.id)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'support_messages',
+        filter: `user_id=eq.${currentUser.id}`,
+      }, (payload) => {
+        if(renderedMessageIds.has(payload.new.id)) return; // اتعرضت بالفعل فوريًا وقت الإرسال
+        renderedMessageIds.add(payload.new.id);
+
+        const box = document.getElementById('chat-box');
+        const emptyEl = box.querySelector('.chat-empty');
+        if(emptyEl) box.innerHTML = '';
+        box.insertAdjacentHTML('beforeend', renderMessage(payload.new));
+        box.scrollTop = box.scrollHeight;
+
+        // لو الرسالة الجاية من الدعم وإحنا فاتحين الصفحة، علّمها مقروءة فورًا
+        if(payload.new.sender_role === 'admin'){
+          supabaseClient
+            .from('support_messages')
+            .update({ read_by_student: true })
+            .eq('id', payload.new.id);
+        }
+      })
+      .subscribe();
+  }
+
+  document.getElementById('chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const body = input.value.trim();
+    if(!body) return;
+
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+
+    const { data, error } = await supabaseClient
+      .from('support_messages')
+      .insert({
+        user_id: currentUser.id,
+        sender_id: currentUser.id,
+        sender_role: 'student',
+        body,
+        read_by_student: true,
+        read_by_admin: false,
+      })
+      .select()
+      .single();
+
+    btn.disabled = false;
+
+    if(error){
+      console.error('send message error:', error);
+      alert('حصل خطأ في إرسال الرسالة، حاول تاني.');
+      return;
+    }
+
+    input.value = '';
+    // بنعرضها فورًا من غير ما نستنى الـ realtime (أسرع للمستخدم نفسه)
+    renderedMessageIds.add(data.id);
+    const box = document.getElementById('chat-box');
+    const emptyEl = box.querySelector('.chat-empty');
+    if(emptyEl) box.innerHTML = '';
+    box.insertAdjacentHTML('beforeend', renderMessage(data));
+    box.scrollTop = box.scrollHeight;
+  });
+</script>
+
+</body>
+</html>
