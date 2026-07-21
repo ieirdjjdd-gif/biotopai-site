@@ -535,7 +535,7 @@
     video.disablePictureInPicture = true;
     surface.appendChild(video);
 
-    const listeners = { timeupdate:[], ended:[], play:[], pause:[] };
+    const listeners = { timeupdate:[], ended:[], play:[], pause:[], qualities:[] };
     video.addEventListener('timeupdate', () => listeners.timeupdate.forEach(cb => cb()));
     video.addEventListener('ended', () => listeners.ended.forEach(cb => cb()));
     video.addEventListener('play', () => listeners.play.forEach(cb => cb()));
@@ -551,6 +551,9 @@
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         levels = hls.levels.map((l, i) => ({ index:i, height:l.height })).sort((a,b) => b.height - a.height);
+        // بيانات الجودات بتوصل بعد الميتاداتا بشوية (Async)، فبنبلغ واجهة
+        // التحكم لحظة ما تبقى جاهزة عشان تبني زرار الجودة
+        listeners.qualities.forEach(cb => cb());
       });
     } else if(video.canPlayType('application/vnd.apple.mpegurl')){
       // سفاري وآيفون بيدعموا HLS مباشرة من غير الحاجة لمكتبة خارجية
@@ -729,17 +732,30 @@
     });
 
     const qualityLabels = { hd2160:'4K', hd1440:'1440p', hd1080:'1080p', hd720:'720p', large:'480p', medium:'360p', small:'240p', tiny:'144p', auto:'تلقائي' };
-    if(adapter.type === 'youtube'){
-      const reported = adapter.getQualities ? adapter.getQualities() : null;
-      const list = (reported && reported.length) ? reported : ['hd1080','hd720','large','medium','small','auto'];
-      qualityWrap.style.display = '';
-      qualityMenu.innerHTML = list.map(qq => `<button type="button" data-q="${qq}">${qualityLabels[qq] || qq}</button>`).join('');
+    if(adapter.type === 'youtube' || adapter.type === 'hls'){
       function refreshQualityLabel(){
         const cur = adapter.getQuality ? adapter.getQuality() : 'auto';
         qualityBtn.textContent = qualityLabels[cur] || 'تلقائي';
         qualityMenu.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.q === cur));
       }
-      refreshQualityLabel();
+      function renderQualityMenu(){
+        const reported = adapter.getQualities ? adapter.getQualities() : null;
+        if(adapter.type === 'youtube'){
+          const list = (reported && reported.length) ? reported : ['hd1080','hd720','large','medium','small','auto'];
+          qualityWrap.style.display = '';
+          qualityMenu.innerHTML = list.map(qq => `<button type="button" data-q="${qq}">${qualityLabels[qq] || qq}</button>`).join('');
+        } else {
+          // Bunny/HLS: لو الفيديو متاح بجودة واحدة بس، نسيب الزرار مخفي
+          if(!reported || reported.length < 2){ qualityWrap.style.display = 'none'; return; }
+          qualityWrap.style.display = '';
+          qualityMenu.innerHTML = reported.map(qq => `<button type="button" data-q="${qq}">${qualityLabels[qq] || qq}</button>`).join('');
+        }
+        refreshQualityLabel();
+      }
+      renderQualityMenu();
+      // في حالة Bunny، بيانات الجودات المتاحة بتوصل بعد شوية من تحميل
+      // الفيديو (مش فورية زي يوتيوب)، فبنستنى الإشعار ده ونعيد بناء القائمة
+      if(adapter.type === 'hls'){ adapter.on('qualities', renderQualityMenu); }
       qualityBtn.addEventListener('click', (e) => { e.stopPropagation(); const open = qualityMenu.classList.contains('open'); closeAllMenus(); if(!open) qualityMenu.classList.add('open'); });
       qualityMenu.addEventListener('click', (e) => {
         const btn = e.target.closest('button'); if(!btn) return;
