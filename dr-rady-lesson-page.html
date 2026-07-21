@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 <style>
   :root{
     --navy-deep:#101c46;
@@ -357,6 +358,9 @@
     if(m) return { type:'youtube', id:m[1] };
     m = url.match(/vimeo\.com\/(\d+)/);
     if(m) return { type:'vimeo', id:m[1] };
+    // روابط Bunny Stream (وأي رابط HLS تاني بيخلص .m3u8) بتتشغل بنفس
+    // سكين وكنترولز الفيديو العادي، مش بالإمبيد الجاهز بتاعهم
+    if(/\.m3u8(\?.*)?$/i.test(url)) return { type:'hls', src:url };
     if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)) return { type:'html5', src:url };
     return { type:'embed', src:url };
   }
@@ -519,6 +523,80 @@
       getQualities: () => null,
       on(evt, cb){ if(listeners[evt]) listeners[evt].push(cb); },
       destroy(){ video.pause(); video.src=''; }
+    };
+  }
+
+  function mountHls(surface, url){
+    const video = document.createElement('video');
+    video.style.cssText = 'width:100%;height:100%;pointer-events:none;';
+    video.preload = 'metadata';
+    video.setAttribute('playsinline', '');
+    video.setAttribute('controlsList', 'nodownload noremoteplayback');
+    video.disablePictureInPicture = true;
+    surface.appendChild(video);
+
+    const listeners = { timeupdate:[], ended:[], play:[], pause:[] };
+    video.addEventListener('timeupdate', () => listeners.timeupdate.forEach(cb => cb()));
+    video.addEventListener('ended', () => listeners.ended.forEach(cb => cb()));
+    video.addEventListener('play', () => listeners.play.forEach(cb => cb()));
+    video.addEventListener('pause', () => listeners.pause.forEach(cb => cb()));
+
+    let hls = null;
+    let levels = []; // [{index, height}]
+    let currentLevel = -1; // -1 = تلقائي (Auto)
+
+    if(window.Hls && Hls.isSupported()){
+      hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        levels = hls.levels.map((l, i) => ({ index:i, height:l.height })).sort((a,b) => b.height - a.height);
+      });
+    } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+      // سفاري وآيفون بيدعموا HLS مباشرة من غير الحاجة لمكتبة خارجية
+      video.src = url;
+    } else {
+      surface.innerHTML = '<div class="player-empty">المتصفح ده مش بيدعم تشغيل الفيديو</div>';
+    }
+
+    return {
+      type:'hls',
+      play: () => video.play(),
+      pause: () => video.pause(),
+      togglePlay(){ video.paused ? video.play() : video.pause(); },
+      isPaused: () => video.paused,
+      getCurrentTime: () => video.currentTime || 0,
+      getDuration: () => video.duration || 0,
+      getBuffered(){
+        if(!video.buffered.length || !video.duration) return 0;
+        return video.buffered.end(video.buffered.length - 1) / video.duration;
+      },
+      seekTo: (t) => { video.currentTime = t; },
+      setVolume: (v) => { video.volume = Math.min(1, Math.max(0, v/100)); },
+      getVolume: () => video.volume * 100,
+      setMuted: (m) => { video.muted = m; },
+      isMuted: () => video.muted,
+      setRate: (r) => { video.playbackRate = r; },
+      getRate: () => video.playbackRate,
+      getAvailableRates: () => [0.5,0.75,1,1.25,1.5,1.75,2],
+      getQualities(){
+        if(!hls || levels.length < 2) return null;
+        return ['auto', ...levels.map(l => l.height + 'p')];
+      },
+      getQuality(){
+        if(!hls || currentLevel === -1) return 'auto';
+        const lvl = levels.find(l => l.index === currentLevel);
+        return lvl ? lvl.height + 'p' : 'auto';
+      },
+      setQuality(q){
+        if(!hls) return;
+        if(q === 'auto'){ hls.currentLevel = -1; currentLevel = -1; return; }
+        const h = parseInt(q, 10);
+        const lvl = levels.find(l => l.height === h);
+        if(lvl){ hls.currentLevel = lvl.index; currentLevel = lvl.index; }
+      },
+      on(evt, cb){ if(listeners[evt]) listeners[evt].push(cb); },
+      destroy(){ if(hls) hls.destroy(); video.pause(); video.src=''; }
     };
   }
 
@@ -754,6 +832,13 @@
       };
       catcher.addEventListener('click', startLoading);
       centerPlay.addEventListener('click', startLoading);
+      return;
+    }
+
+    if(src.type === 'hls'){
+      const adapter = mountHls(surface, src.src);
+      wireControls(cp, adapter);
+      wireFocusGuard(cp, adapter);
       return;
     }
 
