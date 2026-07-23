@@ -135,48 +135,49 @@
   }
 
   /* content-type groups (accordion) */
-  .group-list{display:flex; flex-direction:column; gap:12px; margin-top:22px;}
-  details.group{
+  .group-list{display:flex; flex-direction:column; gap:14px; margin-top:22px;}
+
+  /* ===== المستوى الأول: كل محاضرة أكورديون مستقل ===== */
+  details.lecture-acc{
     background:var(--navy-soft); border:1px solid var(--line); border-radius:16px; overflow:hidden;
   }
-  details.group summary{
-    list-style:none; cursor:pointer; padding:17px 20px;
+  details.lecture-acc summary{
+    list-style:none; cursor:pointer; padding:18px 20px;
     display:flex; align-items:center; justify-content:space-between; gap:12px;
   }
-  details.group summary::-webkit-details-marker{display:none;}
-  .g-title{display:flex; align-items:center; gap:12px;}
-  .g-icon{
-    width:36px; height:36px; border-radius:10px; background:rgba(95,168,43,.16);
-    color:var(--green-bright); display:flex; align-items:center; justify-content:center; font-size:16px;
-  }
-  .g-title b{font-size:14.5px; font-family:'Tajawal'; font-weight:800;}
-  .g-title span{font-size:12px; color:var(--bone-dim); display:block;}
-  .g-chev{color:var(--green-bright); transition:.2s;}
-  details.group[open] .g-chev{transform:rotate(180deg);}
+  details.lecture-acc summary::-webkit-details-marker{display:none;}
+  details.lecture-acc summary .lname{font-size:15px; font-weight:800; font-family:'Tajawal'; color:var(--bone);}
+  details.lecture-acc summary .lchev{color:var(--green-bright); transition:.2s; flex-shrink:0; font-size:18px;}
+  details.lecture-acc[open] summary .lchev{transform:rotate(180deg);}
+  .lecture-acc-body{padding:2px 14px 16px; display:flex; flex-direction:column; gap:10px;}
 
-  .lesson-row{
-    display:flex; align-items:center; justify-content:space-between; gap:14px;
-    padding:13px 20px; border-top:1px solid var(--line);
+  /* ===== المستوى الثاني: أقسام جوه المحاضرة (شرح / واجب / تسليم الواجب / امتحان) ===== */
+  details.cat-acc{
+    background:var(--navy-deep); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    border-inline-start:3px solid var(--cat-color, var(--line));
   }
-  .lesson-row .lname{font-size:13.5px; color:var(--bone-dim);}
-  .lesson-row .lactions{display:flex; align-items:center; gap:8px; flex-shrink:0;}
-  .lesson-row .lbtn{
-    padding:8px 16px; border-radius:8px; font-size:12.5px; font-weight:800; border:none; white-space:nowrap;
-    background:rgba(95,168,43,.18); color:var(--green-bright);
-  }
-  .lesson-row .lbtn:hover{background:var(--green); color:var(--navy-deep);}
-
-  /* ===== أكورديون كل حصة (فيديو / ملفات / اختبار / واجب) ===== */
-  details.lesson-acc{border-top:1px solid var(--line);}
-  details.lesson-acc summary{
-    list-style:none; cursor:pointer; padding:13px 20px;
+  details.cat-acc summary{
+    list-style:none; cursor:pointer; padding:13px 16px;
     display:flex; align-items:center; justify-content:space-between; gap:12px;
   }
-  details.lesson-acc summary::-webkit-details-marker{display:none;}
-  details.lesson-acc summary .lname{font-size:13.5px; color:var(--bone);}
-  details.lesson-acc summary .lchev{color:var(--green-bright); transition:.2s; flex-shrink:0;}
-  details.lesson-acc[open] summary .lchev{transform:rotate(180deg);}
-  .lesson-acc-body{padding:4px 20px 16px; display:flex; flex-direction:column; gap:8px;}
+  details.cat-acc summary::-webkit-details-marker{display:none;}
+  .cat-title{display:flex; align-items:center; gap:10px;}
+  .cat-ic{
+    width:30px; height:30px; border-radius:9px; flex-shrink:0;
+    background:color-mix(in srgb, var(--cat-color, var(--green)) 18%, transparent);
+    color:var(--cat-color, var(--green-bright));
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+  .cat-title b{font-size:13.5px; font-family:'Tajawal'; font-weight:800; color:var(--bone);}
+  .cat-title span{font-size:11px; color:var(--bone-dim); display:block;}
+  .cat-chev{color:var(--cat-color, var(--green-bright)); transition:.2s; flex-shrink:0;}
+  details.cat-acc[open] .cat-chev{transform:rotate(180deg);}
+  .cat-explanation{--cat-color:var(--t-video);}
+  .cat-homework{--cat-color:var(--t-hw);}
+  .cat-submission{--cat-color:var(--t-hw);}
+  .cat-exam{--cat-color:var(--t-exam);}
+
+  .lesson-acc-body{padding:4px 16px 14px; display:flex; flex-direction:column; gap:8px;}
   .lsub-item{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:10px 12px 10px 14px; margin-top:8px;
@@ -210,32 +211,6 @@
     display:flex; align-items:center; justify-content:space-between; gap:14px;
     padding:13px 20px; border-top:1px solid var(--line);
   }
-
-  .lesson-row .lfiles-btn{
-    padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; white-space:nowrap;
-    background:transparent; border:1.5px solid var(--line); color:var(--bone-dim); cursor:pointer;
-  }
-  .lesson-row .lfiles-btn:hover{border-color:var(--green-bright); color:var(--green-bright);}
-  .lesson-row .lfiles-btn.open{border-color:var(--green-bright); color:var(--green-bright);}
-
-  .lfiles-panel{
-    display:none; padding:6px 20px 16px; border-top:1px dashed var(--line);
-  }
-  .lfiles-panel.open{display:block;}
-  .lfile-item{
-    display:flex; align-items:center; gap:10px; padding:10px 12px; margin-top:8px;
-    background:var(--navy-deep); border:1px solid var(--line); border-radius:10px;
-    border-inline-start:3px solid var(--t-file);
-  }
-  .lfile-item .fic{
-    font-size:13px; flex-shrink:0; width:26px; height:26px; border-radius:8px;
-    display:flex; align-items:center; justify-content:center;
-    background:color-mix(in srgb, var(--t-file) 18%, transparent);
-  }
-  .lfile-item .fnm{font-size:12.5px; color:var(--bone-dim); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .lfile-item a{font-size:12px; font-weight:700; color:var(--t-file); flex-shrink:0;}
-  .lfile-item a:hover{text-decoration:underline;}
-  .lfiles-empty{font-size:12.5px; color:var(--bone-dim); margin-top:8px;}
 
   footer{background:var(--navy-deep); padding:28px 0; text-align:center; border-top:1px solid var(--line);}
   footer p{color:var(--bone-dim); font-size:12px;}
@@ -411,20 +386,10 @@
       <p>الحصص مرتّبة بنفس ترتيبها في الكورس، وهتلاقي تحت كل حصة إمكانية المشاهدة لو متاحة.</p>
     </div>
 
-    <!-- الحصص بتتحمل هنا أوتوماتيك من جدول lessons -->
-    <div class="group-list">
-      <details class="group" open>
-        <summary>
-          <div class="g-title">
-            <div class="g-icon">🎬</div>
-            <div><b>دروس الفيديو</b><span id="lessons-summary">جارٍ تحميل الحصص...</span></div>
-          </div>
-          <span class="g-chev">▾</span>
-        </summary>
-        <div id="lessons-list">
-          <div class="lesson-row"><span class="lname">جارٍ التحميل...</span></div>
-        </div>
-      </details>
+    <!-- الحصص بتتحمل هنا أوتوماتيك من جدول lessons، محاضرة تلو الأخرى -->
+    <p id="lessons-summary" style="font-size:12.5px; color:var(--bone-dim); margin-bottom:14px;">جارٍ تحميل المحاضرات...</p>
+    <div class="group-list" id="lessons-list">
+      <div class="lesson-row"><span class="lname">جارٍ التحميل...</span></div>
     </div>
   </div>
 </section>
@@ -572,6 +537,82 @@
       }
     }
 
+    // ===== جلب كل الملفات/الفيديوهات المصنّفة لكل حصص الكورس ده =====
+    let filesByLesson = {};
+    if(lessonIds.length > 0){
+      const { data: files } = await supabaseClient
+        .from('lesson_files')
+        .select('*')
+        .in('lesson_id', lessonIds)
+        .order('created_at', { ascending: true });
+
+      (files || []).forEach(f => {
+        if(!filesByLesson[f.lesson_id]) filesByLesson[f.lesson_id] = [];
+        filesByLesson[f.lesson_id].push(f);
+      });
+    }
+
+    const CAT_META = {
+      explanation: { label: 'الشرح', icon: '🎬' },
+      homework:    { label: 'الواجب', icon: '📝' },
+      submission:  { label: 'تسليم الواجب', icon: '📤' },
+      exam:        { label: 'الامتحان', icon: '✅' }
+    };
+
+    function fileIconFor(f){
+      if(f.content_type === 'video') return '🎬';
+      const ext = ((f.file_name || '').split('.').pop() || '').toLowerCase();
+      if(ext === 'pdf') return '📕';
+      if(['doc','docx'].includes(ext)) return '📘';
+      if(['xls','xlsx'].includes(ext)) return '📗';
+      if(['png','jpg','jpeg','webp'].includes(ext)) return '🖼️';
+      return '📄';
+    }
+
+    function fileRowHTML(f){
+      const actionLabel = f.content_type === 'video' ? 'مشاهدة' : 'فتح الملف';
+      return `
+        <div class="lsub-item">
+          <div class="lsub-info"><span class="lsub-ic">${fileIconFor(f)}</span><div><span class="lsub-label">${f.file_name}</span></div></div>
+          <a class="lbtn" href="${f.file_url}" target="_blank" rel="noopener">${actionLabel}</a>
+        </div>`;
+    }
+
+    function examRowHTML(exam, label){
+      const attempt = attemptsByExam[exam.id];
+      let statusHTML = '';
+      let actionLabel = label === 'تسليم الواجب' ? 'ابدأ الواجب' : 'ابدأ الاختبار';
+      if(attempt){
+        const passed = attempt.percentage >= (exam.passing_score || 50);
+        statusHTML = `<span class="lsub-status">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>`;
+        actionLabel = 'إعادة المحاولة';
+      }
+      return `
+        <div class="lsub-item">
+          <div class="lsub-info">
+            <span class="lsub-ic">✅</span>
+            <div><span class="lsub-label">${exam.title}</span>${statusHTML}</div>
+          </div>
+          <a class="lbtn" href="dr-rady-exam-attempt-page.html?exam=${exam.id}">${actionLabel}</a>
+        </div>`;
+    }
+
+    function catSectionHTML(catKey, itemsHTML){
+      if(!itemsHTML) return '';
+      const meta = CAT_META[catKey];
+      return `
+        <details class="cat-acc cat-${catKey}">
+          <summary>
+            <div class="cat-title">
+              <div class="cat-ic">${meta.icon}</div>
+              <b>${meta.label}</b>
+            </div>
+            <span class="cat-chev">▾</span>
+          </summary>
+          <div class="lesson-acc-body">${itemsHTML}</div>
+        </details>`;
+    }
+
     listEl.innerHTML = lessons.map((lesson, i) => {
       const num = String(i + 1).padStart(2, '0');
       const unlocked = lesson.is_free_preview || isPaid;
@@ -586,129 +627,48 @@
 
       const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
 
-      // ===== عنصر الفيديو =====
-      // ملحوظة: مبقاش عندنا video_url هنا (شوف ملحوظة الأمان فوق)، فبنسيب
-      // زرار "مشاهدة" ظاهر دايمًا للحصص المفتوحة؛ لو مفيش فيديو فعلاً،
-      // صفحة الحصة نفسها هتعرض رسالة "لسه مفيش فيديو مضاف".
-      const videoItem = `
-        <div class="lsub-item type-video">
-          <div class="lsub-info"><span class="lsub-ic">🎬</span><div><span class="lsub-type">فيديو</span><span class="lsub-label">شرح الحصة</span></div></div>
-          <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
-        </div>`;
-
-      // ===== عنصر الملفات =====
-      const filesItem = `
-        <div class="lsub-item type-file">
-          <div class="lsub-info"><span class="lsub-ic">📎</span><div><span class="lsub-type">ملفات</span><span class="lsub-label">مذكرات ومرفقات</span></div></div>
-          <button class="lfiles-btn" id="lfiles-btn-${lesson.id}" onclick="toggleLessonFiles('${lesson.id}')">عرض الملفات</button>
-        </div>
-        <div class="lfiles-panel" id="lfiles-panel-${lesson.id}"></div>`;
-
-      // ===== عنصر الاختبار/الواجب (لو موجودين للحصة دي) =====
       const lessonExams = examsByLesson[lesson.id] || [];
       const examEntry = lessonExams.find(e => e.kind !== 'homework');
       const homeworkEntry = lessonExams.find(e => e.kind === 'homework');
 
-      const buildExamItem = (exam, icon, label, typeClass) => {
-        const attempt = attemptsByExam[exam.id];
-        let statusHTML = '';
-        let actionLabel = label === 'واجب' ? 'ابدأ الواجب' : 'ابدأ الاختبار';
-        if(attempt){
-          const passed = attempt.percentage >= (exam.passing_score || 50);
-          statusHTML = `<span class="lsub-status">${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%</span>`;
-          actionLabel = 'إعادة المحاولة';
-        }
-        return `
-          <div class="lsub-item ${typeClass}">
-            <div class="lsub-info">
-              <span class="lsub-ic">${icon}</span>
-              <div><span class="lsub-type">${label}</span><span class="lsub-label">${exam.title}</span>${statusHTML}</div>
-            </div>
-            <a class="lbtn" href="dr-rady-exam-attempt-page.html?exam=${exam.id}">${actionLabel}</a>
-          </div>`;
-      };
+      const lessonFiles = filesByLesson[lesson.id] || [];
+      const filesByCategory = { explanation: [], homework: [], submission: [], exam: [] };
+      lessonFiles.forEach(f => {
+        (filesByCategory[f.category] || filesByCategory.explanation).push(f);
+      });
 
-      const examItem = examEntry ? buildExamItem(examEntry, '✅', 'اختبار', 'type-exam') : '';
-      const homeworkItem = homeworkEntry ? buildExamItem(homeworkEntry, '📝', 'واجب', 'type-hw') : '';
+      // فيديو شرح الحصة نفسه (لو موجود) بيتحط دايمًا في قسم "الشرح"
+      const lessonVideoRow = `
+        <div class="lsub-item">
+          <div class="lsub-info"><span class="lsub-ic">🎬</span><div><span class="lsub-label">فيديو شرح الحصة</span></div></div>
+          <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
+        </div>`;
+
+      const explanationHTML = lessonVideoRow + filesByCategory.explanation.map(fileRowHTML).join('');
+      const homeworkHTML = filesByCategory.homework.map(fileRowHTML).join('');
+      const submissionHTML = (homeworkEntry ? examRowHTML(homeworkEntry, 'تسليم الواجب') : '') + filesByCategory.submission.map(fileRowHTML).join('');
+      const examHTML = (examEntry ? examRowHTML(examEntry, 'الامتحان') : '') + filesByCategory.exam.map(fileRowHTML).join('');
+
+      const sectionsHTML = [
+        catSectionHTML('explanation', explanationHTML),
+        catSectionHTML('homework', homeworkHTML),
+        catSectionHTML('submission', submissionHTML),
+        catSectionHTML('exam', examHTML)
+      ].join('');
 
       return `
-        <details class="lesson-acc">
+        <details class="lecture-acc">
           <summary>
-            <span class="lname">${num}. ${lesson.title}${previewTag}</span>
+            <span class="lname">المحاضرة ${num}: ${lesson.title}${previewTag}</span>
             <span class="lchev">▾</span>
           </summary>
-          <div class="lesson-acc-body">
-            ${videoItem}
-            ${filesItem}
-            ${examItem}
-            ${homeworkItem}
+          <div class="lecture-acc-body">
+            ${sectionsHTML}
           </div>
         </details>`;
     }).join('');
   }
   loadLessons();
-
-  // ===== إظهار/إخفاء ملفات الحصة (بيتحمّلوا أول مرة بس وبعدين بيتخزنوا) =====
-  const lessonFilesCache = {};
-
-  function fileIcon(name){
-    const ext = ((name || '').split('.').pop() || '').toLowerCase();
-    if(ext === 'pdf') return '📕';
-    if(['doc','docx'].includes(ext)) return '📘';
-    if(['xls','xlsx'].includes(ext)) return '📗';
-    if(['png','jpg','jpeg','webp'].includes(ext)) return '🖼️';
-    return '📄';
-  }
-
-  async function toggleLessonFiles(lessonId){
-    const panel = document.getElementById(`lfiles-panel-${lessonId}`);
-    const btn = document.getElementById(`lfiles-btn-${lessonId}`);
-    const isOpen = panel.classList.contains('open');
-
-    if(isOpen){
-      panel.classList.remove('open');
-      btn.classList.remove('open');
-      return;
-    }
-
-    panel.classList.add('open');
-    btn.classList.add('open');
-
-    if(lessonFilesCache[lessonId]){
-      renderLessonFiles(panel, lessonFilesCache[lessonId]);
-      return;
-    }
-
-    panel.innerHTML = `<p class="lfiles-empty">جارٍ تحميل الملفات...</p>`;
-
-    const { data: files, error } = await supabaseClient
-      .from('lesson_files')
-      .select('*')
-      .eq('lesson_id', lessonId)
-      .order('created_at', { ascending: true });
-
-    if(error || !files){
-      panel.innerHTML = `<p class="lfiles-empty">حصل خطأ في تحميل الملفات</p>`;
-      return;
-    }
-
-    lessonFilesCache[lessonId] = files;
-    renderLessonFiles(panel, files);
-  }
-
-  function renderLessonFiles(panel, files){
-    if(files.length === 0){
-      panel.innerHTML = `<p class="lfiles-empty">مفيش ملفات مرفقة للحصة دي لسه</p>`;
-      return;
-    }
-    panel.innerHTML = files.map(f => `
-      <div class="lfile-item">
-        <span class="fic">${fileIcon(f.file_name)}</span>
-        <span class="fnm">${f.file_name}</span>
-        <a href="${f.file_url}" target="_blank" rel="noopener">تحميل</a>
-      </div>
-    `).join('');
-  }
 
   // لما يدوس على حصة مقفولة: يدخل يسجل، أو لو مسجل بالفعل يشوف بوابة الاشتراك
   async function handleLockedLesson(){
