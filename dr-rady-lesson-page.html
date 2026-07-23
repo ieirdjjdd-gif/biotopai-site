@@ -323,7 +323,7 @@
 
 <!-- ===== حالة عدم الصلاحية ===== -->
 <div id="state-denied" class="wrap" style="display:none;">
-  <h2 id="denied-title">الحصة دي مقفولة 🔒</h2>
+  <h2 id="denied-title">الحصة دي مقفولة <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></h2>
   <p id="denied-msg">لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.</p>
   <a href="#" id="denied-back" class="btn">رجوع لصفحة الكورس</a>
 </div>
@@ -343,7 +343,7 @@
           <span class="num-tag" id="lesson-num-tag">الحصة</span>
           <h1 id="lesson-title">—</h1>
         </div>
-        <button class="btn btn-ghost" id="complete-btn" onclick="toggleComplete()">✓ حدد كـ "خلصتها"</button>
+        <button class="btn btn-ghost" id="complete-btn" onclick="toggleComplete()"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg></span> حدد كـ "خلصتها"</button>
       </div>
 
       <div class="lesson-nav-row">
@@ -353,7 +353,7 @@
 
       <!-- ===== باقي محتوى المحاضرة (فيديوهات / ملفات / امتحانات) ===== -->
       <div class="panel">
-        <h2 id="content-panel-title">📎 محتوى المحاضرة</h2>
+        <h2 id="content-panel-title"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 12.5V7a4 4 0 0 1 8 0v9a2.5 2.5 0 0 1-5 0V8.5"/></svg></span> محتوى المحاضرة</h2>
         <div id="files-list">
           <p class="file-empty">جارٍ تحميل المحتوى...</p>
         </div>
@@ -462,9 +462,9 @@
           <div class="cp-seek-handle" data-role="handle"></div>
         </div>
         <div class="cp-row">
-          <button type="button" class="cp-btn" data-role="playbtn" title="تشغيل/إيقاف">▶</button>
+          <button type="button" class="cp-btn" data-role="playbtn" title="تشغيل/إيقاف"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg></button>
           <div class="cp-vol" data-role="volwrap">
-            <button type="button" class="cp-btn" data-role="mutebtn" title="الصوت">🔊</button>
+            <button type="button" class="cp-btn" data-role="mutebtn" title="الصوت"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="M16 8a5 5 0 0 1 0 8M18.5 6a8 8 0 0 1 0 12"/></svg></button>
             <input type="range" min="0" max="100" value="100" data-role="volslider">
           </div>
           <span class="cp-time" data-role="time">0:00 / 0:00</span>
@@ -477,7 +477,7 @@
             <button type="button" class="cp-btn" data-role="qualitybtn" title="جودة الفيديو" style="width:auto; padding:0 8px; font-size:12.5px;">Auto</button>
             <div class="cp-menu" data-role="qualitymenu"></div>
           </div>
-          <button type="button" class="cp-btn" data-role="fsbtn" title="ملء الشاشة">⛶</button>
+          <button type="button" class="cp-btn" data-role="fsbtn" title="ملء الشاشة"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
         </div>
       </div>
     `;
@@ -684,7 +684,9 @@
 
     function setPlayIcon(){
       const paused = adapter.isPaused();
-      playBtn.textContent = paused ? '▶' : '❚❚';
+      playBtn.innerHTML = paused
+        ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg>'
+        : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5v14M17 5v14"/></svg>';
       centerPlay.classList.toggle('show', paused);
       cp.classList.toggle('paused-ui', paused);
     }
@@ -767,7 +769,11 @@
     function refreshMuteIcon(){
       const vol = adapter.getVolume ? adapter.getVolume() : 100;
       const muted = adapter.isMuted && adapter.isMuted();
-      muteBtn.textContent = (muted || vol === 0) ? '🔇' : (vol < 50 ? '🔈' : '🔊');
+      muteBtn.innerHTML = (muted || vol === 0)
+        ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>'
+        : (vol < 50
+          ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="M16 9.5a3 3 0 0 1 0 5"/></svg>'
+          : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="M16 8a5 5 0 0 1 0 8M18.5 6a8 8 0 0 1 0 12"/></svg>');
     }
     refreshMuteIcon();
     muteBtn.addEventListener('click', () => {
@@ -932,7 +938,7 @@
 
   async function init(){
     if(!COURSE_ID || !LESSON_ID){
-      denied('رابط غير صحيح ⚠️', 'الرابط ده ناقصه بيانات، ارجع لصفحة الكورس واختار الحصة تاني.');
+      denied('رابط غير صحيح <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'الرابط ده ناقصه بيانات، ارجع لصفحة الكورس واختار الحصة تاني.');
       return;
     }
 
@@ -960,14 +966,14 @@
       .from('lessons_public').select('id, course_id, title, order_index, is_free_preview').eq('course_id', COURSE_ID).order('order_index', { ascending: true });
 
     if(lessonsErr || !lessons || lessons.length === 0){
-      denied('حصل خطأ ⚠️', 'مقدرناش نجيب حصص الكورس ده دلوقتي.');
+      denied('حصل خطأ <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'مقدرناش نجيب حصص الكورس ده دلوقتي.');
       return;
     }
     allLessons = lessons;
 
     currentLesson = lessons.find(l => l.id === LESSON_ID);
     if(!currentLesson){
-      denied('الحصة مش موجودة ⚠️', 'الحصة دي مش موجودة في الكورس ده.');
+      denied('الحصة مش موجودة <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'الحصة دي مش موجودة في الكورس ده.');
       return;
     }
 
@@ -978,7 +984,7 @@
 
     const unlocked = currentLesson.is_free_preview || isPaid;
     if(!unlocked){
-      denied('الحصة دي مقفولة 🔒', 'لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.');
+      denied('الحصة دي مقفولة <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>', 'لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.');
       return;
     }
 
@@ -1082,10 +1088,10 @@
       const num = String(i + 1).padStart(2, '0');
 
       if(!unlocked){
-        return `<div class="side-lesson locked"><span class="st-ic">🔒</span><span class="st-title">${num}. ${l.title}</span></div>`;
+        return `<div class="side-lesson locked"><span class="st-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="st-title">${num}. ${l.title}</span></div>`;
       }
       return `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${l.id}" class="side-lesson ${isCurrent ? 'current' : ''}" data-lesson-id="${l.id}">
-        <span class="st-ic">${isCurrent ? '▶' : '⚪'}</span>
+        <span class="st-ic">${isCurrent ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg>' : '<span class="dot-empty"></span>'}</span>
         <span class="st-title">${num}. ${l.title}</span>
       </a>`;
     }).join('');
@@ -1105,13 +1111,13 @@
   function updateCompleteBtn(){
     const btn = document.getElementById('complete-btn');
     if(progressRow?.completed){
-      btn.textContent = '✓ خلصتها بالفعل';
+      btn.innerHTML = '<span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7"/></svg></span> خلصتها بالفعل';
       btn.classList.remove('btn-ghost');
       btn.style.background = 'var(--green)';
       btn.style.color = 'var(--navy-deep)';
       btn.style.border = 'none';
     } else {
-      btn.textContent = '✓ حدد كـ "خلصتها"';
+      btn.innerHTML = '<span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7"/></svg></span> حدد كـ "خلصتها"';
       btn.classList.add('btn-ghost');
       btn.style.background = '';
       btn.style.color = '';
@@ -1147,11 +1153,11 @@
 
   function fileIcon(name){
     const ext = (name.split('.').pop() || '').toLowerCase();
-    if(ext === 'pdf') return '📕';
-    if(['doc','docx'].includes(ext)) return '📘';
-    if(['xls','xlsx'].includes(ext)) return '📗';
-    if(['png','jpg','jpeg','webp'].includes(ext)) return '🖼️';
-    return '📄';
+    if(ext === 'pdf') return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/></svg>';
+    if(['doc','docx'].includes(ext)) return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/></svg>';
+    if(['xls','xlsx'].includes(ext)) return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/></svg>';
+    if(['png','jpg','jpeg','webp'].includes(ext)) return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m5 18 4.5-5 3.5 4 2.5-3 4.5 4"/></svg>';
+    return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l4 4v14H6Z"/><path d="M9 12h6M9 16h6"/></svg>';
   }
 
   function forceDownload(url, filename){
@@ -1228,10 +1234,10 @@
       const isCurrent = currentItem && it.id === currentItem.id;
       return `
         <div class="file-row ${isCurrent ? 'is-playing' : ''}">
-          <div class="file-ic">🎬</div>
+          <div class="file-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg></div>
           <span class="fname">${it.title}${isCurrent ? ' <span style="color:var(--green-bright); font-size:11px;">(بيتشغّل دلوقتي)</span>' : ''}</span>
           ${isCurrent
-            ? `<span class="btn btn-sm" style="opacity:.6; cursor:default;">▶ حالي</span>`
+            ? `<span class="btn btn-sm" style="opacity:.6; cursor:default;"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg></span> حالي</span>`
             : `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${currentLesson.id}&item=${it.id}" class="btn btn-outline btn-sm">مشاهدة</a>`}
         </div>`;
     }
@@ -1263,12 +1269,12 @@
     let statusText = '';
     if(attempt){
       const passed = attempt.percentage >= (exam.passing_score || 50);
-      statusText = ` <span style="color:${passed ? 'var(--green-bright)' : '#e8735a'}; font-size:11px;">(${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%)</span>`;
+      statusText = ` <span style="color:${passed ? 'var(--green-bright)' : '#e8735a'}; font-size:11px;">(${passed ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg> ناجح' : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="m6 6 12 12M18 6 6 18"/></svg> راسب'} — ${Math.round(attempt.percentage)}%)</span>`;
       actionLabel = 'إعادة المحاولة';
     }
     return `
       <div class="file-row">
-        <div class="file-ic">${isHw ? '📝' : '✅'}</div>
+        <div class="file-ic">${isHw ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg>' : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>'}</div>
         <span class="fname">${it.title}${statusText}</span>
         <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn btn-sm">${actionLabel}</a>
       </div>`;

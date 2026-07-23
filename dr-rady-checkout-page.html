@@ -199,8 +199,8 @@
       <div class="step">
         <h3><span class="num">1</span> اختار طريقة الدفع</h3>
         <div class="method-row">
-          <button type="button" class="method-btn active" id="method-vodafone" onclick="selectMethod('vodafone_cash')">📱 فودافون كاش</button>
-          <button type="button" class="method-btn" id="method-instapay" onclick="selectMethod('instapay')">🏦 إنستاباي</button>
+          <button type="button" class="method-btn active" id="method-vodafone" onclick="selectMethod('vodafone_cash')"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg></span> فودافون كاش</button>
+          <button type="button" class="method-btn" id="method-instapay" onclick="selectMethod('instapay')"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M3 10 12 4l9 6"/><path d="M5 10v9M9 10v9M15 10v9M19 10v9"/><path d="M3 19h18"/></svg></span> إنستاباي</button>
         </div>
 
         <div class="instructions" id="instructions-vodafone">
@@ -232,7 +232,7 @@
           <label>صورة إشعار التحويل (سكرين شوت أو صورة الإيصال)</label>
           <div class="upload-box" id="upload-box">
             <input type="file" id="receipt-file" accept="image/*" capture="environment">
-            <div class="ic">📎</div>
+            <div class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 12.5V7a4 4 0 0 1 8 0v9a2.5 2.5 0 0 1-5 0V8.5"/></svg></div>
             <p>دوس هنا أو اسحب الصورة لرفعها</p>
           </div>
           <div class="upload-preview" id="upload-preview">
@@ -289,7 +289,7 @@
     document.getElementById('page-content').style.display = 'block';
 
     if(enrollment && enrollment.status === 'paid'){
-      renderStatus('✅', 'انت مشترك في الكورس ده بالفعل!', 'تقدر تدخل تتفرج على الحصص على طول.',
+      renderStatus('<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>', 'انت مشترك في الكورس ده بالفعل!', 'تقدر تدخل تتفرج على الحصص على طول.',
         `<a href="dr-rady-course-page.html?id=${COURSE_ID}" class="btn" style="text-decoration:none;">روح للكورس</a>`);
       return;
     }
@@ -303,7 +303,7 @@
       document.getElementById('status-view').style.display = 'block';
       document.getElementById('status-view').innerHTML = `
         <div class="status-card">
-          <div class="ic">⚠️</div>
+          <div class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg></div>
           <h2>طلبك السابق اتّرفض</h2>
           <p>تأكد من صورة الإيصال والرقم اللي حوّلت منه، وابعت طلب جديد تحت.</p>
         </div>
@@ -436,7 +436,7 @@
       if(dbError) throw dbError;
 
       document.getElementById('checkout-form').style.display = 'none';
-      renderStatus('✅', 'تم إرسال طلبك بنجاح', 'استلمنا إشعار التحويل وهنراجعه ونفعّل اشتراكك في أقرب وقت.');
+      renderStatus('<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>', 'تم إرسال طلبك بنجاح', 'استلمنا إشعار التحويل وهنراجعه ونفعّل اشتراكك في أقرب وقت.');
 
     } catch(err){
       console.error('checkout submit error:', err);

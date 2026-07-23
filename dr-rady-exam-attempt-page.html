@@ -231,7 +231,7 @@
   </div>
 
   <div id="state-denied" class="state-box" style="display:none;">
-    <div class="ic">🔒</div>
+    <div class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
     <h2 id="denied-title">مقدرش أفتح الاختبار ده</h2>
     <p id="denied-text">تأكد إنك مشترك في الكورس بتاع الاختبار ده.</p>
     <a href="dr-rady-exams-page.html" class="btn">رجوع للاختبارات</a>
@@ -263,7 +263,7 @@
       </div>
       <div class="exam-top-right">
         <div id="timer-box" class="timer" style="display:none;">⏱️ <span id="timer-text">--:--</span></div>
-        <button class="btn btn-sm" id="submit-btn" onclick="openSubmitModal()">تسليم الاختبار ✓</button>
+        <button class="btn btn-sm" id="submit-btn" onclick="openSubmitModal()">تسليم الاختبار <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg></button>
       </div>
     </div>
 
@@ -315,7 +315,7 @@
     </div>
 
     <div id="result-analysis-file" style="display:none; background:var(--navy-base); border:1px dashed var(--line); border-radius:12px; padding:16px 18px; margin:20px auto; max-width:520px;">
-      <p style="font-size:13.5px; color:var(--bone-dim); margin-bottom:10px;">📊 متاح ملف تحليل الإجابات:</p>
+      <p style="font-size:13.5px; color:var(--bone-dim); margin-bottom:10px;"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span> متاح ملف تحليل الإجابات:</p>
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span id="result-analysis-file-name" style="font-size:13px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
         <a id="result-analysis-view-link" href="#" target="_blank" rel="noopener" class="btn btn-outline btn-sm">عرض</a>
@@ -331,7 +331,7 @@
 <!-- ===== نافذة تأكيد التسليم ===== -->
 <div class="modal-overlay" id="submit-modal">
   <div class="modal-box">
-    <div class="ic">📝</div>
+    <div class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg></div>
     <h3>تسليم الاختبار</h3>
     <p id="submit-modal-text">هل انت متأكد إنك عايز تسلم الاختبار؟ مش هتقدر تعدل إجاباتك بعد كده.</p>
     <div class="modal-actions">
@@ -402,7 +402,7 @@
 
   async function init(){
     if(!EXAM_ID){
-      denied('رابط غير صحيح ⚠️', 'الرابط ده ناقصه بيانات، ارجع لصفحة الاختبارات واختار من هناك.');
+      denied('رابط غير صحيح <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'الرابط ده ناقصه بيانات، ارجع لصفحة الاختبارات واختار من هناك.');
       return;
     }
 
@@ -414,11 +414,11 @@
       .from('exams').select('*').eq('id', EXAM_ID).single();
 
     if(examErr || !examData){
-      denied('الاختبار مش موجود ⚠️', 'الاختبار ده اتشال أو الرابط غلط.');
+      denied('الاختبار مش موجود <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'الاختبار ده اتشال أو الرابط غلط.');
       return;
     }
     if(!examData.is_published){
-      denied('الاختبار لسه مش متاح ⚠️', 'الاختبار ده لسه تحت الإعداد، هيتفتح لما يخلص المدرّس منه.');
+      denied('الاختبار لسه مش متاح <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'الاختبار ده لسه تحت الإعداد، هيتفتح لما يخلص المدرّس منه.');
       return;
     }
     exam = examData;
@@ -429,7 +429,7 @@
       .from('enrollments').select('status').eq('user_id', user.id).eq('course_id', exam.course_id).maybeSingle();
 
     if(enrollment?.status !== 'paid'){
-      denied('الاختبار ده مقفول 🔒', 'لازم تكون مشترك في الكورس بتاع الاختبار ده عشان تقدر تأديه.');
+      denied('الاختبار ده مقفول <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>', 'لازم تكون مشترك في الكورس بتاع الاختبار ده عشان تقدر تأديه.');
       return;
     }
 
@@ -447,7 +447,7 @@
 
       if(reviewErr || !reviewAttempt){
         denied(
-          `لسه معملتش ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده ⚠️`,
+          `لسه معملتش ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>`,
           `لازم ${exam.kind === 'homework' ? 'تعمل الواجب' : 'تمتحن'} الأول قبل ما تقدر تراجع إجاباتك.`
         );
         return;
@@ -485,7 +485,7 @@
         if(exam.allow_retake === false){
           const passed = priorAttempt.percentage >= (exam.passing_score || 50);
           denied(
-            'خلّصت المحاولة دي قبل كده ✋',
+            'خلّصت المحاولة دي قبل كده <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 12V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 3.5-2.5 6-6 6-2.5 0-4-1-5.5-3L4 12.5a1.3 1.3 0 0 1 2-1.6L8 13"/></svg>',
             `الأدمن مفعّلش إعادة المحاولة في ${exam.kind === 'homework' ? 'الواجب' : 'الاختبار'} ده. نتيجتك المسجّلة: ${Math.round(priorAttempt.percentage)}% (${passed ? 'ناجح' : 'راسب'}).`
           );
           return;
@@ -534,7 +534,7 @@
     if(priorAttempt && priorAttempt.completed_at){
       const passed = priorAttempt.percentage >= (exam.passing_score || 50);
       document.getElementById('intro-prior-text').textContent =
-        `آخر نتيجة ليك: ${Math.round(priorAttempt.percentage)}% (${passed ? 'ناجح ✓' : 'راسب'}) — تقدر تعمل محاولة جديدة`;
+        `آخر نتيجة ليك: ${Math.round(priorAttempt.percentage)}% (${passed ? 'ناجح <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg>' : 'راسب'}) — تقدر تعمل محاولة جديدة`;
       priorBox.style.display = 'block';
     } else {
       priorBox.style.display = 'none';
@@ -574,7 +574,7 @@
       .from('exam_questions').select('id, question_text, image_url, order_index').eq('exam_id', EXAM_ID).order('order_index', { ascending: true });
 
     if(qErr || !qData || qData.length === 0){
-      denied('الاختبار لسه مش جاهز ⚠️', 'الأسئلة لسه بتتضاف، جرب تاني بعدين.');
+      denied('الاختبار لسه مش جاهز <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'الأسئلة لسه بتتضاف، جرب تاني بعدين.');
       return;
     }
 
@@ -675,7 +675,7 @@
     `;
 
     document.getElementById('prev-btn').disabled = (index === 0);
-    document.getElementById('next-btn').textContent = (index === questions.length - 1) ? 'تسليم الاختبار ✓' : 'التالي ←';
+    document.getElementById('next-btn').textContent = (index === questions.length - 1) ? 'تسليم الاختبار' : 'التالي ←';
     document.getElementById('next-btn').onclick = (index === questions.length - 1) ? openSubmitModal : goNext;
 
     const answeredCount = Object.keys(answers).length;
@@ -869,7 +869,7 @@
     ring.classList.add(passed ? 'pass' : 'fail');
     document.getElementById('result-percentage').textContent = percentage + '%';
     document.getElementById('result-fraction').textContent = `${correctCount} / ${total}`;
-    document.getElementById('result-title').textContent = passed ? 'مبروك، نجحت في الاختبار 🎉' : 'محتاج تراجع الحصة تاني';
+    document.getElementById('result-title').textContent = passed ? 'مبروك، نجحت في الاختبار' : 'محتاج تراجع الحصة تاني';
     document.getElementById('result-text').textContent = passed
       ? 'أداء كويس! تقدر تكمل باقي الاختبارات أو تراجع أي سؤال غلطت فيه تحت.'
       : `محتاج نسبة ${exam.passing_score || 50}% عشان تعدي، راجع الحصة وجرب تاني.`;
@@ -915,7 +915,7 @@
               let cls = '';
               if(o.is_correct) cls = 'correct';
               else if(o.id === chosenId) cls = 'wrong';
-              return `<div class="opt ${cls}">${o.option_text}${o.is_correct ? ' ✓' : (o.id === chosenId ? ' ✗' : '')}</div>`;
+              return `<div class="opt ${cls}">${o.option_text}${o.is_correct ? ' <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg>' : (o.id === chosenId ? ' <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="m6 6 12 12M18 6 6 18"/></svg>' : '')}</div>`;
             }).join('')}
           </div>
         </div>

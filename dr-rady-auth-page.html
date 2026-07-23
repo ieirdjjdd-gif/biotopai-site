@@ -322,8 +322,8 @@
           <line x1="258" y1="140" x2="270" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="badge-card badge-1">🧬 دخولك يفتحلك كل الكورسات</div>
-      <div class="badge-card badge-2">✅ متابعة مستواك أول بأول</div>
+      <div class="badge-card badge-1"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 3c0 6 10 6 10 12"/><path d="M17 21c0-6-10-6-10-12"/><path d="M8 6h8M7.5 10h9M7.5 14h9M8 18h8"/></svg></span> دخولك يفتحلك كل الكورسات</div>
+      <div class="badge-card badge-2"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg></span> متابعة مستواك أول بأول</div>
     </div>
 
     <!-- ===== FORM SIDE ===== -->
@@ -335,7 +335,7 @@
 
       <!-- LOGIN -->
       <div class="form-panel active" id="panel-login">
-        <h1>أهلاً بيك تاني 👋</h1>
+        <h1>أهلاً بيك تاني <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 12V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 3.5-2.5 6-6 6-2.5 0-4-1-5.5-3L4 12.5a1.3 1.3 0 0 1 2-1.6L8 13"/></svg></h1>
         <p class="sub">سجّل دخولك وكمّل من حيث وقفت في مذاكرتك.</p>
 
         <div class="form-error" id="login-error"></div>
@@ -361,7 +361,7 @@
 
       <!-- SIGNUP -->
       <div class="form-panel" id="panel-signup">
-        <h1>ابدأ رحلتك مع د. راضي 🚀</h1>
+        <h1>ابدأ رحلتك مع د. راضي <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 2c3 1 5 4 5 8 0 3-1.5 5.5-2.5 6.5L12 19l-2.5-2.5C8.5 15.5 7 13 7 10c0-4 2-7 5-8Z"/><circle cx="12" cy="9" r="1.6"/><path d="M9 17l-2 3M15 17l2 3"/></svg></h1>
         <p class="sub">اعمل حسابك في دقيقة وابدأ تفهم الأحياء صح.</p>
 
         <div class="field">
@@ -414,7 +414,7 @@
 
       <!-- FORGOT PASSWORD -->
       <div class="form-panel" id="panel-forgot">
-        <h1>استرجاع كلمة المرور 🔑</h1>
+        <h1>استرجاع كلمة المرور <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="8" cy="8" r="4"/><path d="m11 11 9 9M16 16l2-2M18.5 18.5 21 16"/></svg></h1>
         <p class="sub">اكتب بريدك الإلكتروني، وهنبعتلك رابط لإعادة تعيين كلمة المرور.</p>
 
         <div class="form-error" id="forgot-error"></div>
@@ -441,7 +441,7 @@
   <div class="modal-box">
     <div class="modal-head">
       <h2>الشروط والأحكام</h2>
-      <button class="modal-close" onclick="closeTerms()">✕</button>
+      <button class="modal-close" onclick="closeTerms()"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="modal-body">
       <h3>1. حماية المحتوى وحقوق الملكية</h3>
@@ -654,7 +654,7 @@
       return;
     }
 
-    // ⚠️ Supabase بيرجّع نجاح دايمًا سواء البريد ده مسجل عندنا أو لأ، عشان محدش
+    // <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg> Supabase بيرجّع نجاح دايمًا سواء البريد ده مسجل عندنا أو لأ، عشان محدش
     // يقدر يستخدم الصفحة دي يتأكد إن بريد معين مسجل عندنا ولا لأ (حماية خصوصية)
     document.getElementById('forgot-success').style.display = 'block';
     document.getElementById('forgot-email').value = '';
