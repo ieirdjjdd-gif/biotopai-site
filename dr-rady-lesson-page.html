@@ -217,6 +217,13 @@
   .file-row a{color:var(--t-file); font-weight:700; font-size:12.5px; flex-shrink:0;}
   .file-row a:hover{text-decoration:underline;}
   .file-empty{font-size:13px; color:var(--bone-dim);}
+  .lecture-section-block{margin-bottom:20px;}
+  .lecture-section-block:last-child{margin-bottom:0;}
+  .lecture-section-title{
+    font-size:13px; font-weight:800; color:var(--green-bright); margin-bottom:10px;
+    padding-inline-start:2px;
+  }
+  .file-row.is-playing{border-inline-start-color:var(--green-bright); background:rgba(95,168,43,0.08);}
 
   /* ===== SIDEBAR: قائمة حصص الكورس ===== */
   .side-panel{
@@ -344,11 +351,11 @@
         <a href="#" id="next-lesson-link" class="btn btn-outline btn-sm">الحصة الجاية ←</a>
       </div>
 
-      <!-- ===== الملفات المرفقة ===== -->
+      <!-- ===== باقي محتوى المحاضرة (فيديوهات / ملفات / امتحانات) ===== -->
       <div class="panel">
-        <h2>📎 ملفات الحصة</h2>
+        <h2 id="content-panel-title">📎 محتوى المحاضرة</h2>
         <div id="files-list">
-          <p class="file-empty">جارٍ تحميل الملفات...</p>
+          <p class="file-empty">جارٍ تحميل المحتوى...</p>
         </div>
       </div>
     </div>
@@ -368,12 +375,18 @@
   const params = new URLSearchParams(window.location.search);
   const COURSE_ID = params.get('course');
   const LESSON_ID = params.get('lesson');
+  let ITEM_ID = params.get('item'); // عنصر فيديو معيّن جوه المحاضرة (اختياري)
 
   let allLessons = [];
   let currentLesson = null;
   let currentUser = null;
   let isPaid = false;
   let progressRow = null;
+  let currentItem = null; // العنصر (section_items) اللي بيتشغّل دلوقتي
+  let lessonSections = [];
+  let itemsBySection = {};
+  let examsById = {};
+  let attemptsByExam = {};
 
 
   function showState(name){
@@ -969,16 +982,69 @@
       return;
     }
 
-    // دلوقتي بس، وبعد ما اتأكدنا إن المستخدم يستحق يشوف الحصة دي، نجيب
-    // video_url بتاعها هي بس (مش باقي حصص الكورس).
-    const { data: unlockedLesson } = await supabaseClient
-      .from('lessons').select('video_url').eq('id', currentLesson.id).single();
-    currentLesson.video_url = unlockedLesson?.video_url || null;
+    // ===== هيكل الأقسام والعناصر بتاعة المحاضرة دي (عام، بدون روابط حساسة) =====
+    const { data: sections } = await supabaseClient
+      .from('lesson_sections')
+      .select('id, lesson_id, title, order_index')
+      .eq('lesson_id', currentLesson.id)
+      .order('order_index', { ascending: true });
+
+    lessonSections = sections || [];
+    const sectionIds = lessonSections.map(s => s.id);
+
+    let structureItems = [];
+    if(sectionIds.length > 0){
+      const { data: items } = await supabaseClient
+        .from('section_items_public')
+        .select('id, section_id, type, title, order_index, exam_id, file_name')
+        .in('section_id', sectionIds)
+        .order('order_index', { ascending: true });
+      structureItems = items || [];
+    }
+    itemsBySection = {};
+    structureItems.forEach(it => {
+      if(!itemsBySection[it.section_id]) itemsBySection[it.section_id] = [];
+      itemsBySection[it.section_id].push(it);
+    });
+
+    // لو مفيش item محدد في الرابط، هناخد أول عنصر فيديو موجود في المحاضرة تلقائيًا
+    if(!ITEM_ID){
+      const firstVideo = structureItems.find(it => it.type === 'video');
+      if(firstVideo) ITEM_ID = firstVideo.id;
+    }
+
+    // ===== بيانات الامتحانات المرتبطة بعناصر من نوع exam =====
+    const examIds = [...new Set(structureItems.filter(it => it.type === 'exam' && it.exam_id).map(it => it.exam_id))];
+    if(examIds.length > 0){
+      const { data: examsData } = await supabaseClient
+        .from('exams').select('id, title, kind, passing_score').in('id', examIds).eq('is_published', true);
+      (examsData || []).forEach(e => { examsById[e.id] = e; });
+      const { data: attempts } = await supabaseClient
+        .from('exam_attempts').select('exam_id, percentage, completed_at')
+        .eq('user_id', user.id).in('exam_id', examIds).order('completed_at', { ascending: false });
+      (attempts || []).forEach(a => { if(!(a.exam_id in attemptsByExam)) attemptsByExam[a.exam_id] = a; });
+    }
+
+    // ===== دلوقتي بس، وبعد التأكد إن المستخدم يستحق، نجيب رابط الفيديو =====
+    // ===== الفعلي للعنصر المطلوب (لو موجود) — مش قبل كده خالص =====
+    if(ITEM_ID){
+      const { data: fullItem } = await supabaseClient
+        .from('section_items')
+        .select('id, section_id, type, title, video_url, bunny_video_guid')
+        .eq('id', ITEM_ID)
+        .eq('type', 'video')
+        .single();
+      currentItem = fullItem || null;
+    }
+    // ملحوظة: زي ما كان معمول بالظبط في النسخة القديمة، المشغّل بياخد
+    // video_url مباشرة. bunny_video_guid متسيب هنا للتوافق مع لوحة
+    // التحكم فقط، ولسه مربوطش بمشغّل فعلي (زي ما كانت الحال قبل كده).
+    currentLesson.video_url = currentItem?.video_url || null;
 
     renderLesson();
     renderSidebar();
+    renderLectureContent();
     await loadProgress();
-    await loadFiles();
     showState('content');
   }
 
@@ -1107,29 +1173,105 @@
       });
   }
 
-  async function loadFiles(){
-    const listEl = document.getElementById('files-list');
-    const { data: files, error } = await supabaseClient
-      .from('lesson_files')
-      .select('*')
-      .eq('lesson_id', currentLesson.id)
-      .order('created_at', { ascending: true });
+  // ===== فتح ملف عنصر: بنجيب الرابط وقت الضغط بس (بعد ما اتأكدنا بالفعل =====
+  // ===== إن المستخدم عدى بوابة requireAuth + التحقق من الاشتراك فوق) =====
+  async function openItemFile(itemId, fileName){
+    const { data, error } = await supabaseClient
+      .from('section_items')
+      .select('file_url, file_name')
+      .eq('id', itemId)
+      .single();
+    if(error || !data?.file_url){
+      alert('حصل خطأ في فتح الملف، جرّب تاني');
+      return;
+    }
+    window.open(data.file_url, '_blank', 'noopener');
+  }
 
-    if(error || !files || files.length === 0){
-      listEl.innerHTML = `<p class="file-empty">مفيش ملفات مرفقة للحصة دي لسه</p>`;
+  async function downloadItemFile(itemId, fileName){
+    const { data, error } = await supabaseClient
+      .from('section_items')
+      .select('file_url')
+      .eq('id', itemId)
+      .single();
+    if(error || !data?.file_url){
+      alert('حصل خطأ في تحميل الملف، جرّب تاني');
+      return;
+    }
+    forceDownload(data.file_url, fileName || 'file');
+  }
+
+  // ===== عرض محتوى المحاضرة كله (أقسام حرة، وجوه كل قسم فيديوهات/ملفات/امتحانات) =====
+  function renderLectureContent(){
+    const listEl = document.getElementById('files-list');
+
+    if(lessonSections.length === 0){
+      listEl.innerHTML = `<p class="file-empty">لسه مفيش محتوى مضاف للمحاضرة دي</p>`;
       return;
     }
 
-    listEl.innerHTML = files.map((f, i) => `
+    listEl.innerHTML = lessonSections.map(sec => {
+      const items = itemsBySection[sec.id] || [];
+      const rowsHTML = items.length > 0
+        ? items.map(it => renderContentRow(it)).join('')
+        : `<p class="file-empty">لسه مفيش محتوى في القسم ده</p>`;
+      return `
+        <div class="lecture-section-block">
+          <h3 class="lecture-section-title">${sec.title}</h3>
+          ${rowsHTML}
+        </div>`;
+    }).join('');
+  }
+
+  function renderContentRow(it){
+    if(it.type === 'video'){
+      const isCurrent = currentItem && it.id === currentItem.id;
+      return `
+        <div class="file-row ${isCurrent ? 'is-playing' : ''}">
+          <div class="file-ic">🎬</div>
+          <span class="fname">${it.title}${isCurrent ? ' <span style="color:var(--green-bright); font-size:11px;">(بيتشغّل دلوقتي)</span>' : ''}</span>
+          ${isCurrent
+            ? `<span class="btn btn-sm" style="opacity:.6; cursor:default;">▶ حالي</span>`
+            : `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${currentLesson.id}&item=${it.id}" class="btn btn-outline btn-sm">مشاهدة</a>`}
+        </div>`;
+    }
+    if(it.type === 'file'){
+      const safeName = (it.file_name || it.title || 'file').replace(/'/g, "");
+      return `
+        <div class="file-row">
+          <div class="file-ic">${fileIcon(it.file_name || '')}</div>
+          <span class="fname">${it.title}</span>
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="openItemFile('${it.id}')">عرض</button>
+            <button type="button" class="btn btn-sm" onclick="downloadItemFile('${it.id}', '${safeName}')">تحميل</button>
+          </div>
+        </div>`;
+    }
+    // type === 'exam'
+    const exam = examsById[it.exam_id];
+    if(!exam){
+      return `
+        <div class="file-row">
+          <div class="file-ic">⏳</div>
+          <span class="fname">${it.title}</span>
+          <span class="btn btn-sm" style="opacity:.55;">لسه مش متاح</span>
+        </div>`;
+    }
+    const isHw = exam.kind === 'homework';
+    const attempt = attemptsByExam[exam.id];
+    let actionLabel = isHw ? 'ابدأ الواجب' : 'ابدأ الاختبار';
+    let statusText = '';
+    if(attempt){
+      const passed = attempt.percentage >= (exam.passing_score || 50);
+      statusText = ` <span style="color:${passed ? 'var(--green-bright)' : '#e8735a'}; font-size:11px;">(${passed ? '✓ ناجح' : '✗ راسب'} — ${Math.round(attempt.percentage)}%)</span>`;
+      actionLabel = 'إعادة المحاولة';
+    }
+    return `
       <div class="file-row">
-        <div class="file-ic">${fileIcon(f.file_name)}</div>
-        <span class="fname">${f.file_name}</span>
-        <div style="display:flex; gap:8px;">
-          <a href="${f.file_url}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">عرض</a>
-          <button type="button" class="btn btn-sm" onclick="forceDownload('${f.file_url}', '${(f.file_name || 'file').replace(/'/g, "")}')">تحميل</button>
-        </div>
-      </div>
-    `).join('');
+        <div class="file-ic">${isHw ? '📝' : '✅'}</div>
+        <span class="fname">${it.title}${statusText}</span>
+        <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn btn-sm">${actionLabel}</a>
+      </div>`;
   }
 
   init();

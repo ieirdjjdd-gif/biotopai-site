@@ -412,70 +412,42 @@
         </tbody>
       </table>
 
-      <!-- ===== إدارة ملفات الحصة المختارة ===== -->
-      <div id="lesson-files-manager" style="display:none; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
+      <!-- ===== إدارة أقسام وعناصر الحصة المختارة (نظام مرن زي المنافس) ===== -->
+      <div id="lesson-sections-manager" style="display:none; margin-top:22px; padding-top:20px; border-top:1px solid var(--line);">
         <div class="panel-head">
-          <h2>📎 ملفات حصة: <span id="files-lesson-name" style="color:var(--green-bright);"></span></h2>
-          <button class="btn btn-outline btn-sm" onclick="closeFilesManager()">إغلاق</button>
+          <h2>🧩 أقسام حصة: <span id="sections-lesson-name" style="color:var(--green-bright);"></span></h2>
+          <button class="btn btn-outline btn-sm" onclick="closeSectionsManager()">إغلاق</button>
         </div>
+        <p style="font-size:12px; color:var(--bone-dim); margin-bottom:16px;">
+          كل قسم (شرح / تسليم واجب / أي اسم تحبه) هيظهر كأكورديون تحت المحاضرة دي في صفحة الكورس، وجواه العناصر اللي تضيفها.
+        </p>
 
-        <div class="msg msg-error" id="file-form-error"></div>
-        <div class="msg msg-success" id="file-form-success"></div>
+        <div class="msg msg-error" id="section-form-error"></div>
 
         <div class="field-row">
           <div class="field">
-            <label>📁 القسم اللي هيظهر تحته للطالب</label>
-            <select id="file-upload-category">
-              <option value="explanation">الشرح</option>
-              <option value="homework">الواجب</option>
-              <option value="submission">تسليم الواجب</option>
-              <option value="exam">الامتحان</option>
-            </select>
+            <label>اسم القسم (حر تمامًا)</label>
+            <input type="text" id="section-title" placeholder="مثال: شرح / تسليم الواجب / الشامل الأول">
           </div>
           <div class="field">
-            <label>🎞️ نوع المحتوى</label>
-            <select id="file-upload-type">
-              <option value="file">ملف (PDF / صورة / Word...)</option>
-              <option value="video">فيديو (رابط مباشر)</option>
-            </select>
+            <label>الترتيب</label>
+            <input type="number" id="section-order" placeholder="1">
           </div>
         </div>
-
-        <div class="field">
-          <label>📤 ارفع ملف من جهازك (PDF، صورة، Word...)</label>
-          <input type="file" id="file-upload-input" onchange="uploadLessonFile()">
-          <p id="upload-progress-text" style="font-size:12px; color:var(--bone-dim); margin-top:6px; display:none;">جارٍ الرفع، لحظات...</p>
+        <input type="hidden" id="section-edit-id">
+        <div style="display:flex; gap:10px;">
+          <button class="btn" id="save-section-btn" onclick="saveSection()">حفظ القسم</button>
+          <button class="btn btn-outline" id="cancel-section-edit" style="display:none;" onclick="resetSectionForm()">إلغاء التعديل</button>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px; margin:16px 0; color:var(--bone-dim); font-size:12px;">
-          <div style="flex:1; height:1px; background:var(--line);"></div>
-          أو لو عندك رابط جاهز (Google Drive أو فيديو مثلًا) — هيتلمّ في نفس القسم ونوع المحتوى المختارين فوق
-          <div style="flex:1; height:1px; background:var(--line);"></div>
+        <div id="sections-list" style="margin-top:20px; display:flex; flex-direction:column; gap:14px;">
+          <p style="font-size:13px; color:var(--bone-dim);">جارٍ التحميل...</p>
         </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label>اسم المحتوى (زي ما هيظهر للطالب)</label>
-            <input type="text" id="file-name-input" placeholder="مثال: ملخص الوحدة الأولى.pdf أو حل الواجب فيديو">
-          </div>
-          <div class="field">
-            <label>الرابط</label>
-            <input type="text" id="file-url-input" placeholder="https://...">
-          </div>
-        </div>
-        <button class="btn" id="add-file-btn" onclick="addLessonFile()">إضافة بالرابط</button>
-
-        <table style="margin-top:18px;">
-          <thead>
-            <tr><th>القسم</th><th>النوع</th><th>الاسم</th><th></th></tr>
-          </thead>
-          <tbody id="lesson-files-table-body">
-            <tr><td colspan="4">جارٍ التحميل...</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
+
+
 
   <!-- ===== إدارة الاختبارات ===== -->
         </div>
@@ -1486,7 +1458,7 @@
     currentLessonsCourseId = courseId || null;
     const manager = document.getElementById('lessons-manager');
 
-    closeFilesManager();
+    closeSectionsManager();
 
     if(!courseId){
       manager.style.display = 'none';
@@ -1520,7 +1492,7 @@
         <td>
           <div class="row-actions">
             <button class="btn btn-outline btn-sm" onclick='editLesson(${JSON.stringify(l)})'>تعديل</button>
-            <button class="btn btn-outline btn-sm" onclick='manageLessonFiles(${JSON.stringify(l.id)}, ${JSON.stringify(l.title)})'>📎 ملفات</button>
+            <button class="btn btn-outline btn-sm" onclick='manageLessonSections(${JSON.stringify(l.id)}, ${JSON.stringify(l.title)})'>🧩 الأقسام</button>
             <button class="btn btn-danger btn-sm" onclick="deleteLesson('${l.id}')">حذف</button>
           </div>
         </td>
@@ -1600,111 +1572,80 @@
     if(!confirm('متأكد إنك عايز تمسح الحصة دي؟')) return;
     const { error } = await supabaseClient.from('lessons').delete().eq('id', id);
     if(error){ alert('حصل خطأ أثناء الحذف'); return; }
-    if(currentFilesLessonId === id){
-      document.getElementById('lesson-files-manager').style.display = 'none';
-      currentFilesLessonId = null;
+    if(currentSectionsLessonId === id){
+      document.getElementById('lesson-sections-manager').style.display = 'none';
+      currentSectionsLessonId = null;
     }
     refreshLessonsTable();
   }
 
-  // ===== إدارة ملفات الحصة =====
-  let currentFilesLessonId = null;
+  // ============================================================
+  // ===== إدارة أقسام وعناصر الحصة (نظام مرن: أقسام حرة + عناصر) =====
+  // ============================================================
+  let currentSectionsLessonId = null;
+  let currentSectionsList = []; // آخر نسخة محمّلة من أقسام الحصة الحالية
+  let courseExamsCache = null; // كاش لامتحانات الكورس الحالي (لقائمة اختيار عنصر "امتحان")
 
-  function manageLessonFiles(lessonId, lessonTitle){
-    currentFilesLessonId = lessonId;
-    document.getElementById('files-lesson-name').textContent = lessonTitle;
-    document.getElementById('lesson-files-manager').style.display = 'block';
-    document.getElementById('file-name-input').value = '';
-    document.getElementById('file-url-input').value = '';
-    document.getElementById('file-upload-input').value = '';
-    document.getElementById('file-form-error').style.display = 'none';
-    document.getElementById('file-form-success').style.display = 'none';
-    document.getElementById('upload-progress-text').style.display = 'none';
-    document.getElementById('lesson-files-manager').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    loadLessonFilesAdmin();
+  function manageLessonSections(lessonId, lessonTitle){
+    currentSectionsLessonId = lessonId;
+    courseExamsCache = null;
+    document.getElementById('sections-lesson-name').textContent = lessonTitle;
+    document.getElementById('lesson-sections-manager').style.display = 'block';
+    resetSectionForm();
+    document.getElementById('lesson-sections-manager').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    loadSections();
   }
 
-  function closeFilesManager(){
-    currentFilesLessonId = null;
-    document.getElementById('lesson-files-manager').style.display = 'none';
+  function closeSectionsManager(){
+    currentSectionsLessonId = null;
+    document.getElementById('lesson-sections-manager').style.display = 'none';
   }
 
-  async function loadLessonFilesAdmin(){
-    const tbody = document.getElementById('lesson-files-table-body');
-    tbody.innerHTML = `<tr><td colspan="2">جارٍ التحميل...</td></tr>`;
-
-    const { data: files, error } = await supabaseClient
-      .from('lesson_files')
-      .select('*')
-      .eq('lesson_id', currentFilesLessonId)
-      .order('created_at', { ascending: true });
-
-    if(error){
-      tbody.innerHTML = `<tr><td colspan="2">حصل خطأ في تحميل الملفات</td></tr>`;
-      return;
-    }
-    if(!files || files.length === 0){
-      tbody.innerHTML = `<tr><td colspan="4">مفيش ملفات مضافة للحصة دي لسه</td></tr>`;
-      return;
-    }
-
-    const categoryLabel = { explanation: 'الشرح', homework: 'الواجب', submission: 'تسليم الواجب', exam: 'الامتحان' };
-    const typeLabel = { file: '📄 ملف', video: '🎬 فيديو' };
-
-    tbody.innerHTML = files.map(f => `
-      <tr>
-        <td>
-          <select onchange="updateLessonFileCategory('${f.id}', this.value)" style="width:auto;">
-            ${Object.entries(categoryLabel).map(([val, lbl]) => `<option value="${val}" ${f.category === val ? 'selected' : ''}>${lbl}</option>`).join('')}
-          </select>
-        </td>
-        <td>${typeLabel[f.content_type] || typeLabel.file}</td>
-        <td>${f.file_name}</td>
-        <td>
-          <div class="row-actions">
-            <a href="${f.file_url}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">فتح</a>
-            <button class="btn btn-danger btn-sm" onclick="deleteLessonFile('${f.id}', '${f.file_url}')">حذف</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+  function resetSectionForm(){
+    document.getElementById('section-edit-id').value = '';
+    document.getElementById('section-title').value = '';
+    document.getElementById('section-order').value = '';
+    document.getElementById('cancel-section-edit').style.display = 'none';
+    document.getElementById('section-form-error').style.display = 'none';
   }
 
-  async function updateLessonFileCategory(fileId, category){
-    const { error } = await supabaseClient.from('lesson_files').update({ category }).eq('id', fileId);
-    if(error) alert('حصل خطأ أثناء تغيير القسم، حاول تاني');
+  function editSection(s){
+    document.getElementById('section-edit-id').value = s.id;
+    document.getElementById('section-title').value = s.title || '';
+    document.getElementById('section-order').value = s.order_index ?? '';
+    document.getElementById('cancel-section-edit').style.display = 'inline-flex';
+    window.scrollTo({ top: document.getElementById('section-title').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
   }
 
-  async function addLessonFile(){
-    const errEl = document.getElementById('file-form-error');
-    const successEl = document.getElementById('file-form-success');
+  async function saveSection(){
+    const errEl = document.getElementById('section-form-error');
     errEl.style.display = 'none';
-    successEl.style.display = 'none';
 
-    const fileName = document.getElementById('file-name-input').value.trim();
-    const fileUrl = document.getElementById('file-url-input').value.trim();
-
-    if(!fileName || !fileUrl){
-      errEl.textContent = 'اسم الملف والرابط مطلوبين';
+    const title = document.getElementById('section-title').value.trim();
+    if(!title){
+      errEl.textContent = 'اسم القسم مطلوب';
       errEl.style.display = 'block';
       return;
     }
 
-    const btn = document.getElementById('add-file-btn');
-    btn.disabled = true; btn.textContent = 'جارٍ الإضافة...';
+    const payload = {
+      lesson_id: currentSectionsLessonId,
+      title,
+      order_index: document.getElementById('section-order').value ? Number(document.getElementById('section-order').value) : 0
+    };
 
-    const category = document.getElementById('file-upload-category').value;
-    const contentType = document.getElementById('file-upload-type').value;
+    const editId = document.getElementById('section-edit-id').value;
+    const btn = document.getElementById('save-section-btn');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
 
-    const { error } = await supabaseClient.from('lesson_files').insert({
-      lesson_id: currentFilesLessonId,
-      file_name: fileName,
-      file_url: fileUrl,
-      category,
-      content_type: contentType
-    });
+    let error;
+    if(editId){
+      ({ error } = await supabaseClient.from('lesson_sections').update(payload).eq('id', editId));
+    } else {
+      ({ error } = await supabaseClient.from('lesson_sections').insert(payload));
+    }
 
-    btn.disabled = false; btn.textContent = 'إضافة بالرابط';
+    btn.disabled = false; btn.textContent = 'حفظ القسم';
 
     if(error){
       errEl.textContent = 'حصل خطأ، حاول تاني';
@@ -1712,86 +1653,241 @@
       return;
     }
 
-    document.getElementById('file-name-input').value = '';
-    document.getElementById('file-url-input').value = '';
-    successEl.textContent = `✓ اتضاف "${fileName}" بنجاح`;
-    successEl.style.display = 'block';
-    loadLessonFilesAdmin();
+    resetSectionForm();
+    loadSections();
   }
 
-  // ===== رفع ملف فعلي من جهاز الأدمن لـ Supabase Storage =====
-  async function uploadLessonFile(){
-    const input = document.getElementById('file-upload-input');
-    const file = input.files[0];
-    if(!file) return;
-
-    const errEl = document.getElementById('file-form-error');
-    const successEl = document.getElementById('file-form-success');
-    const progressEl = document.getElementById('upload-progress-text');
-    errEl.style.display = 'none';
-    successEl.style.display = 'none';
-    progressEl.style.display = 'block';
-
-    // اسم مسار فريد عشان ملفين بنفس الاسم ميتصطدموش مع بعض
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_\u0600-\u06FF ]/g, '');
-    const filePath = `${currentFilesLessonId}/${Date.now()}_${safeName}`;
-
-    const { error: uploadError } = await supabaseClient
-      .storage
-      .from('lesson-files')
-      .upload(filePath, file);
-
-    progressEl.style.display = 'none';
-
-    if(uploadError){
-      errEl.textContent = 'حصل خطأ أثناء رفع الملف، حاول تاني (تأكد إن ملف 04-admin-approvals-and-uploads.sql اتشغّل في Supabase)';
-      errEl.style.display = 'block';
-      input.value = '';
-      return;
-    }
-
-    const { data: publicUrlData } = supabaseClient
-      .storage
-      .from('lesson-files')
-      .getPublicUrl(filePath);
-
-    const category = document.getElementById('file-upload-category').value;
-    const contentType = document.getElementById('file-upload-type').value;
-
-    const { error: insertError } = await supabaseClient.from('lesson_files').insert({
-      lesson_id: currentFilesLessonId,
-      file_name: file.name,
-      file_url: publicUrlData.publicUrl,
-      category,
-      content_type: contentType
-    });
-
-    input.value = '';
-
-    if(insertError){
-      errEl.textContent = 'اتم رفع الملف بس حصل خطأ في حفظه، حاول تاني';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    successEl.textContent = `✓ اتضاف "${file.name}" بنجاح`;
-    successEl.style.display = 'block';
-    loadLessonFilesAdmin();
-  }
-
-  async function deleteLessonFile(fileId, fileUrl){
-    if(!confirm('متأكد إنك عايز تمسح الملف ده؟')) return;
-    const { error } = await supabaseClient.from('lesson_files').delete().eq('id', fileId);
+  async function deleteSection(id){
+    if(!confirm('متأكد إنك عايز تمسح القسم ده؟ هيتمسح معاه كل العناصر اللي جواه.')) return;
+    const { error } = await supabaseClient.from('lesson_sections').delete().eq('id', id);
     if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    loadSections();
+  }
 
-    // لو الملف كان مرفوع فعليًا (مش رابط خارجي)، نمسحه من الـ storage كمان
-    if(fileUrl && fileUrl.includes('/storage/v1/object/public/lesson-files/')){
-      const storagePath = fileUrl.split('/storage/v1/object/public/lesson-files/')[1];
-      if(storagePath){
-        await supabaseClient.storage.from('lesson-files').remove([decodeURIComponent(storagePath)]);
+  async function loadSections(){
+    const listEl = document.getElementById('sections-list');
+    listEl.innerHTML = `<p style="font-size:13px; color:var(--bone-dim);">جارٍ التحميل...</p>`;
+
+    const { data: sections, error } = await supabaseClient
+      .from('lesson_sections')
+      .select('*')
+      .eq('lesson_id', currentSectionsLessonId)
+      .order('order_index', { ascending: true });
+
+    if(error){
+      listEl.innerHTML = `<p style="font-size:13px; color:var(--bone-dim);">حصل خطأ في تحميل الأقسام</p>`;
+      return;
+    }
+    currentSectionsList = sections || [];
+
+    if(currentSectionsList.length === 0){
+      listEl.innerHTML = `<p style="font-size:13px; color:var(--bone-dim);">لسه مفيش أقسام مضافة، ضيف أول قسم من الفورم فوق (مثلًا "شرح").</p>`;
+      return;
+    }
+
+    listEl.innerHTML = currentSectionsList.map(s => `
+      <div class="panel" style="padding:16px; background:rgba(0,0,0,0.15);">
+        <div class="panel-head" style="margin-bottom:10px;">
+          <h3 style="font-size:14px;">${s.order_index ?? ''}. ${s.title}</h3>
+          <div class="row-actions">
+            <button class="btn btn-outline btn-sm" onclick='editSection(${JSON.stringify(s)})'>تعديل</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSection('${s.id}')">حذف القسم</button>
+          </div>
+        </div>
+        <div id="items-list-${s.id}" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+          <p style="font-size:12px; color:var(--bone-dim);">جارٍ تحميل العناصر...</p>
+        </div>
+        <details>
+          <summary style="cursor:pointer; font-size:12.5px; color:var(--green-bright); font-weight:700;">+ إضافة عنصر جديد للقسم ده</summary>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);">
+            <div class="msg msg-error" id="item-form-error-${s.id}"></div>
+            <div class="field-row">
+              <div class="field">
+                <label>نوع العنصر</label>
+                <select id="item-type-${s.id}" onchange="onItemTypeChange('${s.id}')">
+                  <option value="video">🎬 فيديو</option>
+                  <option value="file">📎 ملف</option>
+                  <option value="exam">✅ امتحان / واجب (من الموجود بالفعل)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>عنوان العنصر (زي ما هيظهر للطالب)</label>
+                <input type="text" id="item-title-${s.id}" placeholder="مثال: شرح نجيب VS حمادة">
+              </div>
+            </div>
+
+            <div id="item-video-fields-${s.id}">
+              <div class="field">
+                <label>رابط الفيديو (يوتيوب / فيميو / رابط مباشر)</label>
+                <input type="text" id="item-video-url-${s.id}" placeholder="https://...">
+              </div>
+              <div class="field">
+                <label>🐰 Bunny Video GUID (اختياري)</label>
+                <input type="text" id="item-bunny-guid-${s.id}" placeholder="8f2b1a3c-....">
+              </div>
+            </div>
+
+            <div id="item-file-fields-${s.id}" style="display:none;">
+              <div class="field">
+                <label>📤 ارفع ملف من جهازك</label>
+                <input type="file" id="item-file-upload-${s.id}">
+              </div>
+              <div style="display:flex; align-items:center; gap:10px; margin:12px 0; color:var(--bone-dim); font-size:12px;">
+                <div style="flex:1; height:1px; background:var(--line);"></div>أو رابط جاهز<div style="flex:1; height:1px; background:var(--line);"></div>
+              </div>
+              <div class="field">
+                <label>رابط الملف (لو عندك رابط جاهز بدل الرفع)</label>
+                <input type="text" id="item-file-url-${s.id}" placeholder="https://...">
+              </div>
+            </div>
+
+            <div id="item-exam-fields-${s.id}" style="display:none;">
+              <div class="field">
+                <label>اختار الامتحان/الواجب</label>
+                <select id="item-exam-id-${s.id}"><option value="">جارٍ التحميل...</option></select>
+                <p style="font-size:11px; color:var(--bone-dim); margin-top:6px;">لو الامتحان اللي محتاجه لسه مش موجود، ضيفه الأول من تبويب "الاختبارات" فوق.</p>
+              </div>
+            </div>
+
+            <button class="btn btn-sm" onclick="addItem('${s.id}')">إضافة العنصر</button>
+          </div>
+        </details>
+      </div>
+    `).join('');
+
+    currentSectionsList.forEach(s => loadItemsForSection(s.id));
+  }
+
+  async function onItemTypeChange(sectionId){
+    const type = document.getElementById(`item-type-${sectionId}`).value;
+    document.getElementById(`item-video-fields-${sectionId}`).style.display = type === 'video' ? '' : 'none';
+    document.getElementById(`item-file-fields-${sectionId}`).style.display = type === 'file' ? '' : 'none';
+    document.getElementById(`item-exam-fields-${sectionId}`).style.display = type === 'exam' ? '' : 'none';
+    if(type === 'exam') await populateExamSelect(sectionId);
+  }
+
+  async function populateExamSelect(sectionId){
+    const select = document.getElementById(`item-exam-id-${sectionId}`);
+    if(!courseExamsCache){
+      const { data: exams } = await supabaseClient
+        .from('exams')
+        .select('id, title, kind')
+        .eq('course_id', currentLessonsCourseId)
+        .order('order_index', { ascending: true });
+      courseExamsCache = exams || [];
+    }
+    if(courseExamsCache.length === 0){
+      select.innerHTML = `<option value="">مفيش امتحانات/واجبات مضافة لسه في الكورس ده</option>`;
+      return;
+    }
+    select.innerHTML = courseExamsCache.map(e =>
+      `<option value="${e.id}">${e.kind === 'homework' ? '📝 واجب' : '✅ امتحان'} — ${e.title}</option>`
+    ).join('');
+  }
+
+  async function loadItemsForSection(sectionId){
+    const listEl = document.getElementById(`items-list-${sectionId}`);
+    const { data: items, error } = await supabaseClient
+      .from('section_items')
+      .select('*')
+      .eq('section_id', sectionId)
+      .order('order_index', { ascending: true });
+
+    if(error){
+      listEl.innerHTML = `<p style="font-size:12px; color:var(--bone-dim);">حصل خطأ في تحميل العناصر</p>`;
+      return;
+    }
+    if(!items || items.length === 0){
+      listEl.innerHTML = `<p style="font-size:12px; color:var(--bone-dim);">لسه مفيش عناصر في القسم ده</p>`;
+      return;
+    }
+
+    const typeLabel = { video: '🎬 فيديو', file: '📎 ملف', exam: '✅ امتحان' };
+    listEl.innerHTML = items.map(it => `
+      <div class="row-actions" style="justify-content:space-between; padding:8px 12px; background:var(--navy-deep); border:1px solid var(--line); border-radius:8px;">
+        <span style="font-size:12.5px;">${typeLabel[it.type] || it.type} — ${it.title}</span>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('${it.id}', '${sectionId}')">حذف</button>
+      </div>
+    `).join('');
+  }
+
+  async function addItem(sectionId){
+    const errEl = document.getElementById(`item-form-error-${sectionId}`);
+    errEl.style.display = 'none';
+
+    const type = document.getElementById(`item-type-${sectionId}`).value;
+    const title = document.getElementById(`item-title-${sectionId}`).value.trim();
+    if(!title){
+      errEl.textContent = 'عنوان العنصر مطلوب';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const payload = { section_id: sectionId, type, title, order_index: 0 };
+
+    if(type === 'video'){
+      payload.video_url = document.getElementById(`item-video-url-${sectionId}`).value.trim() || null;
+      payload.bunny_video_guid = document.getElementById(`item-bunny-guid-${sectionId}`).value.trim() || null;
+      if(!payload.video_url && !payload.bunny_video_guid){
+        errEl.textContent = 'محتاج تحط رابط فيديو أو Bunny GUID';
+        errEl.style.display = 'block';
+        return;
       }
     }
-    loadLessonFilesAdmin();
+
+    if(type === 'file'){
+      const fileInput = document.getElementById(`item-file-upload-${sectionId}`);
+      const urlInput = document.getElementById(`item-file-url-${sectionId}`).value.trim();
+      const file = fileInput.files[0];
+
+      if(file){
+        const safeName = file.name.replace(/[^a-zA-Z0-9.\-_\u0600-\u06FF ]/g, '');
+        const filePath = `${sectionId}/${Date.now()}_${safeName}`;
+        const { error: uploadError } = await supabaseClient.storage.from('lesson-files').upload(filePath, file);
+        if(uploadError){
+          errEl.textContent = 'حصل خطأ أثناء رفع الملف، حاول تاني';
+          errEl.style.display = 'block';
+          return;
+        }
+        const { data: publicUrlData } = supabaseClient.storage.from('lesson-files').getPublicUrl(filePath);
+        payload.file_url = publicUrlData.publicUrl;
+        payload.file_name = file.name;
+      } else if(urlInput){
+        payload.file_url = urlInput;
+        payload.file_name = title;
+      } else {
+        errEl.textContent = 'ارفع ملف أو حط رابط جاهز';
+        errEl.style.display = 'block';
+        return;
+      }
+    }
+
+    if(type === 'exam'){
+      const examId = document.getElementById(`item-exam-id-${sectionId}`).value;
+      if(!examId){
+        errEl.textContent = 'اختار امتحان/واجب من القائمة';
+        errEl.style.display = 'block';
+        return;
+      }
+      payload.exam_id = examId;
+    }
+
+    const { error } = await supabaseClient.from('section_items').insert(payload);
+    if(error){
+      errEl.textContent = 'حصل خطأ، حاول تاني';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    document.getElementById(`item-title-${sectionId}`).value = '';
+    loadItemsForSection(sectionId);
+  }
+
+  async function deleteItem(itemId, sectionId){
+    if(!confirm('متأكد إنك عايز تمسح العنصر ده؟')) return;
+    const { error } = await supabaseClient.from('section_items').delete().eq('id', itemId);
+    if(error){ alert('حصل خطأ أثناء الحذف'); return; }
+    loadItemsForSection(sectionId);
   }
 
   // ============================================================
