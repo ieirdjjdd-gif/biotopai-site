@@ -6,6 +6,7 @@
 <title>لوحتي | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui-effects.css">
 <style>
   :root{
     --navy-deep:#101c46;
@@ -42,6 +43,28 @@
   .btn-ghost{background:rgba(95,168,43,0.14); color:var(--green-bright); border:1px solid rgba(95,168,43,0.4);}
   .link-accent{font-weight:700; color:var(--green-bright);}
   .link-accent:hover{text-decoration:underline;}
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes popIn{from{opacity:0; transform:translateY(18px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);}}
+  @keyframes countPop{from{opacity:0; transform:scale(.7);} to{opacity:1; transform:scale(1);}}
+
+  .reveal{
+    opacity:0; transform:translateY(26px);
+    transition:opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
+  }
+  .reveal.in-view{opacity:1; transform:translateY(0);}
+
+  .reveal-stagger > *{
+    opacity:0; transform:translateY(26px);
+    transition:opacity .55s cubic-bezier(.16,1,.3,1), transform .55s cubic-bezier(.16,1,.3,1);
+  }
+  .reveal-stagger.in-view > *{opacity:1; transform:translateY(0);}
+  .reveal-stagger.in-view > *:nth-child(1){transition-delay:.04s;}
+  .reveal-stagger.in-view > *:nth-child(2){transition-delay:.1s;}
+  .reveal-stagger.in-view > *:nth-child(3){transition-delay:.16s;}
+  .reveal-stagger.in-view > *:nth-child(4){transition-delay:.22s;}
+
+  .pop-in{animation:popIn .45s cubic-bezier(.16,1,.3,1) backwards;}
 
   /* ===== SHELL ===== */
   .shell{display:grid; grid-template-columns:250px 1fr; min-height:calc(100vh - 71px);}
@@ -109,7 +132,9 @@
   .stats-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:32px;}
   .stat-card{
     background:var(--navy-soft); border:1px solid var(--line); border-radius:18px; padding:20px;
+    transition:transform .25s ease, box-shadow .25s ease;
   }
+  .stat-card:hover{transform:translateY(-4px); box-shadow:0 14px 28px rgba(0,0,0,0.25);}
   .stat-card .top-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
   .stat-ic{
     width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px;
@@ -227,9 +252,52 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js?v=2"></script>
+<script src="js/ui-effects.js" defer></script>
 </head>
 <body>
-
+<div id="page-loader">
+  <div class="loader-mark">
+    <svg viewBox="0 0 420 460" fill="none">
+              <ellipse cx="210" cy="440" rx="130" ry="16" fill="#101c46" opacity="0.4"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="#f3ecd9"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="none" stroke="#101c46" stroke-width="2"/>
+              <path d="M172 340 C168 375 165 400 168 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <path d="M248 340 C252 375 255 400 250 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <ellipse cx="166" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <ellipse cx="252" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <path d="M150 235 L270 235 L280 330 L140 330 Z" fill="#1c2f72" stroke="#f3ecd9" stroke-width="3"/>
+              <path d="M186 235 L210 270 L196 300 L172 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M234 235 L210 270 L224 300 L248 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M198 238 L210 258 L222 238 L222 246 L210 264 L198 246 Z" fill="#f3ecd9"/>
+              <path d="M205 258 L215 258 L219 300 L210 312 L201 300 Z" fill="#5fa82b" stroke="#101c46" stroke-width="1"/>
+              <path d="M150 250 C110 260 92 290 90 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <path d="M270 250 C310 260 328 290 330 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="85" cy="325" r="12"/>
+                <rect x="72" y="318" width="10" height="16" rx="4"/>
+                <rect x="86" y="316" width="10" height="18" rx="4"/>
+                <rect x="99" y="319" width="10" height="15" rx="4"/>
+              </g>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="335" cy="325" r="12"/>
+                <rect x="322" y="319" width="10" height="15" rx="4"/>
+                <rect x="335" y="316" width="10" height="18" rx="4"/>
+                <rect x="348" y="318" width="10" height="16" rx="4"/>
+              </g>
+              <circle cx="210" cy="150" r="72" fill="#f3ecd9" stroke="#101c46" stroke-width="3"/>
+              <ellipse cx="183" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <ellipse cx="237" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <path d="M210 158 l-10 18 h20 z" fill="#101c46"/>
+              <path d="M180 195 Q210 214 240 195" stroke="#101c46" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M187 195 v11 M197 197 v11 M207 198 v11 M217 197 v11 M227 195 v11 M233 192 v10" stroke="#101c46" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="183" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <circle cx="237" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="204" y1="146" x2="216" y2="146" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="162" y1="140" x2="150" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="258" y1="140" x2="270" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+  </div>
+</div>
 <!-- ===== TOP HEADER (same as the rest of the site) ===== -->
 <header>
   <div class="nav">
@@ -299,7 +367,7 @@
     </div>
 
     <!-- ===== STATS (أرقام حقيقية من enrollments/lessons) ===== -->
-    <div class="stats-grid">
+    <div class="stats-grid reveal-stagger">
       <div class="stat-card">
         <div class="top-row">
           <div class="stat-ic" style="background:rgba(95,168,43,0.16); color:var(--green-bright);">🎓</div>
@@ -336,7 +404,7 @@
       <div style="display:flex; flex-direction:column; gap:22px;">
 
         <!-- continue learning: كورسات حقيقية من enrollments -->
-        <div class="panel">
+        <div class="panel reveal" style="transition-delay:0s;">
           <div class="panel-head">
             <h2>كورساتك</h2>
             <a href="dr-rady-catalog-page.html">كل الكورسات</a>
@@ -348,7 +416,7 @@
         </div>
 
         <!-- نظام المتابعة والتقييم: لسه بيتبني -->
-        <div class="panel">
+        <div class="panel reveal" style="transition-delay:.08s;">
           <div class="panel-head">
             <h2>الواجبات والدرجات</h2>
             <a href="dr-rady-assignments-page.html">شوف كل حاجة</a>
@@ -364,7 +432,7 @@
       <div style="display:flex; flex-direction:column; gap:22px;">
 
         <!-- طلبات اشتراك محتاجة إكمال دفع -->
-        <div class="panel">
+        <div class="panel reveal" style="transition-delay:.05s;">
           <div class="panel-head">
             <h2>محتاج منك تكمل</h2>
           </div>
@@ -374,7 +442,7 @@
         </div>
 
         <!-- الإنجازات -->
-        <div class="panel">
+        <div class="panel reveal" style="transition-delay:.13s;">
           <div class="panel-head">
             <h2>الإنجازات</h2>
             <a href="dr-rady-achievements-page.html">شوف شاراتك</a>
@@ -425,6 +493,32 @@
       document.getElementById('mainNav').classList.remove('mobile-open');
     });
   });
+
+  // ===== يضيف حركة ظهور تدريجي متتالية للعناصر المولّدة ديناميكيًا (كروت/صفوف) =====
+  function animateStagger(container){
+    if(!container) return;
+    Array.from(container.children).forEach((el, i) => {
+      el.classList.remove('pop-in');
+      void el.offsetWidth; // إعادة تشغيل الأنيميشن لو العنصر اتحدّث تاني
+      el.classList.add('pop-in');
+      el.style.animationDelay = (Math.min(i, 8) * 0.07) + 's';
+    });
+  }
+
+  // ===== تحريك اللوحات (panels) لما تظهر في الشاشة =====
+  (function(){
+    const items = document.querySelectorAll('.reveal, .reveal-stagger');
+    if(!items.length) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+    items.forEach(el => io.observe(el));
+  })();
 
   // ===== حماية الصفحة: لازم تسجيل دخول =====
   (async function initDashboard(){
@@ -504,6 +598,7 @@
         </div>
       `).join('');
     }
+    animateStagger(myCoursesEl);
 
     // ===== طلبات لسه مستنية إكمال الدفع =====
     if(pending.length === 0){
@@ -519,6 +614,7 @@
         </div>
       `).join('');
     }
+    animateStagger(pendingEl);
   })();
 </script>
 

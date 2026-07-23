@@ -6,6 +6,7 @@
 <title>لوحة تحكم د. راضي | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui-effects.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js?v=2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -132,9 +133,52 @@
     .admin-side-link{white-space:nowrap; flex-shrink:0;}
   }
 </style>
+<script src="js/ui-effects.js" defer></script>
 </head>
 <body>
-
+<div id="page-loader">
+  <div class="loader-mark">
+    <svg viewBox="0 0 420 460" fill="none">
+              <ellipse cx="210" cy="440" rx="130" ry="16" fill="#101c46" opacity="0.4"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="#f3ecd9"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="none" stroke="#101c46" stroke-width="2"/>
+              <path d="M172 340 C168 375 165 400 168 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <path d="M248 340 C252 375 255 400 250 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <ellipse cx="166" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <ellipse cx="252" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <path d="M150 235 L270 235 L280 330 L140 330 Z" fill="#1c2f72" stroke="#f3ecd9" stroke-width="3"/>
+              <path d="M186 235 L210 270 L196 300 L172 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M234 235 L210 270 L224 300 L248 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M198 238 L210 258 L222 238 L222 246 L210 264 L198 246 Z" fill="#f3ecd9"/>
+              <path d="M205 258 L215 258 L219 300 L210 312 L201 300 Z" fill="#5fa82b" stroke="#101c46" stroke-width="1"/>
+              <path d="M150 250 C110 260 92 290 90 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <path d="M270 250 C310 260 328 290 330 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="85" cy="325" r="12"/>
+                <rect x="72" y="318" width="10" height="16" rx="4"/>
+                <rect x="86" y="316" width="10" height="18" rx="4"/>
+                <rect x="99" y="319" width="10" height="15" rx="4"/>
+              </g>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="335" cy="325" r="12"/>
+                <rect x="322" y="319" width="10" height="15" rx="4"/>
+                <rect x="335" y="316" width="10" height="18" rx="4"/>
+                <rect x="348" y="318" width="10" height="16" rx="4"/>
+              </g>
+              <circle cx="210" cy="150" r="72" fill="#f3ecd9" stroke="#101c46" stroke-width="3"/>
+              <ellipse cx="183" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <ellipse cx="237" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <path d="M210 158 l-10 18 h20 z" fill="#101c46"/>
+              <path d="M180 195 Q210 214 240 195" stroke="#101c46" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M187 195 v11 M197 197 v11 M207 198 v11 M217 197 v11 M227 195 v11 M233 192 v10" stroke="#101c46" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="183" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <circle cx="237" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="204" y1="146" x2="216" y2="146" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="162" y1="140" x2="150" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="258" y1="140" x2="270" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+  </div>
+</div>
 <header>
   <div class="header-row">
     <div class="brand">Bio<span>Topia</span> — لوحة التحكم</div>
@@ -623,6 +667,8 @@
 
     <div id="results-summary" style="display:none; margin-bottom:16px; font-size:13.5px; color:var(--bone-dim);"></div>
 
+    <div id="results-toughest" style="display:none; margin-bottom:20px;"></div>
+
     <table id="results-table" style="display:none;">
       <thead>
         <tr><th>الطالب</th><th>الصف</th><th>النتيجة</th><th>النسبة</th><th>التاريخ</th><th></th></tr>
@@ -850,6 +896,8 @@
     </div>
 
     <div id="hw-results-summary" style="display:none; margin-bottom:16px; font-size:13.5px; color:var(--bone-dim);"></div>
+
+    <div id="hw-results-toughest" style="display:none; margin-bottom:20px;"></div>
 
     <table id="hw-results-table" style="display:none;">
       <thead>
@@ -1168,6 +1216,7 @@
     const hwResultsSelect = document.getElementById('hw-results-course-select');
     hwResultsSelect.innerHTML = `<option value="">-- اختار كورس --</option>` +
       courses.map(c => `<option value="${c.id}">${c.title}</option>`).join('');
+
   }
 
   // ===== طلبات الاشتراك =====
@@ -2977,12 +3026,65 @@
   let currentResultsAttempts = [];
   let currentResultsProfilesMap = {};
 
+  // بتحسب لكل سؤال عدد الطلاب اللي غلطوا فيه (غلط = اختار إجابة غلط أو ماجاوبش خالص)
+  // وبتعرض أعلى 5 أسئلة غلط فيها الطلاب، مرتبة من الأسوأ للأحسن
+  function renderToughestQuestions(questions, attempts, containerId){
+    const container = document.getElementById(containerId);
+
+    if(!questions || !questions.length || !attempts || !attempts.length){
+      container.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+
+    const stats = questions.map(q => {
+      const correctOption = q.options.find(o => o.is_correct);
+      let wrong = 0;
+      attempts.forEach(a => {
+        const chosen = (a.answers || {})[q.id];
+        const isCorrect = !!(chosen && correctOption && chosen === correctOption.id);
+        if(!isCorrect) wrong++;
+      });
+      return {
+        text: q.question_text,
+        wrong,
+        total: attempts.length,
+        pct: Math.round((wrong / attempts.length) * 100)
+      };
+    });
+
+    const toughest = stats
+      .filter(s => s.wrong > 0)
+      .sort((a, b) => b.pct - a.pct || b.wrong - a.wrong)
+      .slice(0, 5);
+
+    if(!toughest.length){
+      container.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+
+    container.style.display = 'block';
+    container.innerHTML = `
+      <div style="font-size:13px; font-weight:700; color:var(--bone); margin-bottom:10px;">🎯 الأسئلة الأكتر غلط فيها الطلاب</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${toughest.map((s, i) => `
+          <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; padding:10px 14px; border:1.5px solid var(--line); border-radius:10px; background:var(--navy-deep);">
+            <div style="font-size:13.5px;">${i + 1}. ${s.text}</div>
+            <div style="white-space:nowrap; font-size:12px; font-weight:700; color:#e8a3a4;">${s.wrong} من ${s.total} غلطوا فيه (${s.pct}%)</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
   async function loadExamsForResults(){
     const courseId = document.getElementById('results-course-select').value;
     const examSelect = document.getElementById('results-exam-select');
 
     document.getElementById('results-table').style.display = 'none';
     document.getElementById('results-summary').style.display = 'none';
+    document.getElementById('results-toughest').style.display = 'none';
     document.getElementById('results-empty').style.display = 'none';
     closeAttemptDetail();
 
@@ -3013,12 +3115,14 @@
       table.style.display = 'none';
       empty.style.display = 'none';
       summary.style.display = 'none';
+      document.getElementById('results-toughest').style.display = 'none';
       return;
     }
 
     table.style.display = 'table';
     summary.style.display = 'none';
     empty.style.display = 'none';
+    document.getElementById('results-toughest').style.display = 'none';
     tbody.innerHTML = `<tr><td colspan="6">جارٍ التحميل...</td></tr>`;
 
     // هات أسئلة واختيارات الاختبار مرة واحدة، هنستخدمها بعدين لعرض تفاصيل أي محاولة
@@ -3041,10 +3145,12 @@
     if(error || !attempts || attempts.length === 0){
       table.style.display = 'none';
       empty.style.display = 'block';
+      document.getElementById('results-toughest').style.display = 'none';
       return;
     }
 
     currentResultsAttempts = attempts;
+    renderToughestQuestions(currentResultsExamQuestions, attempts, 'results-toughest');
 
     const userIds = [...new Set(attempts.map(a => a.user_id))];
     const { data: profiles } = await supabaseClient
@@ -3129,6 +3235,7 @@
 
     document.getElementById('hw-results-table').style.display = 'none';
     document.getElementById('hw-results-summary').style.display = 'none';
+    document.getElementById('hw-results-toughest').style.display = 'none';
     document.getElementById('hw-results-empty').style.display = 'none';
     closeHwAttemptDetail();
 
@@ -3159,12 +3266,14 @@
       table.style.display = 'none';
       empty.style.display = 'none';
       summary.style.display = 'none';
+      document.getElementById('hw-results-toughest').style.display = 'none';
       return;
     }
 
     table.style.display = 'table';
     summary.style.display = 'none';
     empty.style.display = 'none';
+    document.getElementById('hw-results-toughest').style.display = 'none';
     tbody.innerHTML = `<tr><td colspan="6">جارٍ التحميل...</td></tr>`;
 
     // هات أسئلة واختيارات الواجب مرة واحدة، هنستخدمها بعدين لعرض تفاصيل أي محاولة
@@ -3187,10 +3296,12 @@
     if(error || !attempts || attempts.length === 0){
       table.style.display = 'none';
       empty.style.display = 'block';
+      document.getElementById('hw-results-toughest').style.display = 'none';
       return;
     }
 
     currentResultsHwAttempts = attempts;
+    renderToughestQuestions(currentResultsHwQuestions, attempts, 'hw-results-toughest');
 
     const userIds = [...new Set(attempts.map(a => a.user_id))];
     const { data: profiles } = await supabaseClient

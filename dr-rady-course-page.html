@@ -6,6 +6,7 @@
 <title>باقة المراجعة النهائية — أحياء 3 ثانوي — د. راضي | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui-effects.css">
 <style>
   :root{
     --navy-deep:#101c46;
@@ -16,6 +17,11 @@
     --bone:#f3ecd9;
     --bone-dim:#cdd0e8;
     --line: rgba(243,236,217,0.14);
+    /* أنواع المحتوى — لون مختلف لكل نوع، منسجم مع هوية الموقع */
+    --t-video:#e8b84b;   /* فيديو الشرح — ذهبي */
+    --t-file:#7bb4f0;    /* ملفات/PDF — أزرق فاتح */
+    --t-exam:#e8735a;    /* امتحان — مرجاني */
+    --t-hw:#2dd4bf;      /* واجب — تركواز */
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -170,16 +176,36 @@
   details.lesson-acc summary .lname{font-size:13.5px; color:var(--bone);}
   details.lesson-acc summary .lchev{color:var(--green-bright); transition:.2s; flex-shrink:0;}
   details.lesson-acc[open] summary .lchev{transform:rotate(180deg);}
-  .lesson-acc-body{padding:4px 20px 16px;}
+  .lesson-acc-body{padding:4px 20px 16px; display:flex; flex-direction:column; gap:8px;}
   .lsub-item{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:10px 12px; margin-top:8px;
+    padding:10px 12px 10px 14px; margin-top:8px;
     background:var(--navy-deep); border:1px solid var(--line); border-radius:10px;
+    border-inline-start:3px solid var(--type-color, var(--line));
+    transition:.18s;
   }
+  .lsub-item:hover{background:rgba(255,255,255,0.03); transform:translateX(-1px);}
   .lsub-item .lsub-info{display:flex; align-items:center; gap:10px; min-width:0;}
-  .lsub-item .lsub-ic{font-size:15px; flex-shrink:0;}
-  .lsub-item .lsub-label{font-size:12.5px; color:var(--bone-dim);}
+  .lsub-item .lsub-ic{
+    font-size:14px; flex-shrink:0; width:30px; height:30px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--type-color, var(--green)) 18%, transparent);
+  }
+  .lsub-item .lsub-label{font-size:12.5px; color:var(--bone); font-weight:600;}
+  .lsub-item .lsub-type{
+    font-size:10px; font-weight:800; color:var(--type-color, var(--bone-dim));
+    text-transform:uppercase; letter-spacing:.03em; display:block; margin-bottom:1px;
+  }
   .lsub-item .lsub-status{font-size:11px; color:var(--bone-dim); display:block; margin-top:2px;}
+  .lsub-item .lbtn{
+    background:color-mix(in srgb, var(--type-color, var(--green)) 20%, transparent);
+    color:var(--type-color, var(--green-bright));
+  }
+  .lsub-item .lbtn:hover{background:var(--type-color, var(--green)); color:var(--navy-deep);}
+  .lsub-item.type-video{--type-color:var(--t-video);}
+  .lsub-item.type-file{--type-color:var(--t-file);}
+  .lsub-item.type-exam{--type-color:var(--t-exam);}
+  .lsub-item.type-hw{--type-color:var(--t-hw);}
   .lesson-locked-row{
     display:flex; align-items:center; justify-content:space-between; gap:14px;
     padding:13px 20px; border-top:1px solid var(--line);
@@ -199,10 +225,15 @@
   .lfile-item{
     display:flex; align-items:center; gap:10px; padding:10px 12px; margin-top:8px;
     background:var(--navy-deep); border:1px solid var(--line); border-radius:10px;
+    border-inline-start:3px solid var(--t-file);
   }
-  .lfile-item .fic{font-size:15px; flex-shrink:0;}
+  .lfile-item .fic{
+    font-size:13px; flex-shrink:0; width:26px; height:26px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    background:color-mix(in srgb, var(--t-file) 18%, transparent);
+  }
   .lfile-item .fnm{font-size:12.5px; color:var(--bone-dim); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .lfile-item a{font-size:12px; font-weight:700; color:var(--green-bright); flex-shrink:0;}
+  .lfile-item a{font-size:12px; font-weight:700; color:var(--t-file); flex-shrink:0;}
   .lfile-item a:hover{text-decoration:underline;}
   .lfiles-empty{font-size:12.5px; color:var(--bone-dim); margin-top:8px;}
 
@@ -235,9 +266,52 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js?v=2"></script>
+<script src="js/ui-effects.js" defer></script>
 </head>
 <body>
-
+<div id="page-loader">
+  <div class="loader-mark">
+    <svg viewBox="0 0 420 460" fill="none">
+              <ellipse cx="210" cy="440" rx="130" ry="16" fill="#101c46" opacity="0.4"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="#f3ecd9"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="none" stroke="#101c46" stroke-width="2"/>
+              <path d="M172 340 C168 375 165 400 168 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <path d="M248 340 C252 375 255 400 250 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <ellipse cx="166" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <ellipse cx="252" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <path d="M150 235 L270 235 L280 330 L140 330 Z" fill="#1c2f72" stroke="#f3ecd9" stroke-width="3"/>
+              <path d="M186 235 L210 270 L196 300 L172 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M234 235 L210 270 L224 300 L248 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M198 238 L210 258 L222 238 L222 246 L210 264 L198 246 Z" fill="#f3ecd9"/>
+              <path d="M205 258 L215 258 L219 300 L210 312 L201 300 Z" fill="#5fa82b" stroke="#101c46" stroke-width="1"/>
+              <path d="M150 250 C110 260 92 290 90 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <path d="M270 250 C310 260 328 290 330 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="85" cy="325" r="12"/>
+                <rect x="72" y="318" width="10" height="16" rx="4"/>
+                <rect x="86" y="316" width="10" height="18" rx="4"/>
+                <rect x="99" y="319" width="10" height="15" rx="4"/>
+              </g>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="335" cy="325" r="12"/>
+                <rect x="322" y="319" width="10" height="15" rx="4"/>
+                <rect x="335" y="316" width="10" height="18" rx="4"/>
+                <rect x="348" y="318" width="10" height="16" rx="4"/>
+              </g>
+              <circle cx="210" cy="150" r="72" fill="#f3ecd9" stroke="#101c46" stroke-width="3"/>
+              <ellipse cx="183" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <ellipse cx="237" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <path d="M210 158 l-10 18 h20 z" fill="#101c46"/>
+              <path d="M180 195 Q210 214 240 195" stroke="#101c46" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M187 195 v11 M197 197 v11 M207 198 v11 M217 197 v11 M227 195 v11 M233 192 v10" stroke="#101c46" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="183" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <circle cx="237" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="204" y1="146" x2="216" y2="146" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="162" y1="140" x2="150" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="258" y1="140" x2="270" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+  </div>
+</div>
 <header>
   <div class="nav">
     <div class="brand">
@@ -517,15 +591,15 @@
       // زرار "مشاهدة" ظاهر دايمًا للحصص المفتوحة؛ لو مفيش فيديو فعلاً،
       // صفحة الحصة نفسها هتعرض رسالة "لسه مفيش فيديو مضاف".
       const videoItem = `
-        <div class="lsub-item">
-          <div class="lsub-info"><span class="lsub-ic">🎬</span><span class="lsub-label">فيديو الشرح</span></div>
+        <div class="lsub-item type-video">
+          <div class="lsub-info"><span class="lsub-ic">🎬</span><div><span class="lsub-type">فيديو</span><span class="lsub-label">شرح الحصة</span></div></div>
           <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
         </div>`;
 
       // ===== عنصر الملفات =====
       const filesItem = `
-        <div class="lsub-item">
-          <div class="lsub-info"><span class="lsub-ic">📎</span><span class="lsub-label">الملفات</span></div>
+        <div class="lsub-item type-file">
+          <div class="lsub-info"><span class="lsub-ic">📎</span><div><span class="lsub-type">ملفات</span><span class="lsub-label">مذكرات ومرفقات</span></div></div>
           <button class="lfiles-btn" id="lfiles-btn-${lesson.id}" onclick="toggleLessonFiles('${lesson.id}')">عرض الملفات</button>
         </div>
         <div class="lfiles-panel" id="lfiles-panel-${lesson.id}"></div>`;
@@ -535,7 +609,7 @@
       const examEntry = lessonExams.find(e => e.kind !== 'homework');
       const homeworkEntry = lessonExams.find(e => e.kind === 'homework');
 
-      const buildExamItem = (exam, icon, label) => {
+      const buildExamItem = (exam, icon, label, typeClass) => {
         const attempt = attemptsByExam[exam.id];
         let statusHTML = '';
         let actionLabel = label === 'واجب' ? 'ابدأ الواجب' : 'ابدأ الاختبار';
@@ -545,17 +619,17 @@
           actionLabel = 'إعادة المحاولة';
         }
         return `
-          <div class="lsub-item">
+          <div class="lsub-item ${typeClass}">
             <div class="lsub-info">
               <span class="lsub-ic">${icon}</span>
-              <div><span class="lsub-label">${exam.title}</span>${statusHTML}</div>
+              <div><span class="lsub-type">${label}</span><span class="lsub-label">${exam.title}</span>${statusHTML}</div>
             </div>
             <a class="lbtn" href="dr-rady-exam-attempt-page.html?exam=${exam.id}">${actionLabel}</a>
           </div>`;
       };
 
-      const examItem = examEntry ? buildExamItem(examEntry, '✅', 'اختبار') : '';
-      const homeworkItem = homeworkEntry ? buildExamItem(homeworkEntry, '📝', 'واجب') : '';
+      const examItem = examEntry ? buildExamItem(examEntry, '✅', 'اختبار', 'type-exam') : '';
+      const homeworkItem = homeworkEntry ? buildExamItem(homeworkEntry, '📝', 'واجب', 'type-hw') : '';
 
       return `
         <details class="lesson-acc">

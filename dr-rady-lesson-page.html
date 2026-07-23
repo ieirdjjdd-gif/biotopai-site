@@ -6,6 +6,7 @@
 <title>مشاهدة الحصة | BioTopia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui-effects.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
@@ -21,6 +22,11 @@
     --line: rgba(243,236,217,0.14);
     --amber:#d98e4b;
     --rose:#b45253;
+    /* أنواع المحتوى — نفس ألوان صفحة الكورس */
+    --t-video:#e8b84b;
+    --t-file:#7bb4f0;
+    --t-exam:#e8735a;
+    --t-hw:#2dd4bf;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -199,13 +205,17 @@
   .file-row{
     display:flex; align-items:center; gap:12px; padding:12px 14px;
     background:var(--navy-deep); border:1px solid var(--line); border-radius:12px; margin-bottom:10px;
+    border-inline-start:3px solid var(--t-file); transition:.18s;
   }
+  .file-row:hover{background:rgba(255,255,255,0.03);}
   .file-row:last-child{margin-bottom:0;}
   .file-ic{
-    width:36px; height:36px; border-radius:10px; background:rgba(95,168,43,0.16);
+    width:36px; height:36px; border-radius:10px; background:color-mix(in srgb, var(--t-file) 18%, transparent);
     display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
   }
   .file-row .fname{font-size:13.5px; color:var(--bone); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .file-row a{color:var(--t-file); font-weight:700; font-size:12.5px; flex-shrink:0;}
+  .file-row a:hover{text-decoration:underline;}
   .file-empty{font-size:13px; color:var(--bone-dim);}
 
   /* ===== SIDEBAR: قائمة حصص الكورس ===== */
@@ -231,9 +241,52 @@
     .course-name-crumb{display:none;}
   }
 </style>
+<script src="js/ui-effects.js" defer></script>
 </head>
 <body>
-
+<div id="page-loader">
+  <div class="loader-mark">
+    <svg viewBox="0 0 420 460" fill="none">
+              <ellipse cx="210" cy="440" rx="130" ry="16" fill="#101c46" opacity="0.4"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="#f3ecd9"/>
+              <rect x="95" y="322" width="230" height="30" rx="14" fill="none" stroke="#101c46" stroke-width="2"/>
+              <path d="M172 340 C168 375 165 400 168 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <path d="M248 340 C252 375 255 400 250 420" stroke="#1c2f72" stroke-width="30" stroke-linecap="round"/>
+              <ellipse cx="166" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <ellipse cx="252" cy="426" rx="20" ry="12" fill="#101c46"/>
+              <path d="M150 235 L270 235 L280 330 L140 330 Z" fill="#1c2f72" stroke="#f3ecd9" stroke-width="3"/>
+              <path d="M186 235 L210 270 L196 300 L172 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M234 235 L210 270 L224 300 L248 240 Z" fill="#26398c" stroke="#f3ecd9" stroke-width="2"/>
+              <path d="M198 238 L210 258 L222 238 L222 246 L210 264 L198 246 Z" fill="#f3ecd9"/>
+              <path d="M205 258 L215 258 L219 300 L210 312 L201 300 Z" fill="#5fa82b" stroke="#101c46" stroke-width="1"/>
+              <path d="M150 250 C110 260 92 290 90 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <path d="M270 250 C310 260 328 290 330 322" stroke="#1c2f72" stroke-width="24" stroke-linecap="round" fill="none"/>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="85" cy="325" r="12"/>
+                <rect x="72" y="318" width="10" height="16" rx="4"/>
+                <rect x="86" y="316" width="10" height="18" rx="4"/>
+                <rect x="99" y="319" width="10" height="15" rx="4"/>
+              </g>
+              <g fill="#f3ecd9" stroke="#101c46" stroke-width="1.5">
+                <circle cx="335" cy="325" r="12"/>
+                <rect x="322" y="319" width="10" height="15" rx="4"/>
+                <rect x="335" y="316" width="10" height="18" rx="4"/>
+                <rect x="348" y="318" width="10" height="16" rx="4"/>
+              </g>
+              <circle cx="210" cy="150" r="72" fill="#f3ecd9" stroke="#101c46" stroke-width="3"/>
+              <ellipse cx="183" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <ellipse cx="237" cy="146" rx="14" ry="17" fill="#101c46"/>
+              <path d="M210 158 l-10 18 h20 z" fill="#101c46"/>
+              <path d="M180 195 Q210 214 240 195" stroke="#101c46" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M187 195 v11 M197 197 v11 M207 198 v11 M217 197 v11 M227 195 v11 M233 192 v10" stroke="#101c46" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="183" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <circle cx="237" cy="146" r="21" fill="none" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="204" y1="146" x2="216" y2="146" stroke="#5fa82b" stroke-width="3.5"/>
+              <line x1="162" y1="140" x2="150" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="258" y1="140" x2="270" y2="132" stroke="#5fa82b" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+  </div>
+</div>
 <header>
   <div class="header-row">
     <div class="brand">
@@ -321,6 +374,7 @@
   let currentUser = null;
   let isPaid = false;
   let progressRow = null;
+
 
   function showState(name){
     document.getElementById('state-loading').style.display = name === 'loading' ? 'flex' : 'none';
