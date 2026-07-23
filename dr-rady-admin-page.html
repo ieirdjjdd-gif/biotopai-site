@@ -1559,7 +1559,8 @@
     btn.disabled = false; btn.textContent = 'حفظ الحصة';
 
     if(error){
-      errEl.textContent = 'حصل خطأ، حاول تاني';
+      console.error('saveLesson error:', error);
+      errEl.textContent = 'حصل خطأ: ' + (error.message || 'حاول تاني') + (error.hint ? (' — ' + error.hint) : '');
       errEl.style.display = 'block';
       return;
     }
