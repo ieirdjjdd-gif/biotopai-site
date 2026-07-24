@@ -1474,7 +1474,13 @@
       .eq('course_id', currentLessonsCourseId)
       .order('order_index', { ascending: true });
 
-    if(error || !lessons || lessons.length === 0){
+    if(error){
+      console.error('refreshLessonsTable error:', error);
+      tbody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b;">حصل خطأ فعلي: ${error.message || error.code || 'راجع الـ Console'}</td></tr>`;
+      return;
+    }
+
+    if(!lessons || lessons.length === 0){
       tbody.innerHTML = `<tr><td colspan="4">مفيش حصص لسه في الكورس ده</td></tr>`;
       return;
     }
