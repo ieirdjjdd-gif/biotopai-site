@@ -376,6 +376,7 @@
 
     <div id="lessons-manager" style="display:none;">
       <div class="msg msg-error" id="lesson-form-error"></div>
+      <div class="msg msg-success" id="lesson-form-success"></div>
       <div class="field-row">
         <div class="field">
           <label>عنوان الحصة</label>
@@ -386,15 +387,9 @@
           <input type="number" id="lesson-order" placeholder="1">
         </div>
       </div>
-      <div class="field">
-        <label>رابط الفيديو (يوتيوب / فيميو / رابط مباشر — لو الحصة لسه مش على Bunny)</label>
-        <input type="text" id="lesson-video" placeholder="https://...">
-      </div>
-      <div class="field">
-        <label><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 18a4 4 0 0 1-.5-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 0 1 17.5 18Z"/></svg></span> Bunny Video GUID (لو الفيديو مرفوع على Bunny Stream)</label>
-        <input type="text" id="lesson-bunny-guid" placeholder="مثال: 8f2b1a3c-....-....-....-............">
-        <p style="font-size:11.5px; color:var(--bone-dim); margin-top:6px;">لو اتملى الحقل ده، هيتشغّل بدل رابط الفيديو اللي فوق برابط موقّع ومؤقت (أأمن).</p>
-      </div>
+      <p style="font-size:11.5px; color:var(--bone-dim); margin-top:-4px; margin-bottom:14px;">
+        بعد ما تحفظ الحصة، دوس على "الأقسام" في جدول الحصص تحت عشان تضيف الفيديو — الفيديو مش بيتحط هنا.
+      </p>
       <label class="checkbox-row"><input type="checkbox" id="lesson-free"> حصة معاينة مجانية</label>
 
       <input type="hidden" id="lesson-edit-id">
@@ -1484,11 +1479,26 @@
       return;
     }
 
+    // نتأكد لكل حصة إن فيه عنصر فيديو فعلي جوه أقسامها (ده اللي فعلاً بيظهر للطالب)
+    const lessonIds = lessons.map(l => l.id);
+    const { data: sectionsForVideoCheck } = await supabaseClient
+      .from('lesson_sections').select('id, lesson_id').in('lesson_id', lessonIds);
+    const sectionIdToLessonId = {};
+    (sectionsForVideoCheck || []).forEach(s => { sectionIdToLessonId[s.id] = s.lesson_id; });
+    const allSectionIds = Object.keys(sectionIdToLessonId);
+
+    const lessonHasVideo = {};
+    if(allSectionIds.length > 0){
+      const { data: videoItems } = await supabaseClient
+        .from('section_items').select('section_id').eq('type', 'video').in('section_id', allSectionIds);
+      (videoItems || []).forEach(it => { lessonHasVideo[sectionIdToLessonId[it.section_id]] = true; });
+    }
+
     tbody.innerHTML = lessons.map((l, i) => `
       <tr>
         <td>${l.order_index ?? (i+1)}</td>
         <td>${l.title}${l.is_free_preview ? ' <span class="tag tag-free">معاينة مجانية</span>' : ''}</td>
-        <td>${l.bunny_video_guid ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 18a4 4 0 0 1-.5-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 0 1 17.5 18Z"/></svg> Bunny' : (l.video_url ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> متوفر' : '— لسه مفيش')}</td>
+        <td>${lessonHasVideo[l.id] ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> متوفر' : '— لسه مفيش (دوس الأقسام)'}</td>
         <td>
           <div class="row-actions">
             <button class="btn btn-outline btn-sm" onclick='editLesson(${JSON.stringify(l)})'>تعديل</button>
@@ -1508,8 +1518,6 @@
     document.getElementById('lesson-edit-id').value = '';
     document.getElementById('lesson-title').value = '';
     document.getElementById('lesson-order').value = '';
-    document.getElementById('lesson-video').value = '';
-    document.getElementById('lesson-bunny-guid').value = '';
     document.getElementById('lesson-free').checked = false;
     document.getElementById('cancel-lesson-edit').style.display = 'none';
     document.getElementById('lesson-form-error').style.display = 'none';
@@ -1519,15 +1527,16 @@
     document.getElementById('lesson-edit-id').value = l.id;
     document.getElementById('lesson-title').value = l.title || '';
     document.getElementById('lesson-order').value = l.order_index ?? '';
-    document.getElementById('lesson-video').value = l.video_url || '';
-    document.getElementById('lesson-bunny-guid').value = l.bunny_video_guid || '';
     document.getElementById('lesson-free').checked = !!l.is_free_preview;
     document.getElementById('cancel-lesson-edit').style.display = 'inline-flex';
+    document.getElementById('lesson-form-success').style.display = 'none';
   }
 
   async function saveLesson(){
     const errEl = document.getElementById('lesson-form-error');
+    const successEl = document.getElementById('lesson-form-success');
     errEl.style.display = 'none';
+    successEl.style.display = 'none';
 
     const title = document.getElementById('lesson-title').value.trim();
     if(!title){
@@ -1540,12 +1549,11 @@
       course_id: currentLessonsCourseId,
       title,
       order_index: document.getElementById('lesson-order').value ? Number(document.getElementById('lesson-order').value) : 0,
-      video_url: document.getElementById('lesson-video').value.trim() || null,
-      bunny_video_guid: document.getElementById('lesson-bunny-guid').value.trim() || null,
       is_free_preview: document.getElementById('lesson-free').checked
     };
 
     const editId = document.getElementById('lesson-edit-id').value;
+    const wasEdit = !!editId;
     const btn = document.getElementById('save-lesson-btn');
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
 
@@ -1564,6 +1572,9 @@
       errEl.style.display = 'block';
       return;
     }
+
+    successEl.innerHTML = (wasEdit ? 'تم تعديل الحصة بنجاح ✅' : 'تم إضافة الحصة بنجاح ✅') + ' — دلوقتي دوس على "الأقسام" جنبها في الجدول عشان تضيف الفيديو.';
+    successEl.style.display = 'block';
 
     resetLessonForm();
     refreshLessonsTable();
