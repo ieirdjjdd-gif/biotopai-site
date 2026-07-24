@@ -507,6 +507,18 @@
       isPaid = enrollment?.status === 'paid';
     }
 
+    // ===== تقدّم الطالب في كل حصة (عشان نقفل الحصة التالية لحد ما يخلص اللي قبلها) =====
+    const lessonIds0 = lessons.map(l => l.id);
+    let progressByLesson = {};
+    if(user && lessonIds0.length > 0){
+      const { data: progressRows } = await supabaseClient
+        .from('lesson_progress')
+        .select('lesson_id, completed')
+        .eq('user_id', user.id)
+        .in('lesson_id', lessonIds0);
+      (progressRows || []).forEach(p => { progressByLesson[p.lesson_id] = !!p.completed; });
+    }
+
     // ===== جلب الاختبارات/الواجبات المرتبطة بحصص الكورس ده =====
     const lessonIds = lessons.map(l => l.id);
     let examsByLesson = {};
@@ -578,6 +590,13 @@
         </div>`;
     }
 
+    function lockedFilesRow(msg){
+      return `
+        <div class="lsub-item">
+          <div class="lsub-info"><span class="lsub-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="lsub-label" style="color:var(--bone-dim)">${msg}</span></div></div>
+        </div>`;
+    }
+
     function examRowHTML(exam, label){
       const attempt = attemptsByExam[exam.id];
       let statusHTML = '';
@@ -615,13 +634,19 @@
 
     listEl.innerHTML = lessons.map((lesson, i) => {
       const num = String(i + 1).padStart(2, '0');
-      const unlocked = lesson.is_free_preview || isPaid;
+      const paidUnlocked = lesson.is_free_preview || isPaid;
+      const prevLesson = lessons[i - 1];
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
+      const unlocked = paidUnlocked && prevCompleted;
 
       if(!unlocked){
+        const lockedBySequence = paidUnlocked && !prevCompleted;
         return `
           <div class="lesson-locked-row">
             <span class="lname"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> ${num}. ${lesson.title}</span>
-            <button class="lbtn" style="background:rgba(243,236,217,0.1); color:var(--bone-dim);" onclick="handleLockedLesson()">مقفولة</button>
+            ${lockedBySequence
+              ? `<button class="lbtn" style="background:rgba(243,236,217,0.1); color:var(--bone-dim); cursor:default;" disabled title="لازم تخلّص المحاضرة اللي قبلها الأول">خلّص اللي قبلها الأول</button>`
+              : `<button class="lbtn" style="background:rgba(243,236,217,0.1); color:var(--bone-dim);" onclick="handleLockedLesson()">مقفولة</button>`}
           </div>`;
       }
 
@@ -646,8 +671,24 @@
 
       const explanationHTML = lessonVideoRow + filesByCategory.explanation.map(fileRowHTML).join('');
       const homeworkHTML = filesByCategory.homework.map(fileRowHTML).join('');
-      const submissionHTML = (homeworkEntry ? examRowHTML(homeworkEntry, 'تسليم الواجب') : '') + filesByCategory.submission.map(fileRowHTML).join('');
-      const examHTML = (examEntry ? examRowHTML(examEntry, 'الامتحان') : '') + filesByCategory.exam.map(fileRowHTML).join('');
+
+      // ملفات "تسليم الواجب" (زي نموذج الإجابة/التصحيح) بتتقفل لحد ما الطالب يخلّص الواجب
+      const homeworkAttempt = homeworkEntry ? attemptsByExam[homeworkEntry.id] : null;
+      const homeworkDone = !!homeworkAttempt?.completed_at;
+      const submissionFilesHTML = filesByCategory.submission.length === 0 ? ''
+        : (!homeworkEntry || homeworkDone)
+          ? filesByCategory.submission.map(fileRowHTML).join('')
+          : lockedFilesRow('هتتفتح بعد ما تخلّص الواجب');
+      const submissionHTML = (homeworkEntry ? examRowHTML(homeworkEntry, 'تسليم الواجب') : '') + submissionFilesHTML;
+
+      // ملفات "الامتحان" (زي تحليل الامتحان) بتتقفل لحد ما الطالب يخلّص الامتحان
+      const examAttempt = examEntry ? attemptsByExam[examEntry.id] : null;
+      const examDone = !!examAttempt?.completed_at;
+      const examFilesHTML = filesByCategory.exam.length === 0 ? ''
+        : (!examEntry || examDone)
+          ? filesByCategory.exam.map(fileRowHTML).join('')
+          : lockedFilesRow('هتتفتح بعد ما تخلّص الامتحان');
+      const examHTML = (examEntry ? examRowHTML(examEntry, 'الامتحان') : '') + examFilesHTML;
 
       const sectionsHTML = [
         catSectionHTML('explanation', explanationHTML),

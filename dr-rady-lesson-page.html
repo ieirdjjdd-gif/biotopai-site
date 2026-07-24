@@ -379,6 +379,7 @@
 
   let allLessons = [];
   let currentLesson = null;
+  let progressByLesson = {};
   let currentUser = null;
   let isPaid = false;
   let progressRow = null;
@@ -982,8 +983,25 @@
       .from('enrollments').select('status').eq('user_id', user.id).eq('course_id', COURSE_ID).maybeSingle();
     isPaid = enrollment?.status === 'paid';
 
-    const unlocked = currentLesson.is_free_preview || isPaid;
+    // تقدّم الطالب في كل حصص الكورس ده (عشان نتأكد إنه خلّص اللي قبل الحصة دي)
+    const { data: progressRows } = await supabaseClient
+      .from('lesson_progress')
+      .select('lesson_id, completed')
+      .eq('user_id', user.id)
+      .in('lesson_id', allLessons.map(l => l.id));
+    progressByLesson = {};
+    (progressRows || []).forEach(p => { progressByLesson[p.lesson_id] = !!p.completed; });
+
+    const currentIdx = allLessons.findIndex(l => l.id === currentLesson.id);
+    const prevLessonForAccess = allLessons[currentIdx - 1];
+    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id];
+
+    const unlocked = (currentLesson.is_free_preview || isPaid) && prevCompleted;
     if(!unlocked){
+      if(isPaid && !prevCompleted){
+        denied('لسه متفتحتش <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>', 'لازم تخلّص المحاضرة اللي قبل دي الأول عشان تفتح الحصة دي.');
+        return;
+      }
       denied('الحصة دي مقفولة <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>', 'لازم تكون مشترك في الكورس عشان تتفرج على الحصة دي.');
       return;
     }
@@ -1019,8 +1037,8 @@
       if(firstVideo) ITEM_ID = firstVideo.id;
     }
 
-    // ===== بيانات الامتحانات المرتبطة بعناصر من نوع exam =====
-    const examIds = [...new Set(structureItems.filter(it => it.type === 'exam' && it.exam_id).map(it => it.exam_id))];
+    // ===== بيانات الامتحانات المرتبطة بعناصر من نوع exam، أو ملفات مربوطة بامتحان (زي ملف تحليل الامتحان/الواجب) =====
+    const examIds = [...new Set(structureItems.filter(it => (it.type === 'exam' || it.type === 'file') && it.exam_id).map(it => it.exam_id))];
     if(examIds.length > 0){
       const { data: examsData } = await supabaseClient
         .from('exams').select('id, title, kind, passing_score').in('id', examIds).eq('is_published', true);
@@ -1073,8 +1091,19 @@
       prevLink.style.display = 'none';
     }
     if(nextLesson){
-      nextLink.href = `dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${nextLesson.id}`;
-      nextLink.style.display = '';
+      const nextPaidUnlocked = nextLesson.is_free_preview || isPaid;
+      const nextUnlocked = nextPaidUnlocked && !!progressByLesson[currentLesson.id];
+      if(nextUnlocked){
+        nextLink.href = `dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${nextLesson.id}`;
+        nextLink.style.display = '';
+        nextLink.title = '';
+      } else {
+        nextLink.removeAttribute('href');
+        nextLink.style.display = '';
+        nextLink.style.opacity = '.5';
+        nextLink.style.pointerEvents = 'none';
+        nextLink.title = 'خلّص الحصة دي الأول عشان تفتح اللي بعدها';
+      }
     } else {
       nextLink.style.display = 'none';
     }
@@ -1083,12 +1112,16 @@
   function renderSidebar(){
     const listEl = document.getElementById('side-lesson-list');
     listEl.innerHTML = allLessons.map((l, i) => {
-      const unlocked = l.is_free_preview || isPaid;
+      const paidUnlocked = l.is_free_preview || isPaid;
+      const prevLesson = allLessons[i - 1];
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
+      const unlocked = paidUnlocked && prevCompleted;
       const isCurrent = l.id === currentLesson.id;
       const num = String(i + 1).padStart(2, '0');
 
       if(!unlocked){
-        return `<div class="side-lesson locked"><span class="st-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="st-title">${num}. ${l.title}</span></div>`;
+        const title = (paidUnlocked && !prevCompleted) ? `${num}. ${l.title} — خلّص اللي قبلها الأول` : `${num}. ${l.title}`;
+        return `<div class="side-lesson locked"><span class="st-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="st-title">${title}</span></div>`;
       }
       return `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${l.id}" class="side-lesson ${isCurrent ? 'current' : ''}" data-lesson-id="${l.id}">
         <span class="st-ic">${isCurrent ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg>' : '<span class="dot-empty"></span>'}</span>
@@ -1148,7 +1181,10 @@
       return;
     }
     progressRow = data;
+    progressByLesson[currentLesson.id] = newValue;
     updateCompleteBtn();
+    renderLesson();
+    renderSidebar();
   }
 
   function fileIcon(name){
@@ -1243,6 +1279,21 @@
     }
     if(it.type === 'file'){
       const safeName = (it.file_name || it.title || 'file').replace(/'/g, "");
+      // لو الملف ده مربوط بامتحان/واجب (زي نموذج الإجابة أو تحليل الامتحان)، يفضل مقفول لحد ما الطالب يخلّصه
+      if(it.exam_id){
+        const gateAttempt = attemptsByExam[it.exam_id];
+        const gateDone = !!gateAttempt?.completed_at;
+        if(!gateDone){
+          const gateExam = examsById[it.exam_id];
+          const gateMsg = gateExam?.kind === 'homework' ? 'هيتفتح بعد ما تخلّص الواجب' : 'هيتفتح بعد ما تخلّص الامتحان';
+          return `
+            <div class="file-row">
+              <div class="file-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+              <span class="fname" style="color:var(--bone-dim)">${it.title}</span>
+              <span class="btn btn-sm" style="opacity:.55;">${gateMsg}</span>
+            </div>`;
+        }
+      }
       return `
         <div class="file-row">
           <div class="file-ic">${fileIcon(it.file_name || '')}</div>
