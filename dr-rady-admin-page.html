@@ -1767,7 +1767,8 @@
               </div>
             </div>
 
-            <button class="btn btn-sm" onclick="addItem('${s.id}')">إضافة العنصر</button>
+            <button class="btn btn-sm" id="item-submit-btn-${s.id}" onclick="addItem('${s.id}')">إضافة العنصر</button>
+            <button class="btn btn-outline btn-sm" id="item-cancel-btn-${s.id}" style="display:none;" onclick="cancelEditItem('${s.id}')">إلغاء التعديل</button>
           </div>
         </details>
       </div>
@@ -1784,16 +1785,15 @@
     if(type === 'exam') await populateExamSelect(sectionId);
   }
 
-  async function populateExamSelect(sectionId){
+  async function populateExamSelect(sectionId, preselectExamId){
     const select = document.getElementById(`item-exam-id-${sectionId}`);
-    if(!courseExamsCache){
-      const { data: exams } = await supabaseClient
-        .from('exams')
-        .select('id, title, kind')
-        .eq('course_id', currentLessonsCourseId)
-        .order('order_index', { ascending: true });
-      courseExamsCache = exams || [];
-    }
+    select.innerHTML = `<option value="">جارٍ التحميل...</option>`;
+    const { data: exams } = await supabaseClient
+      .from('exams')
+      .select('id, title, kind')
+      .eq('course_id', currentLessonsCourseId)
+      .order('order_index', { ascending: true });
+    courseExamsCache = exams || [];
     if(courseExamsCache.length === 0){
       select.innerHTML = `<option value="">مفيش امتحانات/واجبات مضافة لسه في الكورس ده</option>`;
       return;
@@ -1801,6 +1801,7 @@
     select.innerHTML = courseExamsCache.map(e =>
       `<option value="${e.id}">${e.kind === 'homework' ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg> واجب' : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> امتحان'} — ${e.title}</option>`
     ).join('');
+    if(preselectExamId) select.value = preselectExamId;
   }
 
   async function loadItemsForSection(sectionId){
@@ -1824,9 +1825,49 @@
     listEl.innerHTML = items.map(it => `
       <div class="row-actions" style="justify-content:space-between; padding:8px 12px; background:var(--navy-deep); border:1px solid var(--line); border-radius:8px;">
         <span style="font-size:12.5px;">${typeLabel[it.type] || it.type} — ${it.title}</span>
-        <button class="btn btn-danger btn-sm" onclick="deleteItem('${it.id}', '${sectionId}')">حذف</button>
+        <div class="row-actions">
+          <button class="btn btn-outline btn-sm" onclick='editItem(${JSON.stringify(it)}, "${sectionId}")'>تعديل</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('${it.id}', '${sectionId}')">حذف</button>
+        </div>
       </div>
     `).join('');
+  }
+
+  let editingItemId = null;
+
+  async function editItem(item, sectionId){
+    const details = document.getElementById(`item-title-${sectionId}`).closest('details');
+    if(details) details.open = true;
+
+    editingItemId = item.id;
+    document.getElementById(`item-submit-btn-${sectionId}`).textContent = 'حفظ التعديل';
+    document.getElementById(`item-cancel-btn-${sectionId}`).style.display = '';
+
+    document.getElementById(`item-type-${sectionId}`).value = item.type;
+    document.getElementById(`item-title-${sectionId}`).value = item.title || '';
+    await onItemTypeChange(sectionId);
+
+    if(item.type === 'video'){
+      document.getElementById(`item-video-url-${sectionId}`).value = item.video_url || '';
+      document.getElementById(`item-bunny-guid-${sectionId}`).value = item.bunny_video_guid || '';
+    }
+    if(item.type === 'file'){
+      document.getElementById(`item-file-url-${sectionId}`).value = item.file_url || '';
+    }
+    if(item.type === 'exam'){
+      await populateExamSelect(sectionId, item.exam_id);
+    }
+
+    document.getElementById(`item-title-${sectionId}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function cancelEditItem(sectionId){
+    editingItemId = null;
+    document.getElementById(`item-submit-btn-${sectionId}`).textContent = 'إضافة العنصر';
+    document.getElementById(`item-cancel-btn-${sectionId}`).style.display = 'none';
+    document.getElementById(`item-title-${sectionId}`).value = '';
+    document.getElementById(`item-type-${sectionId}`).value = 'video';
+    onItemTypeChange(sectionId);
   }
 
   async function addItem(sectionId){
@@ -1841,7 +1882,8 @@
       return;
     }
 
-    const payload = { section_id: sectionId, type, title, order_index: 0 };
+    const payload = { section_id: sectionId, type, title };
+    if(!editingItemId) payload.order_index = 0;
 
     if(type === 'video'){
       payload.video_url = document.getElementById(`item-video-url-${sectionId}`).value.trim() || null;
@@ -1890,13 +1932,22 @@
       payload.exam_id = examId;
     }
 
-    const { error } = await supabaseClient.from('section_items').insert(payload);
+    let error;
+    if(editingItemId){
+      ({ error } = await supabaseClient.from('section_items').update(payload).eq('id', editingItemId));
+    } else {
+      ({ error } = await supabaseClient.from('section_items').insert(payload));
+    }
+
     if(error){
       errEl.textContent = 'حصل خطأ، حاول تاني';
       errEl.style.display = 'block';
       return;
     }
 
+    editingItemId = null;
+    document.getElementById(`item-submit-btn-${sectionId}`).textContent = 'إضافة العنصر';
+    document.getElementById(`item-cancel-btn-${sectionId}`).style.display = 'none';
     document.getElementById(`item-title-${sectionId}`).value = '';
     loadItemsForSection(sectionId);
   }
