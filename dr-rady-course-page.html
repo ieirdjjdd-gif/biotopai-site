@@ -201,8 +201,11 @@
   .lsub-item .lbtn{
     background:color-mix(in srgb, var(--type-color, var(--green)) 20%, transparent);
     color:var(--type-color, var(--green-bright));
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 16px; border-radius:100px; font-size:12px; font-weight:700;
+    white-space:nowrap; flex-shrink:0; text-decoration:none;
   }
-  .lsub-item .lbtn:hover{background:var(--type-color, var(--green)); color:var(--navy-deep);}
+  .lsub-item .lbtn:hover{background:var(--type-color, var(--green)); color:var(--navy-deep); transform:translateY(-1px);}
   .lsub-item.type-video{--type-color:var(--t-video);}
   .lsub-item.type-file{--type-color:var(--t-file);}
   .lsub-item.type-exam{--type-color:var(--t-exam);}
@@ -496,6 +499,7 @@
 
     // هل المستخدم مشترك فعليًا (paid) في الكورس ده؟
     let isPaid = false;
+    let unlockSequence = false;
     const user = await getCurrentUser();
     if(user){
       const { data: enrollment } = await supabaseClient
@@ -505,6 +509,13 @@
         .eq('course_id', COURSE_ID)
         .maybeSingle();
       isPaid = enrollment?.status === 'paid';
+
+      const { data: profileRow } = await supabaseClient
+        .from('profiles')
+        .select('unlock_sequence')
+        .eq('id', user.id)
+        .maybeSingle();
+      unlockSequence = !!profileRow?.unlock_sequence;
     }
 
     // ===== تقدّم الطالب في كل حصة (عشان نقفل الحصة التالية لحد ما يخلص اللي قبلها) =====
@@ -519,57 +530,61 @@
       (progressRows || []).forEach(p => { progressByLesson[p.lesson_id] = !!p.completed; });
     }
 
-    // ===== جلب الاختبارات/الواجبات المرتبطة بحصص الكورس ده =====
     const lessonIds = lessons.map(l => l.id);
-    let examsByLesson = {};
     let attemptsByExam = {};
-    if(lessonIds.length > 0){
-      const { data: exams } = await supabaseClient
-        .from('exams')
-        .select('id, lesson_id, title, kind, time_limit_minutes, passing_score')
-        .in('lesson_id', lessonIds)
-        .eq('is_published', true);
 
-      (exams || []).forEach(e => {
-        if(!examsByLesson[e.lesson_id]) examsByLesson[e.lesson_id] = [];
-        examsByLesson[e.lesson_id].push(e);
+    // ===== جلب أقسام الحصص وعناصرها =====
+    let sectionsByLesson = {};
+    let itemsBySection = {};
+    let examsById = {};
+    if(lessonIds.length > 0){
+      const { data: sections } = await supabaseClient
+        .from('lesson_sections')
+        .select('id, lesson_id, title, order_index')
+        .in('lesson_id', lessonIds)
+        .order('order_index', { ascending: true });
+
+      (sections || []).forEach(s => {
+        if(!sectionsByLesson[s.lesson_id]) sectionsByLesson[s.lesson_id] = [];
+        sectionsByLesson[s.lesson_id].push(s);
       });
 
-      if(user && exams && exams.length > 0){
-        const examIds = exams.map(e => e.id);
-        const { data: attempts } = await supabaseClient
-          .from('exam_attempts')
-          .select('exam_id, percentage, completed_at')
-          .eq('user_id', user.id)
-          .in('exam_id', examIds)
-          .order('completed_at', { ascending: false });
-        (attempts || []).forEach(a => {
-          if(!(a.exam_id in attemptsByExam)) attemptsByExam[a.exam_id] = a;
+      const sectionIds = (sections || []).map(s => s.id);
+      if(sectionIds.length > 0){
+        const { data: items } = await supabaseClient
+          .from('section_items_public')
+          .select('id, section_id, type, title, order_index, exam_id, file_name')
+          .in('section_id', sectionIds)
+          .order('order_index', { ascending: true });
+
+        (items || []).forEach(it => {
+          if(!itemsBySection[it.section_id]) itemsBySection[it.section_id] = [];
+          itemsBySection[it.section_id].push(it);
         });
+
+        const examIdsFromItems = [...new Set((items || []).filter(it => it.type === 'exam' && it.exam_id).map(it => it.exam_id))];
+        if(examIdsFromItems.length > 0){
+          const { data: examsData } = await supabaseClient
+            .from('exams')
+            .select('id, title, kind, passing_score')
+            .in('id', examIdsFromItems)
+            .eq('is_published', true);
+          (examsData || []).forEach(e => { examsById[e.id] = e; });
+
+          if(user){
+            const { data: attempts2 } = await supabaseClient
+              .from('exam_attempts')
+              .select('exam_id, percentage, completed_at')
+              .eq('user_id', user.id)
+              .in('exam_id', examIdsFromItems)
+              .order('completed_at', { ascending: false });
+            (attempts2 || []).forEach(a => {
+              if(!(a.exam_id in attemptsByExam)) attemptsByExam[a.exam_id] = a;
+            });
+          }
+        }
       }
     }
-
-    // ===== جلب كل الملفات/الفيديوهات المصنّفة لكل حصص الكورس ده =====
-    let filesByLesson = {};
-    if(lessonIds.length > 0){
-      const { data: files } = await supabaseClient
-        .from('lesson_files')
-        .select('*')
-        .in('lesson_id', lessonIds)
-        .order('created_at', { ascending: true });
-
-      (files || []).forEach(f => {
-        if(!filesByLesson[f.lesson_id]) filesByLesson[f.lesson_id] = [];
-        filesByLesson[f.lesson_id].push(f);
-      });
-    }
-
-    const CAT_META = {
-      explanation: { label: 'الشرح', icon: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg>' },
-      homework:    { label: 'الواجب', icon: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg>' },
-      submission:  { label: 'تسليم الواجب', icon: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>' },
-      exam:        { label: 'الامتحان', icon: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>' }
-    };
 
     function fileIconFor(f){
       if(f.content_type === 'video') return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg>';
@@ -579,22 +594,6 @@
       if(['xls','xlsx'].includes(ext)) return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l4 4v14H6Z"/><path d="M15 3v4h4"/></svg>';
       if(['png','jpg','jpeg','webp'].includes(ext)) return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="m5 18 4.5-5 3.5 4 2.5-3 4.5 4"/></svg>';
       return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l4 4v14H6Z"/><path d="M9 12h6M9 16h6"/></svg>';
-    }
-
-    function fileRowHTML(f){
-      const actionLabel = f.content_type === 'video' ? 'مشاهدة' : 'فتح الملف';
-      return `
-        <div class="lsub-item">
-          <div class="lsub-info"><span class="lsub-ic">${fileIconFor(f)}</span><div><span class="lsub-label">${f.file_name}</span></div></div>
-          <a class="lbtn" href="${f.file_url}" target="_blank" rel="noopener">${actionLabel}</a>
-        </div>`;
-    }
-
-    function lockedFilesRow(msg){
-      return `
-        <div class="lsub-item">
-          <div class="lsub-info"><span class="lsub-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><span class="lsub-label" style="color:var(--bone-dim)">${msg}</span></div></div>
-        </div>`;
     }
 
     function examRowHTML(exam, label){
@@ -616,16 +615,37 @@
         </div>`;
     }
 
-    function catSectionHTML(catKey, itemsHTML){
-      if(!itemsHTML) return '';
-      const meta = CAT_META[catKey];
+    function itemIconFor(type, fileName){
+      if(type === 'video') return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg>';
+      if(type === 'exam') return '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>';
+      return fileIconFor({ content_type: 'file', file_name: fileName });
+    }
+
+    // عنصر من نوع فيديو/ملف: الرابط الفعلي بيتجاب جوه صفحة الحصة نفسها بس
+    // (بعد التأكد من الاشتراك)، فهنا بس بنعمل لينك لصفحة الحصة مع رقم العنصر
+    function structureItemRowHTML(item, lesson){
+      if(item.type === 'exam'){
+        const exam = examsById[item.exam_id];
+        if(!exam) return '';
+        return examRowHTML(exam, exam.kind === 'homework' ? 'تسليم الواجب' : 'الامتحان');
+      }
+      const label = item.title || (item.type === 'video' ? 'فيديو' : (item.file_name || 'ملف'));
+      const actionLabel = item.type === 'video' ? 'مشاهدة' : 'فتح الملف';
       return `
-        <details class="cat-acc cat-${catKey}">
+        <div class="lsub-item">
+          <div class="lsub-info"><span class="lsub-ic">${itemIconFor(item.type, item.file_name)}</span><div><span class="lsub-label">${label}</span></div></div>
+          <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}&item=${item.id}">${actionLabel}</a>
+        </div>`;
+    }
+
+    function newSectionAccHTML(section, lesson){
+      const items = itemsBySection[section.id] || [];
+      const itemsHTML = items.map(it => structureItemRowHTML(it, lesson)).join('');
+      if(!itemsHTML) return '';
+      return `
+        <details class="cat-acc">
           <summary>
-            <div class="cat-title">
-              <div class="cat-ic">${meta.icon}</div>
-              <b>${meta.label}</b>
-            </div>
+            <div class="cat-title"><b>${section.title}</b></div>
             <span class="cat-chev">▾</span>
           </summary>
           <div class="lesson-acc-body">${itemsHTML}</div>
@@ -636,7 +656,7 @@
       const num = String(i + 1).padStart(2, '0');
       const paidUnlocked = lesson.is_free_preview || isPaid;
       const prevLesson = lessons[i - 1];
-      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
       const unlocked = paidUnlocked && prevCompleted;
 
       if(!unlocked){
@@ -652,50 +672,10 @@
 
       const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
 
-      const lessonExams = examsByLesson[lesson.id] || [];
-      const examEntry = lessonExams.find(e => e.kind !== 'homework');
-      const homeworkEntry = lessonExams.find(e => e.kind === 'homework');
-
-      const lessonFiles = filesByLesson[lesson.id] || [];
-      const filesByCategory = { explanation: [], homework: [], submission: [], exam: [] };
-      lessonFiles.forEach(f => {
-        (filesByCategory[f.category] || filesByCategory.explanation).push(f);
-      });
-
-      // فيديو شرح الحصة نفسه (لو موجود) بيتحط دايمًا في قسم "الشرح"
-      const lessonVideoRow = `
-        <div class="lsub-item">
-          <div class="lsub-info"><span class="lsub-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg></span><div><span class="lsub-label">فيديو شرح الحصة</span></div></div>
-          <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}">مشاهدة</a>
-        </div>`;
-
-      const explanationHTML = lessonVideoRow + filesByCategory.explanation.map(fileRowHTML).join('');
-      const homeworkHTML = filesByCategory.homework.map(fileRowHTML).join('');
-
-      // ملفات "تسليم الواجب" (زي نموذج الإجابة/التصحيح) بتتقفل لحد ما الطالب يخلّص الواجب
-      const homeworkAttempt = homeworkEntry ? attemptsByExam[homeworkEntry.id] : null;
-      const homeworkDone = !!homeworkAttempt?.completed_at;
-      const submissionFilesHTML = filesByCategory.submission.length === 0 ? ''
-        : (!homeworkEntry || homeworkDone)
-          ? filesByCategory.submission.map(fileRowHTML).join('')
-          : lockedFilesRow('هتتفتح بعد ما تخلّص الواجب');
-      const submissionHTML = (homeworkEntry ? examRowHTML(homeworkEntry, 'تسليم الواجب') : '') + submissionFilesHTML;
-
-      // ملفات "الامتحان" (زي تحليل الامتحان) بتتقفل لحد ما الطالب يخلّص الامتحان
-      const examAttempt = examEntry ? attemptsByExam[examEntry.id] : null;
-      const examDone = !!examAttempt?.completed_at;
-      const examFilesHTML = filesByCategory.exam.length === 0 ? ''
-        : (!examEntry || examDone)
-          ? filesByCategory.exam.map(fileRowHTML).join('')
-          : lockedFilesRow('هتتفتح بعد ما تخلّص الامتحان');
-      const examHTML = (examEntry ? examRowHTML(examEntry, 'الامتحان') : '') + examFilesHTML;
-
-      const sectionsHTML = [
-        catSectionHTML('explanation', explanationHTML),
-        catSectionHTML('homework', homeworkHTML),
-        catSectionHTML('submission', submissionHTML),
-        catSectionHTML('exam', examHTML)
-      ].join('');
+      const lessonSections = (sectionsByLesson[lesson.id] || []).slice().sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+      const sectionsHTML = lessonSections.length > 0
+        ? lessonSections.map(s => newSectionAccHTML(s, lesson)).join('')
+        : `<div class="lsub-item"><div class="lsub-info"><span class="lsub-label" style="color:var(--bone-dim)">هيتم إضافة محتوى المحاضرة دي قريبًا</span></div></div>`;
 
       return `
         <details class="lecture-acc">

@@ -343,8 +343,9 @@
           <span class="num-tag" id="lesson-num-tag">الحصة</span>
           <h1 id="lesson-title">—</h1>
         </div>
-        <button class="btn btn-ghost" id="complete-btn" onclick="toggleComplete()"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg></span> حدد كـ "خلصتها"</button>
+        <span class="btn btn-ghost" id="complete-status" style="cursor:default;"><span class="ic ic-inline">⏳</span> بنجهّز حالة المتطلبات...</span>
       </div>
+      <p id="lesson-requirements-list" style="display:none; color:var(--bone-dim); font-size:12.5px; margin:-6px 0 10px;"></p>
 
       <div class="lesson-nav-row">
         <a href="#" id="prev-lesson-link" class="btn btn-outline btn-sm">→ الحصة السابقة</a>
@@ -382,12 +383,15 @@
   let progressByLesson = {};
   let currentUser = null;
   let isPaid = false;
+  let unlockSequence = false;
   let progressRow = null;
   let currentItem = null; // العنصر (section_items) اللي بيتشغّل دلوقتي
   let lessonSections = [];
   let itemsBySection = {};
   let examsById = {};
   let attemptsByExam = {};
+  let bestAttemptPctByExam = {}; // exam_id -> أعلى نسبة حققها الطالب في أي محاولة (لتحديد النجاح)
+  let videoProgressByItem = {}; // item_id -> { max_percent, completed }
 
 
   function showState(name){
@@ -873,7 +877,47 @@
     guard.addEventListener('click', () => guard.classList.remove('show'));
   }
 
-  async function mountPlayer(container, videoUrl){
+  // ===== تتبّع نسبة المشاهدة الفعلية للفيديو (مش زرار يدوي) =====
+  // بنحفظ أعلى نسبة وصلها الطالب في item_video_progress، وأي مرة توصل
+  // النسبة لـ 90% أو الفيديو يخلص، نعتبره "مشاهَد" ونعيد حساب حالة الحصة
+  function attachProgressTracking(adapter, item){
+    if(!item || item.type !== 'video' || !currentUser) return;
+    let lastSavedAt = 0;
+    let lastSavedPct = videoProgressByItem[item.id]?.max_percent || 0;
+
+    async function save(force){
+      const dur = adapter.getDuration();
+      const cur = adapter.getCurrentTime();
+      if(!dur || dur <= 0) return;
+      const pct = Math.min(100, Math.round((cur / dur) * 1000) / 10);
+      const prevMax = videoProgressByItem[item.id]?.max_percent || 0;
+      const newMax = Math.max(prevMax, pct);
+      const now = Date.now();
+      if(!force && (newMax - lastSavedPct < 3) && (now - lastSavedAt < 8000)) return;
+      lastSavedAt = now;
+      lastSavedPct = newMax;
+      const wasCompleted = !!videoProgressByItem[item.id]?.completed;
+      const completed = newMax >= 90;
+      videoProgressByItem[item.id] = { max_percent: newMax, completed };
+      try{
+        await supabaseClient.from('item_video_progress').upsert({
+          user_id: currentUser.id,
+          item_id: item.id,
+          lesson_id: currentLesson.id,
+          max_percent: newMax,
+          completed,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,item_id' });
+      }catch(err){ /* هنعيد المحاولة مع أي timeupdate تاني */ }
+      if(completed && !wasCompleted) syncLessonCompletion();
+    }
+
+    adapter.on('timeupdate', () => save(false));
+    adapter.on('pause', () => save(true));
+    adapter.on('ended', () => save(true));
+  }
+
+  async function mountPlayer(container, videoUrl, item){
     container.innerHTML = '';
     const src = parseVideoSource(videoUrl);
 
@@ -883,7 +927,9 @@
     }
 
     // فيميو/أي إمبيد خارجي تاني: مفيش API موحّد نقدر نبني بيه شريط تحكم
-    // مخصص بشكل موثوق، فبنسيب المشغل الأصلي بتاعه شغال عادي
+    // مخصص بشكل موثوق، ولا نقدر نتابع نسبة المشاهدة فيه بدقة، فبنسيب
+    // المشغل الأصلي بتاعه شغال عادي. ملحوظة: بالنسبة لمتطلبات إكمال
+    // الحصة، النوع ده بيتحسب "متشاف" بمجرد فتحه لأننا مقدرش نتحقق أكتر
     if(src.type === 'vimeo' || src.type === 'embed'){
       const iframe = document.createElement('iframe');
       iframe.src = src.type === 'vimeo' ? `https://player.vimeo.com/video/${src.id}` : src.src;
@@ -892,6 +938,16 @@
       iframe.style.pointerEvents = 'auto';
       container.appendChild(iframe);
       mountWatermark(container);
+      if(item && item.type === 'video' && currentUser && !videoProgressByItem[item.id]?.completed){
+        videoProgressByItem[item.id] = { max_percent: 100, completed: true };
+        try{
+          await supabaseClient.from('item_video_progress').upsert({
+            user_id: currentUser.id, item_id: item.id, lesson_id: currentLesson.id,
+            max_percent: 100, completed: true, updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id,item_id' });
+        }catch(err){}
+        syncLessonCompletion();
+      }
       return;
     }
 
@@ -919,6 +975,7 @@
         spinner.remove();
         wireControls(cp, adapter);
         wireFocusGuard(cp, adapter);
+        attachProgressTracking(adapter, item);
       };
       catcher.addEventListener('click', startLoading);
       centerPlay.addEventListener('click', startLoading);
@@ -929,12 +986,14 @@
       const adapter = mountHls(surface, src.src);
       wireControls(cp, adapter);
       wireFocusGuard(cp, adapter);
+      attachProgressTracking(adapter, item);
       return;
     }
 
     const adapter = mountHtml5(surface, src.src);
     wireControls(cp, adapter);
     wireFocusGuard(cp, adapter);
+    attachProgressTracking(adapter, item);
   }
 
   async function init(){
@@ -983,6 +1042,10 @@
       .from('enrollments').select('status').eq('user_id', user.id).eq('course_id', COURSE_ID).maybeSingle();
     isPaid = enrollment?.status === 'paid';
 
+    const { data: profileRow } = await supabaseClient
+      .from('profiles').select('unlock_sequence').eq('id', user.id).maybeSingle();
+    unlockSequence = !!profileRow?.unlock_sequence;
+
     // تقدّم الطالب في كل حصص الكورس ده (عشان نتأكد إنه خلّص اللي قبل الحصة دي)
     const { data: progressRows } = await supabaseClient
       .from('lesson_progress')
@@ -994,7 +1057,7 @@
 
     const currentIdx = allLessons.findIndex(l => l.id === currentLesson.id);
     const prevLessonForAccess = allLessons[currentIdx - 1];
-    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id];
+    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id] || unlockSequence;
 
     const unlocked = (currentLesson.is_free_preview || isPaid) && prevCompleted;
     if(!unlocked){
@@ -1047,7 +1110,26 @@
         .from('exam_attempts').select('exam_id, percentage, completed_at')
         .eq('user_id', user.id).in('exam_id', examIds).order('completed_at', { ascending: false });
       (attempts || []).forEach(a => { if(!(a.exam_id in attemptsByExam)) attemptsByExam[a.exam_id] = a; });
+      // أعلى نسبة حققها الطالب عبر كل محاولاته (مش بس آخر محاولة)، عشان تحديد
+      // النجاح مش متأثر لو حاول تاني بعد النجاح وطلعتله نسبة أقل بالغلط
+      (attempts || []).forEach(a => {
+        if(!(a.exam_id in bestAttemptPctByExam) || a.percentage > bestAttemptPctByExam[a.exam_id]){
+          bestAttemptPctByExam[a.exam_id] = a.percentage;
+        }
+      });
     }
+
+    // ===== تقدّم المشاهدة الفعلي لكل فيديوهات المحاضرة دي (مش زرار يدوي) =====
+    const videoItemIds = structureItems.filter(it => it.type === 'video').map(it => it.id);
+    if(videoItemIds.length > 0){
+      const { data: vProgress } = await supabaseClient
+        .from('item_video_progress')
+        .select('item_id, max_percent, completed')
+        .eq('user_id', user.id)
+        .in('item_id', videoItemIds);
+      (vProgress || []).forEach(r => { videoProgressByItem[r.item_id] = { max_percent: r.max_percent, completed: r.completed }; });
+    }
+
 
     // ===== دلوقتي بس، وبعد التأكد إن المستخدم يستحق، نجيب رابط الفيديو =====
     // ===== الفعلي للعنصر المطلوب (لو موجود) — مش قبل كده خالص =====
@@ -1068,7 +1150,8 @@
     renderLesson();
     renderSidebar();
     renderLectureContent();
-    await loadProgress();
+    await fetchProgressRow();
+    await syncLessonCompletion();
     showState('content');
   }
 
@@ -1076,9 +1159,12 @@
     const idx = allLessons.findIndex(l => l.id === currentLesson.id);
     document.getElementById('lesson-num-tag').textContent = `الحصة ${idx + 1} من ${allLessons.length}`;
     document.getElementById('lesson-title').textContent = currentLesson.title;
-    mountPlayer(document.getElementById('player-wrap'), currentLesson.video_url);
+    mountPlayer(document.getElementById('player-wrap'), currentLesson.video_url, currentItem);
+    renderNavLinks();
+  }
 
-    // التنقل بين الحصص
+  function renderNavLinks(){
+    const idx = allLessons.findIndex(l => l.id === currentLesson.id);
     const prevLesson = allLessons[idx - 1];
     const nextLesson = allLessons[idx + 1];
     const prevLink = document.getElementById('prev-lesson-link');
@@ -1097,6 +1183,8 @@
         nextLink.href = `dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${nextLesson.id}`;
         nextLink.style.display = '';
         nextLink.title = '';
+        nextLink.style.opacity = '';
+        nextLink.style.pointerEvents = '';
       } else {
         nextLink.removeAttribute('href');
         nextLink.style.display = '';
@@ -1114,7 +1202,7 @@
     listEl.innerHTML = allLessons.map((l, i) => {
       const paidUnlocked = l.is_free_preview || isPaid;
       const prevLesson = allLessons[i - 1];
-      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
       const unlocked = paidUnlocked && prevCompleted;
       const isCurrent = l.id === currentLesson.id;
       const num = String(i + 1).padStart(2, '0');
@@ -1130,7 +1218,7 @@
     }).join('');
   }
 
-  async function loadProgress(){
+  async function fetchProgressRow(){
     const { data } = await supabaseClient
       .from('lesson_progress')
       .select('*')
@@ -1138,53 +1226,74 @@
       .eq('lesson_id', currentLesson.id)
       .maybeSingle();
     progressRow = data || null;
-    updateCompleteBtn();
   }
 
-  function updateCompleteBtn(){
-    const btn = document.getElementById('complete-btn');
-    if(progressRow?.completed){
-      btn.innerHTML = '<span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7"/></svg></span> خلصتها بالفعل';
-      btn.classList.remove('btn-ghost');
-      btn.style.background = 'var(--green)';
-      btn.style.color = 'var(--navy-deep)';
-      btn.style.border = 'none';
+  // ===== بيحسب متطلبات الحصة (فيديوهات لازم تتشاف + واجبات/امتحانات لازم =====
+  // ===== الطالب ينجح فيها) ويحدّث lesson_progress أوتوماتيك من غير أي =====
+  // ===== زرار يدوي — القفل بتاع الحصة اللي بعدها بيعتمد على النتيجة دي =====
+  function lessonRequirementsStatus(){
+    const allItems = Object.values(itemsBySection).flat();
+    const missing = [];
+
+    allItems.filter(it => it.type === 'video').forEach(it => {
+      const prog = videoProgressByItem[it.id];
+      if(!prog || prog.max_percent < 90) missing.push(`مشاهدة فيديو "${it.title}"`);
+    });
+
+    allItems.filter(it => it.type === 'exam' && it.exam_id).forEach(it => {
+      const exam = examsById[it.exam_id];
+      if(!exam) return;
+      const bestPct = bestAttemptPctByExam[it.exam_id] || 0;
+      const passed = bestPct >= (exam.passing_score || 50);
+      if(!passed) missing.push(exam.kind === 'homework' ? `النجاح في "${exam.title}"` : `النجاح في امتحان "${exam.title}"`);
+    });
+
+    return missing;
+  }
+
+  async function syncLessonCompletion(){
+    const missing = lessonRequirementsStatus();
+    const shouldBeCompleted = missing.length === 0;
+
+    if(shouldBeCompleted !== !!progressRow?.completed){
+      const { data, error } = await supabaseClient
+        .from('lesson_progress')
+        .upsert({
+          user_id: currentUser.id,
+          lesson_id: currentLesson.id,
+          completed: shouldBeCompleted,
+          completed_at: shouldBeCompleted ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,lesson_id' })
+        .select()
+        .single();
+      if(!error){
+        progressRow = data;
+        progressByLesson[currentLesson.id] = shouldBeCompleted;
+        renderNavLinks();
+        renderSidebar();
+      }
+    }
+    renderCompletionStatus(missing);
+  }
+
+  function renderCompletionStatus(missing){
+    const badge = document.getElementById('complete-status');
+    const listEl = document.getElementById('lesson-requirements-list');
+    if(missing.length === 0){
+      badge.innerHTML = '<span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg></span> خلصت متطلبات الحصة دي';
+      badge.style.background = 'var(--green)';
+      badge.style.color = 'var(--navy-deep)';
+      badge.style.border = 'none';
+      listEl.style.display = 'none';
     } else {
-      btn.innerHTML = '<span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.5 17 19 7"/></svg></span> حدد كـ "خلصتها"';
-      btn.classList.add('btn-ghost');
-      btn.style.background = '';
-      btn.style.color = '';
-      btn.style.border = '';
+      badge.innerHTML = '<span class="ic ic-inline">⏳</span> لسه مخلصتش متطلبات الحصة';
+      badge.style.background = '';
+      badge.style.color = '';
+      badge.style.border = '';
+      listEl.style.display = '';
+      listEl.innerHTML = 'باقيلك: ' + missing.join('، ');
     }
-  }
-
-  async function toggleComplete(){
-    const btn = document.getElementById('complete-btn');
-    btn.disabled = true;
-
-    const newValue = !(progressRow?.completed);
-    const { data, error } = await supabaseClient
-      .from('lesson_progress')
-      .upsert({
-        user_id: currentUser.id,
-        lesson_id: currentLesson.id,
-        completed: newValue,
-        completed_at: newValue ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id,lesson_id' })
-      .select()
-      .single();
-
-    btn.disabled = false;
-    if(error){
-      alert('حصل خطأ، حاول تاني');
-      return;
-    }
-    progressRow = data;
-    progressByLesson[currentLesson.id] = newValue;
-    updateCompleteBtn();
-    renderLesson();
-    renderSidebar();
   }
 
   function fileIcon(name){

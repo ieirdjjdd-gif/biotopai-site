@@ -227,6 +227,9 @@
         <button class="admin-side-link" data-tab="assignments" onclick="showAdminTab('assignments')">
           <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg></span> الواجبات
         </button>
+        <button class="admin-side-link" data-tab="unlock-codes" onclick="showAdminTab('unlock-codes')">
+          <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg></span> أكواد فتح الترتيب
+        </button>
       </nav>
 
       <div class="admin-content">
@@ -376,7 +379,6 @@
 
     <div id="lessons-manager" style="display:none;">
       <div class="msg msg-error" id="lesson-form-error"></div>
-      <div class="msg msg-success" id="lesson-form-success"></div>
       <div class="field-row">
         <div class="field">
           <label>عنوان الحصة</label>
@@ -387,9 +389,15 @@
           <input type="number" id="lesson-order" placeholder="1">
         </div>
       </div>
-      <p style="font-size:11.5px; color:var(--bone-dim); margin-top:-4px; margin-bottom:14px;">
-        بعد ما تحفظ الحصة، دوس على "الأقسام" في جدول الحصص تحت عشان تضيف الفيديو — الفيديو مش بيتحط هنا.
-      </p>
+      <div class="field">
+        <label>رابط الفيديو (يوتيوب / فيميو / رابط مباشر — لو الحصة لسه مش على Bunny)</label>
+        <input type="text" id="lesson-video" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 18a4 4 0 0 1-.5-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 0 1 17.5 18Z"/></svg></span> Bunny Video GUID (لو الفيديو مرفوع على Bunny Stream)</label>
+        <input type="text" id="lesson-bunny-guid" placeholder="مثال: 8f2b1a3c-....-....-....-............">
+        <p style="font-size:11.5px; color:var(--bone-dim); margin-top:6px;">لو اتملى الحقل ده، هيتشغّل بدل رابط الفيديو اللي فوق برابط موقّع ومؤقت (أأمن).</p>
+      </div>
       <label class="checkbox-row"><input type="checkbox" id="lesson-free"> حصة معاينة مجانية</label>
 
       <input type="hidden" id="lesson-edit-id">
@@ -906,6 +914,40 @@
 
         </div>
 
+        <div class="admin-tab-section" id="admin-tab-unlock-codes">
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg></span> أكواد فتح الترتيب</h2>
+      <p>الكود ده بيدي الطالب (اللي حضر لايف في السنتر) صلاحية يفتح أي محاضرة في صفه من غير ما يخلّص اللي قبلها بالترتيب. كل كود بيتستخدم مرة واحدة بس.</p>
+    </div>
+
+    <div style="display:flex; align-items:flex-end; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+      <div class="field" style="margin-bottom:0; width:140px;">
+        <label for="unlock-gen-count">عدد الأكواد</label>
+        <input type="number" id="unlock-gen-count" value="10" min="1" max="200">
+      </div>
+      <button class="btn" onclick="generateUnlockCodes()" id="unlock-gen-btn">توليد أكواد جديدة</button>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <select id="unlock-codes-filter" onchange="loadUnlockCodes()" style="width:auto; background:var(--navy-deep); border:1.5px solid var(--line); border-radius:10px; padding:8px 12px; color:var(--bone); font-size:13px;">
+        <option value="unused">لسه ما اتستخدمش</option>
+        <option value="used">اتستخدمت</option>
+        <option value="all">الكل</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>الكود</th><th>الحالة</th><th>استخدمه</th><th>تاريخ الاستخدام</th></tr>
+      </thead>
+      <tbody id="unlock-codes-table-body">
+        <tr><td colspan="4">جارٍ التحميل...</td></tr>
+      </tbody>
+    </table>
+  </div>
+        </div>
+
 
       </div>
     </div>
@@ -943,6 +985,7 @@
     loadEnrollments();
     loadSupportThreads();
     subscribeToSupportMessages();
+    loadUnlockCodes();
   })();
 
   // ===== التنقل بين تابات لوحة التحكم =====
@@ -1474,37 +1517,16 @@
       .eq('course_id', currentLessonsCourseId)
       .order('order_index', { ascending: true });
 
-    if(error){
-      console.error('refreshLessonsTable error:', error);
-      tbody.innerHTML = `<tr><td colspan="4" style="color:#ff6b6b;">حصل خطأ فعلي: ${error.message || error.code || 'راجع الـ Console'}</td></tr>`;
-      return;
-    }
-
-    if(!lessons || lessons.length === 0){
+    if(error || !lessons || lessons.length === 0){
       tbody.innerHTML = `<tr><td colspan="4">مفيش حصص لسه في الكورس ده</td></tr>`;
       return;
-    }
-
-    // نتأكد لكل حصة إن فيه عنصر فيديو فعلي جوه أقسامها (ده اللي فعلاً بيظهر للطالب)
-    const lessonIds = lessons.map(l => l.id);
-    const { data: sectionsForVideoCheck } = await supabaseClient
-      .from('lesson_sections').select('id, lesson_id').in('lesson_id', lessonIds);
-    const sectionIdToLessonId = {};
-    (sectionsForVideoCheck || []).forEach(s => { sectionIdToLessonId[s.id] = s.lesson_id; });
-    const allSectionIds = Object.keys(sectionIdToLessonId);
-
-    const lessonHasVideo = {};
-    if(allSectionIds.length > 0){
-      const { data: videoItems } = await supabaseClient
-        .from('section_items').select('section_id').eq('type', 'video').in('section_id', allSectionIds);
-      (videoItems || []).forEach(it => { lessonHasVideo[sectionIdToLessonId[it.section_id]] = true; });
     }
 
     tbody.innerHTML = lessons.map((l, i) => `
       <tr>
         <td>${l.order_index ?? (i+1)}</td>
         <td>${l.title}${l.is_free_preview ? ' <span class="tag tag-free">معاينة مجانية</span>' : ''}</td>
-        <td>${lessonHasVideo[l.id] ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> متوفر' : '— لسه مفيش (دوس الأقسام)'}</td>
+        <td>${l.bunny_video_guid ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 18a4 4 0 0 1-.5-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 0 1 17.5 18Z"/></svg> Bunny' : (l.video_url ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> متوفر' : '— لسه مفيش')}</td>
         <td>
           <div class="row-actions">
             <button class="btn btn-outline btn-sm" onclick='editLesson(${JSON.stringify(l)})'>تعديل</button>
@@ -1524,6 +1546,8 @@
     document.getElementById('lesson-edit-id').value = '';
     document.getElementById('lesson-title').value = '';
     document.getElementById('lesson-order').value = '';
+    document.getElementById('lesson-video').value = '';
+    document.getElementById('lesson-bunny-guid').value = '';
     document.getElementById('lesson-free').checked = false;
     document.getElementById('cancel-lesson-edit').style.display = 'none';
     document.getElementById('lesson-form-error').style.display = 'none';
@@ -1533,16 +1557,15 @@
     document.getElementById('lesson-edit-id').value = l.id;
     document.getElementById('lesson-title').value = l.title || '';
     document.getElementById('lesson-order').value = l.order_index ?? '';
+    document.getElementById('lesson-video').value = l.video_url || '';
+    document.getElementById('lesson-bunny-guid').value = l.bunny_video_guid || '';
     document.getElementById('lesson-free').checked = !!l.is_free_preview;
     document.getElementById('cancel-lesson-edit').style.display = 'inline-flex';
-    document.getElementById('lesson-form-success').style.display = 'none';
   }
 
   async function saveLesson(){
     const errEl = document.getElementById('lesson-form-error');
-    const successEl = document.getElementById('lesson-form-success');
     errEl.style.display = 'none';
-    successEl.style.display = 'none';
 
     const title = document.getElementById('lesson-title').value.trim();
     if(!title){
@@ -1555,11 +1578,12 @@
       course_id: currentLessonsCourseId,
       title,
       order_index: document.getElementById('lesson-order').value ? Number(document.getElementById('lesson-order').value) : 0,
+      video_url: document.getElementById('lesson-video').value.trim() || null,
+      bunny_video_guid: document.getElementById('lesson-bunny-guid').value.trim() || null,
       is_free_preview: document.getElementById('lesson-free').checked
     };
 
     const editId = document.getElementById('lesson-edit-id').value;
-    const wasEdit = !!editId;
     const btn = document.getElementById('save-lesson-btn');
     btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
 
@@ -1578,9 +1602,6 @@
       errEl.style.display = 'block';
       return;
     }
-
-    successEl.innerHTML = (wasEdit ? 'تم تعديل الحصة بنجاح ✅' : 'تم إضافة الحصة بنجاح ✅') + ' — دلوقتي دوس على "الأقسام" جنبها في الجدول عشان تضيف الفيديو.';
-    successEl.style.display = 'block';
 
     resetLessonForm();
     refreshLessonsTable();
@@ -1767,8 +1788,7 @@
               </div>
             </div>
 
-            <button class="btn btn-sm" id="item-submit-btn-${s.id}" onclick="addItem('${s.id}')">إضافة العنصر</button>
-            <button class="btn btn-outline btn-sm" id="item-cancel-btn-${s.id}" style="display:none;" onclick="cancelEditItem('${s.id}')">إلغاء التعديل</button>
+            <button class="btn btn-sm" onclick="addItem('${s.id}')">إضافة العنصر</button>
           </div>
         </details>
       </div>
@@ -1785,15 +1805,16 @@
     if(type === 'exam') await populateExamSelect(sectionId);
   }
 
-  async function populateExamSelect(sectionId, preselectExamId){
+  async function populateExamSelect(sectionId){
     const select = document.getElementById(`item-exam-id-${sectionId}`);
-    select.innerHTML = `<option value="">جارٍ التحميل...</option>`;
-    const { data: exams } = await supabaseClient
-      .from('exams')
-      .select('id, title, kind')
-      .eq('course_id', currentLessonsCourseId)
-      .order('order_index', { ascending: true });
-    courseExamsCache = exams || [];
+    if(!courseExamsCache){
+      const { data: exams } = await supabaseClient
+        .from('exams')
+        .select('id, title, kind')
+        .eq('course_id', currentLessonsCourseId)
+        .order('order_index', { ascending: true });
+      courseExamsCache = exams || [];
+    }
     if(courseExamsCache.length === 0){
       select.innerHTML = `<option value="">مفيش امتحانات/واجبات مضافة لسه في الكورس ده</option>`;
       return;
@@ -1801,7 +1822,6 @@
     select.innerHTML = courseExamsCache.map(e =>
       `<option value="${e.id}">${e.kind === 'homework' ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg> واجب' : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> امتحان'} — ${e.title}</option>`
     ).join('');
-    if(preselectExamId) select.value = preselectExamId;
   }
 
   async function loadItemsForSection(sectionId){
@@ -1825,49 +1845,9 @@
     listEl.innerHTML = items.map(it => `
       <div class="row-actions" style="justify-content:space-between; padding:8px 12px; background:var(--navy-deep); border:1px solid var(--line); border-radius:8px;">
         <span style="font-size:12.5px;">${typeLabel[it.type] || it.type} — ${it.title}</span>
-        <div class="row-actions">
-          <button class="btn btn-outline btn-sm" onclick='editItem(${JSON.stringify(it)}, "${sectionId}")'>تعديل</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteItem('${it.id}', '${sectionId}')">حذف</button>
-        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('${it.id}', '${sectionId}')">حذف</button>
       </div>
     `).join('');
-  }
-
-  let editingItemId = null;
-
-  async function editItem(item, sectionId){
-    const details = document.getElementById(`item-title-${sectionId}`).closest('details');
-    if(details) details.open = true;
-
-    editingItemId = item.id;
-    document.getElementById(`item-submit-btn-${sectionId}`).textContent = 'حفظ التعديل';
-    document.getElementById(`item-cancel-btn-${sectionId}`).style.display = '';
-
-    document.getElementById(`item-type-${sectionId}`).value = item.type;
-    document.getElementById(`item-title-${sectionId}`).value = item.title || '';
-    await onItemTypeChange(sectionId);
-
-    if(item.type === 'video'){
-      document.getElementById(`item-video-url-${sectionId}`).value = item.video_url || '';
-      document.getElementById(`item-bunny-guid-${sectionId}`).value = item.bunny_video_guid || '';
-    }
-    if(item.type === 'file'){
-      document.getElementById(`item-file-url-${sectionId}`).value = item.file_url || '';
-    }
-    if(item.type === 'exam'){
-      await populateExamSelect(sectionId, item.exam_id);
-    }
-
-    document.getElementById(`item-title-${sectionId}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  function cancelEditItem(sectionId){
-    editingItemId = null;
-    document.getElementById(`item-submit-btn-${sectionId}`).textContent = 'إضافة العنصر';
-    document.getElementById(`item-cancel-btn-${sectionId}`).style.display = 'none';
-    document.getElementById(`item-title-${sectionId}`).value = '';
-    document.getElementById(`item-type-${sectionId}`).value = 'video';
-    onItemTypeChange(sectionId);
   }
 
   async function addItem(sectionId){
@@ -1882,8 +1862,7 @@
       return;
     }
 
-    const payload = { section_id: sectionId, type, title };
-    if(!editingItemId) payload.order_index = 0;
+    const payload = { section_id: sectionId, type, title, order_index: 0 };
 
     if(type === 'video'){
       payload.video_url = document.getElementById(`item-video-url-${sectionId}`).value.trim() || null;
@@ -1932,22 +1911,13 @@
       payload.exam_id = examId;
     }
 
-    let error;
-    if(editingItemId){
-      ({ error } = await supabaseClient.from('section_items').update(payload).eq('id', editingItemId));
-    } else {
-      ({ error } = await supabaseClient.from('section_items').insert(payload));
-    }
-
+    const { error } = await supabaseClient.from('section_items').insert(payload);
     if(error){
       errEl.textContent = 'حصل خطأ، حاول تاني';
       errEl.style.display = 'block';
       return;
     }
 
-    editingItemId = null;
-    document.getElementById(`item-submit-btn-${sectionId}`).textContent = 'إضافة العنصر';
-    document.getElementById(`item-cancel-btn-${sectionId}`).style.display = 'none';
     document.getElementById(`item-title-${sectionId}`).value = '';
     loadItemsForSection(sectionId);
   }
@@ -3578,6 +3548,76 @@
 
   function closeHwAttemptDetail(){
     document.getElementById('hw-attempt-detail').style.display = 'none';
+  }
+
+  // ===== أكواد فتح الترتيب =====
+  function randomUnlockCode(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // من غير حروف/أرقام بتتلخبط زي O/0/I/1
+    let s = '';
+    for(let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s.slice(0, 4) + '-' + s.slice(4);
+  }
+
+  async function generateUnlockCodes(){
+    const btn = document.getElementById('unlock-gen-btn');
+    const count = Math.max(1, Math.min(200, parseInt(document.getElementById('unlock-gen-count').value, 10) || 0));
+    btn.disabled = true; btn.textContent = 'جارٍ التوليد...';
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const rows = Array.from({ length: count }, () => ({ code: randomUnlockCode(), created_by: user?.id || null }));
+
+    const { error } = await supabaseClient.from('unlock_codes').insert(rows);
+
+    btn.disabled = false; btn.textContent = 'توليد أكواد جديدة';
+
+    if(error){
+      console.error('generate unlock codes error:', error);
+      alert('حصل خطأ أثناء توليد الأكواد: ' + error.message);
+      return;
+    }
+
+    document.getElementById('unlock-codes-filter').value = 'unused';
+    loadUnlockCodes();
+  }
+
+  async function loadUnlockCodes(){
+    const tbody = document.getElementById('unlock-codes-table-body');
+    const filter = document.getElementById('unlock-codes-filter').value;
+    tbody.innerHTML = `<tr><td colspan="4">جارٍ التحميل...</td></tr>`;
+
+    let query = supabaseClient.from('unlock_codes').select('*').order('created_at', { ascending: false });
+    if(filter === 'unused') query = query.eq('is_used', false);
+    if(filter === 'used') query = query.eq('is_used', true);
+    const { data: codes, error } = await query;
+
+    if(error){
+      tbody.innerHTML = `<tr><td colspan="4">حصل خطأ في تحميل الأكواد (تأكد إن ملف add_unlock_codes.sql اتشغّل في Supabase)</td></tr>`;
+      return;
+    }
+    if(!codes || codes.length === 0){
+      tbody.innerHTML = `<tr><td colspan="4">مفيش أكواد هنا دلوقتي</td></tr>`;
+      return;
+    }
+
+    const usedByIds = [...new Set(codes.filter(c => c.used_by).map(c => c.used_by))];
+    let usersMap = {};
+    if(usedByIds.length > 0){
+      const { data: profiles } = await supabaseClient
+        .from('profiles').select('id, full_name, grade').in('id', usedByIds);
+      (profiles || []).forEach(p => usersMap[p.id] = p);
+    }
+
+    tbody.innerHTML = codes.map(c => {
+      const usedByName = c.used_by ? (usersMap[c.used_by]?.full_name || '—') : '—';
+      const usedAt = c.used_at ? new Date(c.used_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+      return `
+        <tr>
+          <td style="font-family:monospace; letter-spacing:.05em;">${c.code}</td>
+          <td><span class="tag ${c.is_used ? 'tag-hidden' : 'tag-live'}">${c.is_used ? 'اتستخدم' : 'متاح'}</span></td>
+          <td>${usedByName}</td>
+          <td>${usedAt}</td>
+        </tr>`;
+    }).join('');
   }
 
 </script>

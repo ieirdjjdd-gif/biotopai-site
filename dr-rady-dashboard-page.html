@@ -139,6 +139,11 @@
   .stat-ic{
     width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px;
   }
+  .stat-ic.pending-pulse{ animation: statPulse 1.8s ease-in-out infinite; }
+  @keyframes statPulse{
+    0%, 100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:.65; transform:scale(0.92); }
+  }
   .stat-card b{display:block; font-family:'Tajawal'; font-size:24px; color:var(--bone);}
   .stat-card span{font-size:12.5px; color:var(--bone-dim);}
 
@@ -384,7 +389,7 @@
       </div>
       <div class="stat-card">
         <div class="top-row">
-          <div class="stat-ic" style="background:rgba(217,142,75,0.16); color:var(--amber);">⏳</div>
+          <div class="stat-ic" id="stat-pending-ic" style="background:rgba(217,142,75,0.16); color:var(--amber);"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l4 2.5"/></svg></div>
         </div>
         <b id="stat-pending-courses">—</b>
         <span>طلبات اشتراك قيد الدفع</span>
@@ -568,6 +573,7 @@
       document.getElementById('stat-paid-courses').textContent = '0';
       document.getElementById('stat-total-lessons').textContent = '0';
       document.getElementById('stat-pending-courses').textContent = '0';
+      document.getElementById('stat-pending-ic').classList.remove('pending-pulse');
       pendingEl.innerHTML = `<div class="todo-item"><div><span>مفيش حاجة مستنياك دلوقتي <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20 14 10"/><path d="M20 4 10 8l3 3-1 6 8-13Z"/><circle cx="7" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="17" cy="15" r="1" fill="currentColor" stroke="none"/></svg></span></div></div>`;
       return;
     }
@@ -579,6 +585,7 @@
     document.getElementById('stat-total-lessons').textContent =
       paid.reduce((sum, e) => sum + (e.courses.lessons_count || 0), 0);
     document.getElementById('stat-pending-courses').textContent = pending.length;
+    document.getElementById('stat-pending-ic').classList.toggle('pending-pulse', pending.length > 0);
 
     // ===== قائمة الكورسات المدفوعة فعليًا =====
     if(paid.length === 0){
@@ -606,7 +613,7 @@
     } else {
       pendingEl.innerHTML = pending.map(e => `
         <div class="todo-item">
-          <div class="todo-tag" style="background:rgba(217,142,75,0.16); color:var(--amber);">⏳</div>
+          <div class="todo-tag" style="background:rgba(217,142,75,0.16); color:var(--amber);"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l4 2.5"/></svg></div>
           <div>
             <b>${e.courses.title}</b>
             <span>الاشتراك لسه مستني تأكيد الدفع</span>
