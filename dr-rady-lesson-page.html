@@ -383,6 +383,7 @@
   let progressByLesson = {};
   let currentUser = null;
   let isPaid = false;
+  let unlockSequence = false;
   let progressRow = null;
   let currentItem = null; // العنصر (section_items) اللي بيتشغّل دلوقتي
   let lessonSections = [];
@@ -1052,6 +1053,10 @@
       isPaid = !!gradeUnlock;
     }
 
+    const { data: profileRow } = await supabaseClient
+      .from('profiles').select('unlock_sequence').eq('id', user.id).maybeSingle();
+    unlockSequence = !!profileRow?.unlock_sequence;
+
     // تقدّم الطالب في كل حصص الكورس ده (عشان نتأكد إنه خلّص اللي قبل الحصة دي)
     const { data: progressRows } = await supabaseClient
       .from('lesson_progress')
@@ -1063,7 +1068,7 @@
 
     const currentIdx = allLessons.findIndex(l => l.id === currentLesson.id);
     const prevLessonForAccess = allLessons[currentIdx - 1];
-    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id];
+    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id] || unlockSequence;
 
     const unlocked = (currentLesson.is_free_preview || isPaid) && prevCompleted;
     if(!unlocked){
@@ -1208,7 +1213,7 @@
     listEl.innerHTML = allLessons.map((l, i) => {
       const paidUnlocked = l.is_free_preview || isPaid;
       const prevLesson = allLessons[i - 1];
-      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
       const unlocked = paidUnlocked && prevCompleted;
       const isCurrent = l.id === currentLesson.id;
       const num = String(i + 1).padStart(2, '0');

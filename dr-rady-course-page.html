@@ -201,8 +201,11 @@
   .lsub-item .lbtn{
     background:color-mix(in srgb, var(--type-color, var(--green)) 20%, transparent);
     color:var(--type-color, var(--green-bright));
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 16px; border-radius:100px; font-size:12px; font-weight:700;
+    white-space:nowrap; flex-shrink:0; text-decoration:none;
   }
-  .lsub-item .lbtn:hover{background:var(--type-color, var(--green)); color:var(--navy-deep);}
+  .lsub-item .lbtn:hover{background:var(--type-color, var(--green)); color:var(--navy-deep); transform:translateY(-1px);}
   .lsub-item.type-video{--type-color:var(--t-video);}
   .lsub-item.type-file{--type-color:var(--t-file);}
   .lsub-item.type-exam{--type-color:var(--t-exam);}
@@ -496,6 +499,7 @@
 
     // هل المستخدم مشترك فعليًا (paid) في الكورس ده؟
     let isPaid = false;
+    let unlockSequence = false;
     const user = await getCurrentUser();
     if(user){
       const { data: enrollment } = await supabaseClient
@@ -520,6 +524,13 @@
           isPaid = !!gradeUnlock;
         }
       }
+
+      const { data: profileRow } = await supabaseClient
+        .from('profiles')
+        .select('unlock_sequence')
+        .eq('id', user.id)
+        .maybeSingle();
+      unlockSequence = !!profileRow?.unlock_sequence;
     }
 
     // ===== تقدّم الطالب في كل حصة (عشان نقفل الحصة التالية لحد ما يخلص اللي قبلها) =====
@@ -660,7 +671,7 @@
       const num = String(i + 1).padStart(2, '0');
       const paidUnlocked = lesson.is_free_preview || isPaid;
       const prevLesson = lessons[i - 1];
-      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
       const unlocked = paidUnlocked && prevCompleted;
 
       if(!unlocked){
