@@ -383,7 +383,6 @@
   let progressByLesson = {};
   let currentUser = null;
   let isPaid = false;
-  let unlockSequence = false;
   let progressRow = null;
   let currentItem = null; // العنصر (section_items) اللي بيتشغّل دلوقتي
   let lessonSections = [];
@@ -1011,7 +1010,7 @@
 
     // بيانات الكورس (للاسم في الهيدر)
     const { data: course } = await supabaseClient
-      .from('courses').select('title').eq('id', COURSE_ID).single();
+      .from('courses').select('title, grade').eq('id', COURSE_ID).single();
     if(course){
       document.getElementById('crumb-course-name').textContent = '/ ' + course.title;
       document.title = course.title + ' | BioTopia';
@@ -1042,9 +1041,16 @@
       .from('enrollments').select('status').eq('user_id', user.id).eq('course_id', COURSE_ID).maybeSingle();
     isPaid = enrollment?.status === 'paid';
 
-    const { data: profileRow } = await supabaseClient
-      .from('profiles').select('unlock_sequence').eq('id', user.id).maybeSingle();
-    unlockSequence = !!profileRow?.unlock_sequence;
+    // مش مشترك بالدفع العادي؟ نشوف لو عنده كود سنتر فاتح سنة الكورس ده
+    if(!isPaid && course?.grade){
+      const { data: gradeUnlock } = await supabaseClient
+        .from('grade_unlocks')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('grade', course.grade)
+        .maybeSingle();
+      isPaid = !!gradeUnlock;
+    }
 
     // تقدّم الطالب في كل حصص الكورس ده (عشان نتأكد إنه خلّص اللي قبل الحصة دي)
     const { data: progressRows } = await supabaseClient
@@ -1057,7 +1063,7 @@
 
     const currentIdx = allLessons.findIndex(l => l.id === currentLesson.id);
     const prevLessonForAccess = allLessons[currentIdx - 1];
-    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id] || unlockSequence;
+    const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id];
 
     const unlocked = (currentLesson.is_free_preview || isPaid) && prevCompleted;
     if(!unlocked){
@@ -1202,7 +1208,7 @@
     listEl.innerHTML = allLessons.map((l, i) => {
       const paidUnlocked = l.is_free_preview || isPaid;
       const prevLesson = allLessons[i - 1];
-      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
+      const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id];
       const unlocked = paidUnlocked && prevCompleted;
       const isCurrent = l.id === currentLesson.id;
       const num = String(i + 1).padStart(2, '0');
