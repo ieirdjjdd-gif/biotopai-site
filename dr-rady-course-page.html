@@ -203,7 +203,7 @@
     color:var(--type-color, var(--green-bright));
     display:inline-flex; align-items:center; justify-content:center;
     padding:8px 16px; border-radius:100px; font-size:12px; font-weight:700;
-    white-space:nowrap; flex-shrink:0; text-decoration:none;
+    white-space:nowrap; flex-shrink:0; text-decoration:none; border:none; font-family:inherit; cursor:pointer;
   }
   .lsub-item .lbtn:hover{background:var(--type-color, var(--green)); color:var(--navy-deep); transform:translateY(-1px);}
   .lsub-item.type-video{--type-color:var(--t-video);}
@@ -338,9 +338,8 @@
         <div><b>د. راضي</b><span>منصة BioTopia لتعليم الأحياء</span></div>
       </div>
       <div class="meta-line">
-        <span><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg></span> <b>تاريخ الإنشاء:</b> ١٤ مارس ٢٠٢٦</span>
-        <span><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 12a8 8 0 0 1 14-5.3L21 9"/><path d="M21 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L3 15"/><path d="M3 20v-5h5"/></svg></span> <b>آخر تحديث:</b> ٢٧ يونيو ٢٠٢٦</span>
-        <span><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c1.2-3.3 3.2-5 6-5s4.8 1.7 6 5"/><path d="M15.5 6a3 3 0 0 1 0 5.8"/><path d="M18.5 19c-.5-2.2-1.4-3.8-2.7-4.7"/></svg></span> <b>+2,400</b> طالب مشترك</span>
+        <span><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg></span> <b>تاريخ الإنشاء:</b> <span id="course-created">—</span></span>
+        <span><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 12a8 8 0 0 1 14-5.3L21 9"/><path d="M21 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L3 15"/><path d="M3 20v-5h5"/></svg></span> <b>آخر تحديث:</b> <span id="course-updated">—</span></span>
       </div>
     </div>
 
@@ -440,6 +439,16 @@
   const urlParams = new URLSearchParams(window.location.search);
   const COURSE_ID = urlParams.get('id');
 
+  // بيحوّل تاريخ ISO لصيغة عربية مقروءة زي "١٤ مارس ٢٠٢٦"
+  function formatArabicDate(iso){
+    if(!iso) return '—';
+    try{
+      return new Intl.DateTimeFormat('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(iso));
+    } catch(e){
+      return '—';
+    }
+  }
+
   // ===== تحميل بيانات الكورس الحقيقية من الداتابيز =====
   async function loadCourseDetails(){
     if(!COURSE_ID) return; // لو دخل الصفحة من غير id، تفضل البيانات الافتراضية الظاهرة في التصميم
@@ -457,6 +466,8 @@
     document.getElementById('course-price').textContent = course.price + ' ج.م';
     document.getElementById('course-price-mobile').textContent = course.price + ' ج.م';
     document.title = course.title + ' — د. راضي | BioTopia';
+    document.getElementById('course-created').textContent = formatArabicDate(course.created_at);
+    document.getElementById('course-updated').textContent = formatArabicDate(course.updated_at || course.created_at);
 
     const oldPriceEl = document.getElementById('course-old-price');
     if(course.old_price){
@@ -485,7 +496,7 @@
     // نفسها (dr-rady-lesson-page.html) وبعد التأكد من الاشتراك.
     const { data: lessons, error } = await supabaseClient
       .from('lessons_public')
-      .select('id, course_id, title, order_index, is_free_preview')
+      .select('id, course_id, title, order_index')
       .eq('course_id', COURSE_ID)
       .order('order_index', { ascending: true });
 
@@ -613,6 +624,7 @@
 
     function examRowHTML(exam, label){
       const attempt = attemptsByExam[exam.id];
+      const typeClass = exam.kind === 'homework' ? 'type-hw' : 'type-exam';
       let statusHTML = '';
       let actionLabel = label === 'تسليم الواجب' ? 'ابدأ الواجب' : 'ابدأ الاختبار';
       if(attempt){
@@ -621,7 +633,7 @@
         actionLabel = 'إعادة المحاولة';
       }
       return `
-        <div class="lsub-item">
+        <div class="lsub-item ${typeClass}">
           <div class="lsub-info">
             <span class="lsub-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg></span>
             <div><span class="lsub-label">${exam.title}</span>${statusHTML}</div>
@@ -645,12 +657,36 @@
         return examRowHTML(exam, exam.kind === 'homework' ? 'تسليم الواجب' : 'الامتحان');
       }
       const label = item.title || (item.type === 'video' ? 'فيديو' : (item.file_name || 'ملف'));
-      const actionLabel = item.type === 'video' ? 'مشاهدة' : 'فتح الملف';
+      const typeClass = item.type === 'video' ? 'type-video' : 'type-file';
+
+      if(item.type === 'file'){
+        const safeName = (item.file_name || item.title || 'file').replace(/'/g, "");
+        return `
+          <div class="lsub-item ${typeClass}">
+            <div class="lsub-info"><span class="lsub-ic">${itemIconFor(item.type, item.file_name)}</span><div><span class="lsub-label">${label}</span></div></div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="lbtn" onclick="openItemFile('${item.id}')">عرض</button>
+              <button type="button" class="lbtn" onclick="downloadItemFile('${item.id}', '${safeName}')">تحميل</button>
+            </div>
+          </div>`;
+      }
+
+      const actionLabel = 'مشاهدة';
       return `
-        <div class="lsub-item">
+        <div class="lsub-item ${typeClass}">
           <div class="lsub-info"><span class="lsub-ic">${itemIconFor(item.type, item.file_name)}</span><div><span class="lsub-label">${label}</span></div></div>
           <a class="lbtn" href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${lesson.id}&item=${item.id}">${actionLabel}</a>
         </div>`;
+    }
+
+    // بيحدد لون "خانة" القسم (شرح/واجب/تسليم/امتحان) حسب نوع العناصر جواها
+    function sectionCategoryClass(items){
+      const examItem = items.find(it => it.type === 'exam' && it.exam_id && examsById[it.exam_id]);
+      if(examItem) return examsById[examItem.exam_id].kind === 'homework' ? 'cat-homework' : 'cat-exam';
+      const gatedFile = items.find(it => it.type === 'file' && it.exam_id && examsById[it.exam_id]);
+      if(gatedFile) return examsById[gatedFile.exam_id].kind === 'homework' ? 'cat-submission' : 'cat-exam';
+      if(items.some(it => it.type === 'video')) return 'cat-explanation';
+      return '';
     }
 
     function newSectionAccHTML(section, lesson){
@@ -658,7 +694,7 @@
       const itemsHTML = items.map(it => structureItemRowHTML(it, lesson)).join('');
       if(!itemsHTML) return '';
       return `
-        <details class="cat-acc">
+        <details class="cat-acc ${sectionCategoryClass(items)}">
           <summary>
             <div class="cat-title"><b>${section.title}</b></div>
             <span class="cat-chev">▾</span>
@@ -669,7 +705,7 @@
 
     listEl.innerHTML = lessons.map((lesson, i) => {
       const num = String(i + 1).padStart(2, '0');
-      const paidUnlocked = lesson.is_free_preview || isPaid;
+      const paidUnlocked = isPaid;
       const prevLesson = lessons[i - 1];
       const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
       const unlocked = paidUnlocked && prevCompleted;
@@ -685,8 +721,6 @@
           </div>`;
       }
 
-      const previewTag = lesson.is_free_preview ? ' <span style="color:var(--green-bright); font-size:11px;">(معاينة مجانية)</span>' : '';
-
       const lessonSections = (sectionsByLesson[lesson.id] || []).slice().sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
       const sectionsHTML = lessonSections.length > 0
         ? lessonSections.map(s => newSectionAccHTML(s, lesson)).join('')
@@ -695,7 +729,7 @@
       return `
         <details class="lecture-acc">
           <summary>
-            <span class="lname">المحاضرة ${num}: ${lesson.title}${previewTag}</span>
+            <span class="lname">المحاضرة ${num}: ${lesson.title}</span>
             <span class="lchev">▾</span>
           </summary>
           <div class="lecture-acc-body">
@@ -729,6 +763,37 @@
     // بوابة الدفع (فودافون كاش / إنستاباي) هي اللي بتنشئ طلب
     // الاشتراك فعليًا بعد ما الطالب يرفع إثبات التحويل
     window.location.href = 'dr-rady-checkout-page.html?course=' + COURSE_ID;
+  }
+  // ===== فتح/تحميل ملف مباشرة من صفحة الكورس، من غير الدخول لصفحة الحصة =====
+  // ملحوظة أمان: زي صفحة الحصة بالظبط، بنجيب رابط الملف وقت الضغط بس من
+  // جدول section_items نفسه (مش الـ view العام)، وده محمي بـ RLS: لو
+  // المستخدم مش مشترك فعليًا أو الحصة لسه مقفولة عنده، الاستعلام هيرجع
+  // فاضي حتى لو حد عدّل الكود من المتصفح وحاول ينده الدالة يدويًا.
+  function forceDownload(url, filename){
+    fetch(url)
+      .then(res => res.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl; a.download = filename || 'file';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      })
+      .catch(() => window.open(url, '_blank', 'noopener'));
+  }
+
+  async function openItemFile(itemId){
+    const { data, error } = await supabaseClient
+      .from('section_items').select('file_url').eq('id', itemId).single();
+    if(error || !data?.file_url){ alert('حصل خطأ في فتح الملف، جرّب تاني'); return; }
+    window.open(data.file_url, '_blank', 'noopener');
+  }
+
+  async function downloadItemFile(itemId, fileName){
+    const { data, error } = await supabaseClient
+      .from('section_items').select('file_url').eq('id', itemId).single();
+    if(error || !data?.file_url){ alert('حصل خطأ في تحميل الملف، جرّب تاني'); return; }
+    forceDownload(data.file_url, fileName || 'file');
   }
 </script>
 

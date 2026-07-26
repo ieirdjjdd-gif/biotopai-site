@@ -401,8 +401,6 @@
         <input type="text" id="lesson-bunny-guid" placeholder="مثال: 8f2b1a3c-....-....-....-............">
         <p style="font-size:11.5px; color:var(--bone-dim); margin-top:6px;">لو اتملى الحقل ده، هيتشغّل بدل رابط الفيديو اللي فوق برابط موقّع ومؤقت (أأمن).</p>
       </div>
-      <label class="checkbox-row"><input type="checkbox" id="lesson-free"> حصة معاينة مجانية</label>
-
       <input type="hidden" id="lesson-edit-id">
       <div style="display:flex; gap:10px;">
         <button class="btn" id="save-lesson-btn" onclick="saveLesson()">حفظ الحصة</button>
@@ -1508,7 +1506,8 @@
       grade: document.getElementById('course-grade').value,
       course_type: document.getElementById('course-type').value,
       image_url: document.getElementById('course-image').value.trim() || null,
-      is_published: document.getElementById('course-published').checked
+      is_published: document.getElementById('course-published').checked,
+      updated_at: new Date().toISOString()
     };
 
     const editId = document.getElementById('course-edit-id').value;
@@ -1581,7 +1580,7 @@
     tbody.innerHTML = lessons.map((l, i) => `
       <tr>
         <td>${l.order_index ?? (i+1)}</td>
-        <td>${l.title}${l.is_free_preview ? ' <span class="tag tag-free">معاينة مجانية</span>' : ''}</td>
+        <td>${l.title}</td>
         <td>${l.bunny_video_guid ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 18a4 4 0 0 1-.5-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 0 1 17.5 18Z"/></svg> Bunny' : (l.video_url ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> متوفر' : '— لسه مفيش')}</td>
         <td>
           <div class="row-actions">
@@ -1604,7 +1603,6 @@
     document.getElementById('lesson-order').value = '';
     document.getElementById('lesson-video').value = '';
     document.getElementById('lesson-bunny-guid').value = '';
-    document.getElementById('lesson-free').checked = false;
     document.getElementById('cancel-lesson-edit').style.display = 'none';
     document.getElementById('lesson-form-error').style.display = 'none';
   }
@@ -1615,7 +1613,6 @@
     document.getElementById('lesson-order').value = l.order_index ?? '';
     document.getElementById('lesson-video').value = l.video_url || '';
     document.getElementById('lesson-bunny-guid').value = l.bunny_video_guid || '';
-    document.getElementById('lesson-free').checked = !!l.is_free_preview;
     document.getElementById('cancel-lesson-edit').style.display = 'inline-flex';
   }
 
@@ -1635,8 +1632,7 @@
       title,
       order_index: document.getElementById('lesson-order').value ? Number(document.getElementById('lesson-order').value) : 0,
       video_url: document.getElementById('lesson-video').value.trim() || null,
-      bunny_video_guid: document.getElementById('lesson-bunny-guid').value.trim() || null,
-      is_free_preview: document.getElementById('lesson-free').checked
+      bunny_video_guid: document.getElementById('lesson-bunny-guid').value.trim() || null
     };
 
     const editId = document.getElementById('lesson-edit-id').value;
@@ -1834,6 +1830,11 @@
                 <label>رابط الملف (لو عندك رابط جاهز بدل الرفع)</label>
                 <input type="text" id="item-file-url-${s.id}" placeholder="https://...">
               </div>
+              <div class="field" style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);">
+                <label><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span> اقفل الملف ده لحد ما الطالب يسلّم امتحان/واجب معيّن (اختياري)</label>
+                <select id="item-file-gate-exam-${s.id}"><option value="">من غير قفل — الملف يفضل متاح على طول</option></select>
+                <p style="font-size:11px; color:var(--bone-dim); margin-top:6px;">مفيد لملف نموذج الإجابة أو تحليل الامتحان: هيفضل مقفول للطالب لحد ما يسلّم الامتحان/الواجب ده.</p>
+              </div>
             </div>
 
             <div id="item-exam-fields-${s.id}" style="display:none;">
@@ -1858,11 +1859,14 @@
     document.getElementById(`item-video-fields-${sectionId}`).style.display = type === 'video' ? '' : 'none';
     document.getElementById(`item-file-fields-${sectionId}`).style.display = type === 'file' ? '' : 'none';
     document.getElementById(`item-exam-fields-${sectionId}`).style.display = type === 'exam' ? '' : 'none';
-    if(type === 'exam') await populateExamSelect(sectionId);
+    if(type === 'exam') await populateExamSelect(sectionId, `item-exam-id-${sectionId}`, false);
+    // الملف كمان محتاج قائمة الامتحانات جاهزة (لخيار القفل الاختياري)
+    if(type === 'file') await populateExamSelect(sectionId, `item-file-gate-exam-${sectionId}`, true);
   }
 
-  async function populateExamSelect(sectionId){
-    const select = document.getElementById(`item-exam-id-${sectionId}`);
+  // targetSelectId: الـ <select> اللي هنملاه. allowEmpty: لو true بيفضل فيه خيار "من غير قفل" فوق
+  async function populateExamSelect(sectionId, targetSelectId, allowEmpty){
+    const select = document.getElementById(targetSelectId || `item-exam-id-${sectionId}`);
     if(!courseExamsCache){
       const { data: exams } = await supabaseClient
         .from('exams')
@@ -1872,10 +1876,13 @@
       courseExamsCache = exams || [];
     }
     if(courseExamsCache.length === 0){
-      select.innerHTML = `<option value="">مفيش امتحانات/واجبات مضافة لسه في الكورس ده</option>`;
+      select.innerHTML = allowEmpty
+        ? `<option value="">من غير قفل — الملف يفضل متاح على طول</option>`
+        : `<option value="">مفيش امتحانات/واجبات مضافة لسه في الكورس ده</option>`;
       return;
     }
-    select.innerHTML = courseExamsCache.map(e =>
+    const emptyOptionHTML = allowEmpty ? `<option value="">من غير قفل — الملف يفضل متاح على طول</option>` : '';
+    select.innerHTML = emptyOptionHTML + courseExamsCache.map(e =>
       `<option value="${e.id}">${e.kind === 'homework' ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg> واجب' : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> امتحان'} — ${e.title}</option>`
     ).join('');
   }
@@ -1900,7 +1907,7 @@
     const typeLabel = { video: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg> فيديو', file: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 12.5V7a4 4 0 0 1 8 0v9a2.5 2.5 0 0 1-5 0V8.5"/></svg> ملف', exam: '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> امتحان' };
     listEl.innerHTML = items.map(it => `
       <div class="row-actions" style="justify-content:space-between; padding:8px 12px; background:var(--navy-deep); border:1px solid var(--line); border-radius:8px;">
-        <span style="font-size:12.5px;">${typeLabel[it.type] || it.type} — ${it.title}</span>
+        <span style="font-size:12.5px;">${typeLabel[it.type] || it.type} — ${it.title}${it.type === 'file' && it.exam_id ? ' <span style="color:var(--bone-dim);" title="مقفول لحد ما يسلّم الامتحان/الواجب المربوط">🔒</span>' : ''}</span>
         <button class="btn btn-danger btn-sm" onclick="deleteItem('${it.id}', '${sectionId}')">حذف</button>
       </div>
     `).join('');
@@ -1955,6 +1962,10 @@
         errEl.style.display = 'block';
         return;
       }
+
+      // لو الأدمن اختار قفل الملف ده لحد ما الطالب يسلّم امتحان/واجب معيّن
+      const gateExamId = document.getElementById(`item-file-gate-exam-${sectionId}`)?.value;
+      if(gateExamId) payload.exam_id = gateExamId;
     }
 
     if(type === 'exam'){

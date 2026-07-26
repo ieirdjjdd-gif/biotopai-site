@@ -205,17 +205,22 @@
   .file-row{
     display:flex; align-items:center; gap:12px; padding:12px 14px;
     background:var(--navy-deep); border:1px solid var(--line); border-radius:12px; margin-bottom:10px;
-    border-inline-start:3px solid var(--t-file); transition:.18s;
+    border-inline-start:3px solid var(--type-color, var(--t-file)); transition:.18s;
   }
   .file-row:hover{background:rgba(255,255,255,0.03);}
   .file-row:last-child{margin-bottom:0;}
   .file-ic{
-    width:36px; height:36px; border-radius:10px; background:color-mix(in srgb, var(--t-file) 18%, transparent);
+    width:36px; height:36px; border-radius:10px; background:color-mix(in srgb, var(--type-color, var(--t-file)) 18%, transparent);
+    color:var(--type-color, var(--t-file));
     display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
   }
   .file-row .fname{font-size:13.5px; color:var(--bone); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .file-row a{color:var(--t-file); font-weight:700; font-size:12.5px; flex-shrink:0;}
+  .file-row a{color:var(--type-color, var(--t-file)); font-weight:700; font-size:12.5px; flex-shrink:0;}
   .file-row a:hover{text-decoration:underline;}
+  .file-row.type-video{--type-color:var(--t-video);}
+  .file-row.type-file{--type-color:var(--t-file);}
+  .file-row.type-exam{--type-color:var(--t-exam);}
+  .file-row.type-hw{--type-color:var(--t-hw);}
   .file-empty{font-size:13px; color:var(--bone-dim);}
   .lecture-section-block{margin-bottom:20px;}
   .lecture-section-block:last-child{margin-bottom:0;}
@@ -224,6 +229,22 @@
     padding-inline-start:2px;
   }
   .file-row.is-playing{border-inline-start-color:var(--green-bright); background:rgba(95,168,43,0.08);}
+
+  /* أزرار مشاهدة/عرض/تحميل/ابدأ الامتحان — لون حسب نوع المحتوى بدل اللون الموحّد */
+  .btn.btn-type-video.btn-outline{border-color:var(--t-video); color:var(--t-video);}
+  .btn.btn-type-video.btn-outline:hover{background:var(--t-video); color:var(--navy-deep); border-color:var(--t-video);}
+  .btn.btn-type-video:not(.btn-outline){background:var(--t-video); color:var(--navy-deep);}
+  .btn.btn-type-file.btn-outline{border-color:var(--t-file); color:var(--t-file);}
+  .btn.btn-type-file.btn-outline:hover{background:var(--t-file); color:var(--navy-deep); border-color:var(--t-file);}
+  .btn.btn-type-file:not(.btn-outline){background:var(--t-file); color:var(--navy-deep);}
+  .btn.btn-type-exam.btn-outline{border-color:var(--t-exam); color:var(--t-exam);}
+  .btn.btn-type-exam.btn-outline:hover{background:var(--t-exam); color:var(--navy-deep); border-color:var(--t-exam);}
+  .btn.btn-type-exam:not(.btn-outline){background:var(--t-exam); color:var(--navy-deep);}
+  .btn.btn-type-hw.btn-outline{border-color:var(--t-hw); color:var(--t-hw);}
+  .btn.btn-type-hw.btn-outline:hover{background:var(--t-hw); color:var(--navy-deep); border-color:var(--t-hw);}
+  .btn.btn-type-hw:not(.btn-outline){background:var(--t-hw); color:var(--navy-deep);}
+  .btn.btn-type-video:not(.btn-outline):hover, .btn.btn-type-file:not(.btn-outline):hover,
+  .btn.btn-type-exam:not(.btn-outline):hover, .btn.btn-type-hw:not(.btn-outline):hover{filter:brightness(1.08);}
 
   /* ===== SIDEBAR: قائمة حصص الكورس ===== */
   .side-panel{
@@ -1023,7 +1044,7 @@
     // مش عارضاها. بنجيب بس البيانات اللي مالهاش حساسية هنا، وهنجيب
     // video_url لحصة واحدة بس بعد ما نتأكد إن المستخدم فعلاً مشترك.
     const { data: lessons, error: lessonsErr } = await supabaseClient
-      .from('lessons_public').select('id, course_id, title, order_index, is_free_preview').eq('course_id', COURSE_ID).order('order_index', { ascending: true });
+      .from('lessons_public').select('id, course_id, title, order_index').eq('course_id', COURSE_ID).order('order_index', { ascending: true });
 
     if(lessonsErr || !lessons || lessons.length === 0){
       denied('حصل خطأ <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M12 4 2 20h20Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".4" fill="currentColor" stroke="none"/></svg>', 'مقدرناش نجيب حصص الكورس ده دلوقتي.');
@@ -1070,7 +1091,7 @@
     const prevLessonForAccess = allLessons[currentIdx - 1];
     const prevCompleted = !prevLessonForAccess || !!progressByLesson[prevLessonForAccess.id] || unlockSequence;
 
-    const unlocked = (currentLesson.is_free_preview || isPaid) && prevCompleted;
+    const unlocked = isPaid && prevCompleted;
     if(!unlocked){
       if(isPaid && !prevCompleted){
         denied('لسه متفتحتش <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>', 'لازم تخلّص المحاضرة اللي قبل دي الأول عشان تفتح الحصة دي.');
@@ -1158,7 +1179,7 @@
     // التحكم فقط، ولسه مربوطش بمشغّل فعلي (زي ما كانت الحال قبل كده).
     currentLesson.video_url = currentItem?.video_url || null;
 
-    renderLesson();
+    await renderLesson();
     renderSidebar();
     renderLectureContent();
     await fetchProgressRow();
@@ -1166,11 +1187,41 @@
     showState('content');
   }
 
-  function renderLesson(){
+  // ============================================================
+  // رابط سيرفر الفيديو الجديد (R2 + Cloudflare Worker). بدل ما نشغّل
+  // currentLesson.video_url مباشرة (كان رابط ثابت)، بنطلب من السيرفر
+  // ده توكن تشغيل مؤقت (صالح لمدة محدودة) بعد ما يتأكد إن الطالب
+  // مستحق فعلاً. لو مش مستخدم السيرفر الجديد لسه، سيب المتغير ده فاضي
+  // وهيرجع يشتغل بالطريقة القديمة (video_url مباشر) زي ما كان.
+  // ============================================================
+  const VIDEO_SERVER_URL = ''; // مثال: 'https://api.biotopia.example.com'
+
+  async function getPlaybackUrl(item){
+    if(!VIDEO_SERVER_URL || !item?.id) return currentLesson.video_url;
+    try{
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      const accessToken = session?.access_token;
+      if(!accessToken) return currentLesson.video_url;
+      const res = await fetch(`${VIDEO_SERVER_URL}/playback/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify({ itemId: item.id }),
+      });
+      if(!res.ok) return null; // مش مستحق أو فيه مشكلة — نخلي مطعّم الفيديو يعرض رسالة فاضي
+      const data = await res.json();
+      return data.url;
+    }catch(err){
+      console.error('getPlaybackUrl error:', err);
+      return currentLesson.video_url; // fallback في حالة خطأ شبكة، منمنعش الفيديو بسبب السيرفر الجديد
+    }
+  }
+
+  async function renderLesson(){
     const idx = allLessons.findIndex(l => l.id === currentLesson.id);
     document.getElementById('lesson-num-tag').textContent = `الحصة ${idx + 1} من ${allLessons.length}`;
     document.getElementById('lesson-title').textContent = currentLesson.title;
-    mountPlayer(document.getElementById('player-wrap'), currentLesson.video_url, currentItem);
+    const playbackUrl = await getPlaybackUrl(currentItem);
+    mountPlayer(document.getElementById('player-wrap'), playbackUrl, currentItem);
     renderNavLinks();
   }
 
@@ -1188,7 +1239,7 @@
       prevLink.style.display = 'none';
     }
     if(nextLesson){
-      const nextPaidUnlocked = nextLesson.is_free_preview || isPaid;
+      const nextPaidUnlocked = isPaid;
       const nextUnlocked = nextPaidUnlocked && !!progressByLesson[currentLesson.id];
       if(nextUnlocked){
         nextLink.href = `dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${nextLesson.id}`;
@@ -1211,7 +1262,7 @@
   function renderSidebar(){
     const listEl = document.getElementById('side-lesson-list');
     listEl.innerHTML = allLessons.map((l, i) => {
-      const paidUnlocked = l.is_free_preview || isPaid;
+      const paidUnlocked = isPaid;
       const prevLesson = allLessons[i - 1];
       const prevCompleted = !prevLesson || !!progressByLesson[prevLesson.id] || unlockSequence;
       const unlocked = paidUnlocked && prevCompleted;
@@ -1389,12 +1440,12 @@
     if(it.type === 'video'){
       const isCurrent = currentItem && it.id === currentItem.id;
       return `
-        <div class="file-row ${isCurrent ? 'is-playing' : ''}">
+        <div class="file-row type-video ${isCurrent ? 'is-playing' : ''}">
           <div class="file-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg></div>
           <span class="fname">${it.title}${isCurrent ? ' <span style="color:var(--green-bright); font-size:11px;">(بيتشغّل دلوقتي)</span>' : ''}</span>
           ${isCurrent
             ? `<span class="btn btn-sm" style="opacity:.6; cursor:default;"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg></span> حالي</span>`
-            : `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${currentLesson.id}&item=${it.id}" class="btn btn-outline btn-sm">مشاهدة</a>`}
+            : `<a href="dr-rady-lesson-page.html?course=${COURSE_ID}&lesson=${currentLesson.id}&item=${it.id}" class="btn btn-outline btn-sm btn-type-video">مشاهدة</a>`}
         </div>`;
     }
     if(it.type === 'file'){
@@ -1406,8 +1457,9 @@
         if(!gateDone){
           const gateExam = examsById[it.exam_id];
           const gateMsg = gateExam?.kind === 'homework' ? 'هيتفتح بعد ما تخلّص الواجب' : 'هيتفتح بعد ما تخلّص الامتحان';
+          const gateTypeClass = gateExam?.kind === 'homework' ? 'type-hw' : 'type-exam';
           return `
-            <div class="file-row">
+            <div class="file-row ${gateTypeClass}" style="opacity:.65;">
               <div class="file-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
               <span class="fname" style="color:var(--bone-dim)">${it.title}</span>
               <span class="btn btn-sm" style="opacity:.55;">${gateMsg}</span>
@@ -1415,12 +1467,12 @@
         }
       }
       return `
-        <div class="file-row">
+        <div class="file-row type-file">
           <div class="file-ic">${fileIcon(it.file_name || '')}</div>
           <span class="fname">${it.title}</span>
           <div style="display:flex; gap:8px;">
-            <button type="button" class="btn btn-outline btn-sm" onclick="openItemFile('${it.id}')">عرض</button>
-            <button type="button" class="btn btn-sm" onclick="downloadItemFile('${it.id}', '${safeName}')">تحميل</button>
+            <button type="button" class="btn btn-outline btn-sm btn-type-file" onclick="openItemFile('${it.id}')">عرض</button>
+            <button type="button" class="btn btn-sm btn-type-file" onclick="downloadItemFile('${it.id}', '${safeName}')">تحميل</button>
           </div>
         </div>`;
     }
@@ -1444,10 +1496,10 @@
       actionLabel = 'إعادة المحاولة';
     }
     return `
-      <div class="file-row">
+      <div class="file-row ${isHw ? 'type-hw' : 'type-exam'}">
         <div class="file-ic">${isHw ? '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg>' : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>'}</div>
         <span class="fname">${it.title}${statusText}</span>
-        <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn btn-sm">${actionLabel}</a>
+        <a href="dr-rady-exam-attempt-page.html?exam=${exam.id}" class="btn btn-sm ${isHw ? 'btn-type-hw' : 'btn-type-exam'}">${actionLabel}</a>
       </div>`;
   }
 
