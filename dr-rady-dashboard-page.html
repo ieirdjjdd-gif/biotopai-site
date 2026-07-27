@@ -150,10 +150,69 @@
   /* ===== SECTION LAYOUT ===== */
   .grid-2{display:grid; grid-template-columns:1.55fr 1fr; gap:22px; align-items:start;}
   .panel{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; padding:24px;}
+  /* رسم بياني بسيط لتطوّر درجات آخر الاختبارات */
+  .score-chart-bars{display:flex; align-items:flex-end; gap:10px; height:118px; padding-top:16px;}
+  .score-bar-col{flex:1; display:flex; align-items:flex-end; height:100%;}
+  .score-bar{
+    width:100%; min-height:6px; background:linear-gradient(180deg, var(--green-bright), var(--green));
+    border-radius:8px 8px 0 0; position:relative; display:flex; align-items:flex-start; justify-content:center;
+    height:0%; transition:height 1s cubic-bezier(.16,1,.3,1);
+  }
+  .score-bar span{position:absolute; top:-20px; font-size:11px; font-weight:800; color:var(--bone-dim); white-space:nowrap;}
+  .score-chart-labels{display:flex; gap:10px; margin-top:10px;}
+  .score-chart-labels span{flex:1; text-align:center; font-size:10.5px; color:var(--bone-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
   .panel-head h2{font-size:17px; color:var(--bone);}
   .panel-head a{font-size:12.5px; font-weight:700; color:var(--green-bright);}
   .panel-head a:hover{text-decoration:underline;}
+
+  /* ===== بطاقة "استكمل من هنا" ===== */
+  .continue-card{
+    position:relative; display:flex; align-items:center; gap:16px; overflow:hidden;
+    background:linear-gradient(155deg, rgba(95,168,43,0.18) 0%, var(--navy-soft) 62%);
+    border:1px solid var(--line); border-radius:20px; padding:18px 22px; margin-bottom:22px;
+  }
+  .continue-card .ic{
+    width:46px; height:46px; border-radius:13px; background:rgba(143,209,85,0.2); color:var(--green-bright);
+    display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;
+  }
+  .continue-card .txt{flex:1; min-width:0;}
+  .continue-card .eyebrow{font-size:11px; color:var(--green-bright); font-weight:800; margin-bottom:3px;}
+  .continue-card .t{font-weight:800; font-size:15px; font-family:'Tajawal'; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .continue-card .sub{font-size:12px; color:var(--bone-dim); margin-top:3px;}
+  .continue-card .btn{flex-shrink:0;}
+
+  /* ===== كالندر انتظام المذاكرة ===== */
+  .streak-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .streak-fire{font-family:'Tajawal'; font-weight:900; font-size:13.5px; color:var(--green-bright); display:flex; align-items:center; gap:5px;}
+  .heatmap{display:grid; grid-template-columns:repeat(7, 1fr); gap:5px;}
+  .hcell{aspect-ratio:1; border-radius:5px; background:var(--navy-deep);}
+  .hcell.l1{background:rgba(95,168,43,0.3);}
+  .hcell.l2{background:rgba(95,168,43,0.6);}
+  .hcell.l3{background:var(--green-bright);}
+
+  /* ===== رسم بياني لنشاطك (Sparkline) ===== */
+  .spark-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .spark-val{font-family:'Tajawal'; font-weight:900; font-size:15px; color:var(--green-bright);}
+  .spark{width:100%; height:56px; display:block;}
+  .spark path.spark-line{fill:none; stroke:var(--green-bright); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:300; stroke-dashoffset:300; transition:stroke-dashoffset 1.1s cubic-bezier(.16,1,.3,1);}
+  .spark path.spark-area{fill:url(#dashSparkGrad); opacity:0; transition:opacity .6s ease .5s;}
+  .spark.play path.spark-area{opacity:1;}
+
+  /* ===== تذكير لطيف عند الغياب ===== */
+  .reminder-card{
+    display:flex; align-items:center; gap:14px; overflow:hidden;
+    background:linear-gradient(155deg, rgba(232,196,104,0.16) 0%, var(--navy-soft) 62%);
+    border:1px solid var(--line); border-radius:20px; padding:16px 20px; margin-bottom:22px;
+  }
+  .reminder-card .ic{
+    width:44px; height:44px; border-radius:12px; background:rgba(232,196,104,0.2); color:var(--gold);
+    display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+  }
+  .reminder-card .txt{flex:1; min-width:0;}
+  .reminder-card b{display:block; font-size:14.5px; font-family:'Tajawal';}
+  .reminder-card span{font-size:12px; color:var(--bone-dim); margin-top:2px; display:block;}
+  .reminder-card .btn{flex-shrink:0;}
 
   /* continue-learning course rows */
   .course-row{
@@ -161,19 +220,23 @@
     border-bottom:1px solid var(--line);
   }
   .course-row:last-child{border-bottom:none; padding-bottom:0;}
+  .course-ring{position:relative; width:64px; height:64px; flex:0 0 64px;}
+  .course-ring svg.ring-svg{position:absolute; inset:0; transform:rotate(-90deg);}
+  .course-ring .ring-bg{fill:none; stroke:var(--navy-deep); stroke-width:5;}
+  .course-ring .ring-fg{
+    fill:none; stroke:var(--green-bright); stroke-width:5; stroke-linecap:round;
+    stroke-dasharray:163.36; stroke-dashoffset:163.36;
+    transition:stroke-dashoffset 1.1s cubic-bezier(.16,1,.3,1);
+  }
   .course-thumb{
-    width:56px; height:56px; border-radius:14px; flex:0 0 56px;
+    position:absolute; inset:6px; border-radius:50%;
     background:linear-gradient(150deg, var(--navy-base), var(--navy-deep));
-    display:flex; align-items:center; justify-content:center; font-size:22px;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
     border:1px solid var(--line); overflow:hidden;
   }
-  .course-thumb img{width:100%; height:100%; object-fit:cover;}
+  .course-thumb img{width:100%; height:100%; object-fit:cover; border-radius:50%;}
   .course-row-info{flex:1; min-width:0;}
   .course-row-info b{display:block; font-size:14.5px; color:var(--bone); margin-bottom:6px;}
-  .progress-track{
-    height:7px; background:var(--navy-deep); border-radius:100px; overflow:hidden; margin-bottom:6px;
-  }
-  .progress-fill{height:100%; background:var(--green); border-radius:100px;}
   .course-row-info .meta{font-size:11.5px; color:var(--bone-dim);}
   .course-row .btn{padding:8px 16px; font-size:12.5px; flex-shrink:0;}
 
@@ -372,6 +435,9 @@
       </div>
     </div>
 
+    <div id="reminder-card-wrap"></div>
+    <div id="continue-card-wrap"></div>
+
     <!-- ===== STATS (أرقام حقيقية من enrollments/lessons) ===== -->
     <div class="stats-grid reveal-stagger">
       <div class="stat-card">
@@ -417,19 +483,20 @@
           </div>
 
           <div id="my-courses-list">
-            <div class="course-row"><div class="course-row-info"><b>جارٍ تحميل كورساتك...</b></div></div>
+            <div class="sk-row"><div class="sk-box sk-thumb"></div><div class="sk-lines"><div class="sk-box sk-line" style="width:65%;"></div><div class="sk-box sk-line" style="width:35%;"></div></div></div>
+            <div class="sk-row"><div class="sk-box sk-thumb"></div><div class="sk-lines"><div class="sk-box sk-line" style="width:50%;"></div><div class="sk-box sk-line" style="width:30%;"></div></div></div>
           </div>
         </div>
 
-        <!-- نظام المتابعة والتقييم: لسه بيتبني -->
+        <!-- تطوّر درجات آخر الاختبارات -->
         <div class="panel reveal" style="transition-delay:.08s;">
           <div class="panel-head">
-            <h2>الواجبات والدرجات</h2>
+            <h2>تطوّر درجاتك في الاختبارات</h2>
             <a href="dr-rady-assignments-page.html">شوف كل حاجة</a>
           </div>
-          <p style="font-size:13px; color:var(--bone-dim);">
-            تابع واجباتك المستنياك وشوف درجاتك في الاختبارات اللي خلّصتها من صفحة الواجبات.
-          </p>
+          <div id="score-chart-wrap">
+            <p style="font-size:13px; color:var(--bone-dim);">بنجهّز رسمك البياني...</p>
+          </div>
         </div>
 
       </div>
@@ -443,8 +510,33 @@
             <h2>محتاج منك تكمل</h2>
           </div>
           <div class="todo-list" id="pending-list">
-            <div class="todo-item"><div><span>جارٍ التحميل...</span></div></div>
+            <div class="sk-row"><div class="sk-box sk-thumb" style="border-radius:8px; width:32px; height:32px;"></div><div class="sk-lines"><div class="sk-box sk-line" style="width:55%;"></div></div></div>
           </div>
+        </div>
+
+        <!-- انتظام المذاكرة -->
+        <div class="panel reveal" style="transition-delay:.09s;">
+          <div class="streak-top">
+            <span style="font-size:12.5px; color:var(--bone-dim);">انتظامك في المذاكرة</span>
+            <span class="streak-fire" id="streak-fire">🔥 —</span>
+          </div>
+          <div class="heatmap" id="streak-heatmap"></div>
+        </div>
+
+        <!-- رسم بياني لنشاطك -->
+        <div class="panel reveal" style="transition-delay:.11s;">
+          <div class="spark-top">
+            <span style="font-size:12.5px; color:var(--bone-dim);">نشاطك آخر أسبوعين</span>
+            <span class="spark-val" id="spark-val">— حصة</span>
+          </div>
+          <svg class="spark" id="spark-svg" viewBox="0 0 300 56" preserveAspectRatio="none">
+            <defs><linearGradient id="dashSparkGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#8fd155" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#8fd155" stop-opacity="0"/>
+            </linearGradient></defs>
+            <path class="spark-area" id="spark-area" d=""/>
+            <path class="spark-line" id="spark-line" d=""/>
+          </svg>
         </div>
 
         <!-- الإنجازات -->
@@ -527,9 +619,61 @@
   })();
 
   // ===== حماية الصفحة: لازم تسجيل دخول =====
+  // ===== رسم بياني بسيط لآخر نتائج اختبارات الطالب (مش الواجبات) =====
+  async function loadScoreChart(userId){
+    const wrap = document.getElementById('score-chart-wrap');
+    if(!wrap) return;
+    try{
+      const { data: attempts, error } = await supabaseClient
+        .from('exam_attempts')
+        .select('percentage, completed_at, exams(title, kind)')
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null)
+        .order('completed_at', { ascending: false })
+        .limit(25);
+      if(error) throw error;
+
+      const examsOnly = (attempts || [])
+        .filter(a => a.exams && a.exams.kind === 'exam' && a.percentage != null)
+        .slice(0, 6)
+        .reverse(); // من الأقدم للأحدث، عشان الرسم يتقرأ من اليمين للشمال زي بقية الموقع
+
+      if(examsOnly.length === 0){
+        wrap.innerHTML = `<p style="font-size:13px; color:var(--bone-dim);">لسه مفيش نتائج اختبارات — أول ما تخلّص اختبار هيظهر تقدّمك هنا.</p>`;
+        return;
+      }
+
+      const shortTitle = t => {
+        t = t || 'اختبار';
+        return t.length > 11 ? t.slice(0, 11) + '…' : t;
+      };
+
+      wrap.innerHTML = `
+        <div class="score-chart-bars">
+          ${examsOnly.map(a => `
+            <div class="score-bar-col">
+              <div class="score-bar" data-target="${Math.max(4, Math.round(a.percentage))}"><span>${Math.round(a.percentage)}%</span></div>
+            </div>`).join('')}
+        </div>
+        <div class="score-chart-labels">
+          ${examsOnly.map(a => `<span title="${shortTitle(a.exams.title)}">${shortTitle(a.exams.title)}</span>`).join('')}
+        </div>`;
+
+      requestAnimationFrame(() => {
+        wrap.querySelectorAll('.score-bar').forEach(el => {
+          el.style.height = (Number(el.dataset.target) || 0) + '%';
+        });
+      });
+    }catch(err){
+      console.error('loadScoreChart error:', err);
+      wrap.innerHTML = `<p style="font-size:13px; color:var(--bone-dim);">تعذّر تحميل الرسم البياني دلوقتي.</p>`;
+    }
+  }
+
   (async function initDashboard(){
     const user = await requireAuth();
     if(!user) return; // requireAuth بيحوّل لصفحة الدخول لو مفيش مستخدم
+    loadScoreChart(user.id); // مستقل عن باقي بيانات الداشبورد، بنسيبه يحمّل لوحده
 
     const { data: profile } = await supabaseClient
       .from('profiles')
@@ -571,6 +715,11 @@
           <div class="course-row-info"><b>لسه مشتركتش في أي كورس</b></div>
           <a href="dr-rady-catalog-page.html" class="btn">تصفّح الكورسات</a>
         </div>`;
+      document.getElementById('continue-card-wrap').innerHTML = '';
+      document.getElementById('reminder-card-wrap').innerHTML = '';
+      document.getElementById('spark-val').textContent = '— حصة';
+      document.getElementById('streak-heatmap').innerHTML = Array.from({ length: 35 }).map(() => '<div class="hcell"></div>').join('');
+      document.getElementById('streak-fire').textContent = '— لسه ما بدأتش';
       document.getElementById('stat-paid-courses').textContent = '0';
       document.getElementById('stat-total-lessons').textContent = '0';
       document.getElementById('stat-pending-courses').textContent = '0';
@@ -581,6 +730,140 @@
 
     const paid = enrollments.filter(e => e.status === 'paid' && e.courses);
     const pending = enrollments.filter(e => e.status === 'pending' && e.courses);
+
+    // ===== حساب نسبة تقدّم حقيقية لكل كورس (عدد الحصص المخلّصة / إجمالي الحصص) =====
+    let progressByCourse = {};
+    let lessonsByCourse = {};
+    let completedLessonIds = new Set();
+    let allProgressRows = [];
+    if(paid.length > 0){
+      const paidCourseIds = paid.map(e => e.courses.id);
+      const { data: courseLessons } = await supabaseClient
+        .from('lessons').select('id, course_id, title, order_index').in('course_id', paidCourseIds);
+      const lessonToCourse = {};
+      (courseLessons || []).forEach(l => {
+        lessonToCourse[l.id] = l.course_id;
+        (lessonsByCourse[l.course_id] ||= []).push(l);
+      });
+      Object.values(lessonsByCourse).forEach(list => list.sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
+      const lessonIds = Object.keys(lessonToCourse);
+      if(lessonIds.length > 0){
+        const { data: progressRows } = await supabaseClient
+          .from('lesson_progress').select('lesson_id, completed, completed_at')
+          .eq('user_id', user.id).in('lesson_id', lessonIds);
+        allProgressRows = progressRows || [];
+        allProgressRows.forEach(p => {
+          if(!p.completed) return;
+          completedLessonIds.add(p.lesson_id);
+          const cid = lessonToCourse[p.lesson_id];
+          if(cid) progressByCourse[cid] = (progressByCourse[cid] || 0) + 1;
+        });
+      }
+    }
+
+    // ===== بطاقة "استكمل من هنا" — أول حصة لسه ما خلصتش في أول كورس فيه تقدّم =====
+    const continueWrap = document.getElementById('continue-card-wrap');
+    let continueTarget = null;
+    for(const e of paid){
+      const cid = e.courses.id;
+      const total = e.courses.lessons_count || 0;
+      const done = progressByCourse[cid] || 0;
+      if(total > 0 && done < total){
+        const nextLesson = (lessonsByCourse[cid] || []).find(l => !completedLessonIds.has(l.id));
+        if(nextLesson){
+          continueTarget = { course: e.courses, lesson: nextLesson, done, total };
+          break;
+        }
+      }
+    }
+    if(continueTarget){
+      continueWrap.innerHTML = `
+        <div class="continue-card pop-in">
+          <div class="ic">▶</div>
+          <div class="txt">
+            <div class="eyebrow">كمّل من هنا</div>
+            <div class="t">${continueTarget.course.title} — ${continueTarget.lesson.title}</div>
+            <div class="sub">خلّصت ${continueTarget.done} من ${continueTarget.total} حصة في الكورس ده</div>
+          </div>
+          <a class="btn" href="dr-rady-lesson-page.html?course=${continueTarget.course.id}&lesson=${continueTarget.lesson.id}">كمّل</a>
+        </div>`;
+    } else {
+      continueWrap.innerHTML = '';
+    }
+
+    // ===== كالندر انتظام المذاكرة — آخر 35 يوم من lesson_progress =====
+    const heatmapEl = document.getElementById('streak-heatmap');
+    const fireEl = document.getElementById('streak-fire');
+    const days = [];
+    const now = new Date();
+    for(let i = 34; i >= 0; i--){
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      days.push({ key: d.toISOString().slice(0, 10), count: 0 });
+    }
+    const dayIndex = {};
+    days.forEach((d, idx) => { dayIndex[d.key] = idx; });
+    allProgressRows.forEach(p => {
+      if(!p.completed || !p.completed_at) return;
+      const key = new Date(p.completed_at).toISOString().slice(0, 10);
+      if(key in dayIndex) days[dayIndex[key]].count++;
+    });
+    let cursor = days.length - 1;
+    if(days[cursor].count === 0) cursor--;
+    let streakDays = 0;
+    while(cursor >= 0 && days[cursor].count > 0){ streakDays++; cursor--; }
+    heatmapEl.innerHTML = days.map(d => {
+      const lvl = d.count >= 3 ? 'l3' : d.count === 2 ? 'l2' : d.count === 1 ? 'l1' : '';
+      return `<div class="hcell ${lvl}"></div>`;
+    }).join('');
+    fireEl.textContent = streakDays > 0 ? `🔥 ${streakDays} يوم متتالي` : '— لسه ما بدأتش';
+
+    // ===== رسم بياني لنشاطك — آخر 14 يوم من نفس بيانات الـ 35 يوم =====
+    const last14 = days.slice(-14);
+    const totalLast14 = last14.reduce((sum, d) => sum + d.count, 0);
+    document.getElementById('spark-val').textContent = `${totalLast14} حصة`;
+    const maxCount = Math.max(1, ...last14.map(d => d.count));
+    const w = 300, h = 56, padTop = 6, padBottom = 6;
+    const stepX = w / (last14.length - 1);
+    const points = last14.map((d, i) => {
+      const x = Math.round(i * stepX);
+      const y = Math.round(h - padBottom - (d.count / maxCount) * (h - padTop - padBottom));
+      return [x, y];
+    });
+    const linePath = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(' ');
+    const areaPath = `${linePath} L${w},${h} L0,${h} Z`;
+    const sparkSvg = document.getElementById('spark-svg');
+    const sparkLine = document.getElementById('spark-line');
+    document.getElementById('spark-area').setAttribute('d', areaPath);
+    sparkLine.setAttribute('d', linePath);
+    const sparkLen = Math.ceil(sparkLine.getTotalLength());
+    sparkLine.style.strokeDasharray = sparkLen;
+    sparkLine.style.strokeDashoffset = sparkLen;
+    sparkSvg.classList.remove('play');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      sparkLine.style.strokeDashoffset = 0;
+      sparkSvg.classList.add('play');
+    }));
+
+    // ===== تذكير لطيف عند الغياب — لو مفيش نشاط من 3 أيام أو أكتر =====
+    const reminderWrap = document.getElementById('reminder-card-wrap');
+    const lastActiveIdx = (() => {
+      for(let i = days.length - 1; i >= 0; i--){ if(days[i].count > 0) return i; }
+      return -1;
+    })();
+    const daysSinceActive = lastActiveIdx === -1 ? null : (days.length - 1 - lastActiveIdx);
+    if(paid.length > 0 && daysSinceActive !== null && daysSinceActive >= 3){
+      reminderWrap.innerHTML = `
+        <div class="reminder-card pop-in">
+          <div class="ic">👋</div>
+          <div class="txt">
+            <b>وحشتني يا عزيزي</b>
+            <span>مذاكرتش من ${daysSinceActive} أيام — يلا نكمّل من هنا</span>
+          </div>
+        </div>`;
+    } else {
+      reminderWrap.innerHTML = '';
+    }
 
     document.getElementById('stat-paid-courses').textContent = paid.length;
     document.getElementById('stat-total-lessons').textContent =
@@ -595,16 +878,45 @@
           <div class="course-row-info"><b>مفيش كورسات مفعّلة لسه</b><span class="meta">هتظهر هنا أول ما يتأكد الدفع</span></div>
         </div>`;
     } else {
-      myCoursesEl.innerHTML = paid.map(e => `
+      myCoursesEl.innerHTML = paid.map(e => {
+        const total = e.courses.lessons_count || 0;
+        const done = progressByCourse[e.courses.id] || 0;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        return `
         <div class="course-row">
-          <div class="course-thumb">${e.courses.image_url ? `<img src="${e.courses.image_url}" alt="">` : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M2 9 12 4l10 5-10 5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg>'}</div>
+          <div class="course-ring">
+            <svg class="ring-svg" viewBox="0 0 60 60">
+              <circle class="ring-bg" cx="30" cy="30" r="26"/>
+              <circle class="ring-fg" cx="30" cy="30" r="26" data-target="${pct}"/>
+            </svg>
+            <div class="course-thumb">${e.courses.image_url ? `<img src="${e.courses.image_url}" alt="">` : '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M2 9 12 4l10 5-10 5Z"/><path d="M6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg>'}</div>
+          </div>
           <div class="course-row-info">
             <b>${e.courses.title}</b>
-            <div class="meta">${e.courses.grade || ''} · ${e.courses.lessons_count || 0} حصة</div>
+            <div class="meta"><span class="progress-pct-num" data-target="${pct}">0</span>% مخلّص · ${done}/${total} حصة</div>
           </div>
           <a href="dr-rady-course-page.html?id=${e.courses.id}" class="btn">فتح الكورس</a>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
+      // تحريك حلقة التقدّم والرقم لكل كورس بعد إضافته للصفحة
+      requestAnimationFrame(() => {
+        myCoursesEl.querySelectorAll('.ring-fg').forEach(el => {
+          const target = Number(el.dataset.target) || 0;
+          const circumference = 163.36;
+          el.style.strokeDashoffset = circumference - (circumference * target / 100);
+        });
+        myCoursesEl.querySelectorAll('.progress-pct-num').forEach(el => {
+          const target = Number(el.dataset.target) || 0;
+          const start = performance.now();
+          const duration = 900;
+          function tick(now){
+            const p = Math.min(1, (now - start) / duration);
+            el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+            if(p < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        });
+      });
     }
     animateStagger(myCoursesEl);
 

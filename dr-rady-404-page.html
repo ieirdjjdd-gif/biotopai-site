@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الصفحة مش موجودة | BioTopia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/ui-effects.css">
+<style>
+  :root{
+    --navy-deep:#101c46;
+    --navy-base:#1c2f72;
+    --navy-soft:#26398c;
+    --green:#5fa82b;
+    --green-bright:#8fd155;
+    --bone:#f3ecd9;
+    --bone-dim:#e2d8bd;
+    --ink:#0c1230;
+    --line: rgba(243,236,217,0.16);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--navy-base); color:var(--bone);
+    font-family:'Cairo', sans-serif; line-height:1.7;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  h1,h2{font-family:'Tajawal', sans-serif; font-weight:900;}
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer;}
+
+  header{padding:18px 28px; border-bottom:1px solid var(--line);}
+  .header-row{display:flex; align-items:center; justify-content:space-between; max-width:1180px; margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .logo-mark{width:36px; height:36px;}
+  .brand-text{font-family:'Tajawal'; font-weight:800; font-size:20px; color:var(--green-bright);}
+  .brand-text span{color:var(--bone);}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 26px; border-radius:100px; font-weight:700; font-size:14px;
+    background:var(--green); color:var(--navy-deep); border:none; transition:.2s;
+  }
+  .btn:hover{background:var(--green-bright); transform:translateY(-1px);}
+  .btn-outline{background:transparent; border:1.5px solid var(--line); color:var(--bone);}
+  .btn-outline:hover{border-color:var(--green-bright); color:var(--green-bright);}
+
+  main{flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px; position:relative; overflow:hidden;}
+  main::before{
+    content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:480px; height:480px; border-radius:50%;
+    background:radial-gradient(circle, rgba(95,168,43,0.14), transparent 65%);
+    pointer-events:none;
+  }
+  .content{position:relative; text-align:center; max-width:440px;}
+  .num{font-family:'Tajawal'; font-weight:900; font-size:88px; color:var(--green-bright); line-height:1; margin-bottom:6px;}
+  .content h1{font-size:22px; margin-bottom:10px;}
+  .content p{font-size:14.5px; color:var(--bone-dim); margin-bottom:30px;}
+  .actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+
+  footer{padding:20px; text-align:center; border-top:1px solid var(--line);}
+  footer p{font-size:12.5px; color:var(--bone-dim);}
+
+  @media (max-width:480px){
+    .num{font-size:64px;}
+  }
+</style>
+<script src="js/ui-effects.js" defer></script>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <a href="index.html" class="brand">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="12" fill="#5fa82b"/>
+        <path d="M12 40 L18 27 L24 33 L30 27 L36 40 Z" fill="#101c46"/>
+        <path d="M18 27 L24 33 L21 40 Z" fill="#f3ecd9"/>
+        <path d="M30 27 L24 33 L27 40 Z" fill="#f3ecd9"/>
+        <rect x="22.5" y="33" width="3" height="9" fill="#5fa82b" stroke="#101c46" stroke-width="0.6"/>
+        <circle cx="24" cy="18" r="10" fill="#f3ecd9" stroke="#101c46" stroke-width="1.4"/>
+        <ellipse cx="20" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <ellipse cx="28" cy="17" rx="2.3" ry="2.8" fill="#101c46"/>
+        <path d="M24 20 l-1.4 2.4 h2.8 z" fill="#101c46"/>
+        <path d="M18.5 24.5c2 1.6 8 1.6 11 0" stroke="#101c46" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">Bio<span style="color:#f3ecd9">Topia</span></div>
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="content">
+    <div class="num">404</div>
+    <h1>الصفحة دي مش موجودة</h1>
+    <p>ممكن اللينك يكون قديم أو اتغيّر مكانه، جرّب ترجع للرئيسية أو تدوّر على اللي محتاجه من صفحة الكورسات.</p>
+    <div class="actions">
+      <a href="index.html" class="btn">رجوع للرئيسية</a>
+      <a href="dr-rady-catalog-page.html" class="btn btn-outline">كل الكورسات</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 BioTopia — كل الحقوق محفوظة لـ د. راضي</p>
+</footer>
+
+</body>
+</html>

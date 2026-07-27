@@ -144,6 +144,57 @@
   }
   .cp-seek:hover .cp-seek-handle{opacity:1;}
 
+  /* طبقة علامات الفيديو (الهيكل العظمي الصغير اللي بيقعد فوق الشريط) */
+  .cp-bookmarks-layer{position:absolute; inset:0; pointer-events:none;}
+  .cp-bookmark-mark{
+    position:absolute; top:-15px; transform:translateX(50%);
+    width:17px; height:17px; padding:0; background:none; border:none;
+    cursor:pointer; pointer-events:auto; z-index:6; filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));
+    transition:transform .15s;
+  }
+  .cp-bookmark-mark:hover{transform:translateX(50%) translateY(-2px) scale(1.15);}
+  .cp-bookmark-mark svg{width:100%; height:100%; display:block;}
+
+  /* نموذج إضافة علامة جديدة (منسدل من زرار العلامة في شريط التحكم) */
+  .cp-bookmark-form{width:210px; gap:8px; padding:10px;}
+  .cp-bookmark-form input{
+    background:var(--navy-deep); border:1px solid rgba(243,236,217,0.25); border-radius:8px;
+    color:var(--bone); font-size:12px; padding:8px 10px; font-family:inherit; outline:none;
+  }
+  .cp-bookmark-form button{
+    background:var(--green-bright); color:var(--navy-deep); border:none; border-radius:8px;
+    padding:8px 10px; font-size:12px; font-weight:800; cursor:pointer; text-align:center;
+  }
+  .cp-bookmark-form button:hover{filter:brightness(1.06);}
+
+  /* قائمة علامات الفيديو المحفوظة تحت المشغّل */
+  .bm-row{
+    display:flex; align-items:center; gap:12px; padding:10px 12px;
+    background:var(--navy-deep); border:1px solid var(--line); border-radius:12px; margin-bottom:8px;
+  }
+  .bm-row:last-child{margin-bottom:0;}
+  .bm-ic{width:26px; height:26px; flex-shrink:0;}
+  .bm-time{
+    font-family:'Tajawal'; font-weight:800; font-size:12.5px; color:var(--green-bright);
+    background:rgba(95,168,43,0.14); border-radius:8px; padding:4px 9px; flex-shrink:0; white-space:nowrap;
+  }
+  .bm-note{flex:1; font-size:12.5px; color:var(--bone-dim); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .bm-del{
+    background:transparent; border:none; color:var(--bone-dim); cursor:pointer; flex-shrink:0;
+    width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  }
+  .bm-del:hover{background:rgba(180,82,83,0.16); color:var(--rose);}
+  .bm-empty{font-size:12.5px; color:var(--bone-dim);}
+
+  /* صندوق ملاحظات الطالب الشخصية على الحصة */
+  #lesson-notes-input{
+    width:100%; min-height:96px; resize:vertical; font-family:inherit; font-size:13px; line-height:1.8;
+    background:var(--navy-deep); border:1px dashed rgba(95,168,43,0.4); border-radius:12px;
+    padding:14px 16px; color:var(--bone); outline:none;
+  }
+  #lesson-notes-input::placeholder{color:var(--bone-dim);}
+  .notes-status{font-size:11.5px; color:var(--bone-dim); margin-top:8px; display:flex; align-items:center; gap:6px;}
+
   .cp-row{display:flex; align-items:center; gap:4px;}
   .cp-btn{
     background:transparent; border:none; color:var(--bone); width:34px; height:34px; border-radius:8px;
@@ -214,6 +265,9 @@
     color:var(--type-color, var(--t-file));
     display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
   }
+  .file-ic.video-thumb{position:relative; overflow:hidden;}
+  .file-ic .vprogress-track{position:absolute; right:0; left:0; bottom:0; height:3px; background:rgba(0,0,0,0.35);}
+  .file-ic .vprogress-fill{height:100%; background:var(--t-video);}
   .file-row .fname{font-size:13.5px; color:var(--bone); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .file-row a{color:var(--type-color, var(--t-file)); font-weight:700; font-size:12.5px; flex-shrink:0;}
   .file-row a:hover{text-decoration:underline;}
@@ -373,6 +427,19 @@
         <a href="#" id="next-lesson-link" class="btn btn-outline btn-sm">الحصة الجاية ←</a>
       </div>
 
+      <!-- ===== علاماتي على الفيديو ===== -->
+      <div class="panel" id="bookmarks-panel" style="display:none;">
+        <h2><span class="ic ic-inline">⭐</span> علاماتي على الفيديو</h2>
+        <div id="bookmarks-list"><p class="bm-empty">لسه مفيش علامات — ضيف علامة من زرار <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.2em"><path d="M6 3h12v18l-6-4.5L6 21Z"/></svg> اللي في شريط تحكم الفيديو.</p></div>
+      </div>
+
+      <!-- ===== ملاحظاتي على الحصة ===== -->
+      <div class="panel">
+        <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h9l3 3v15H6Z"/><path d="M15 3v3h3"/><path d="M9 12h6M9 16h6M9 8h3"/></svg></span> ملاحظاتي على الحصة</h2>
+        <textarea id="lesson-notes-input" placeholder="اكتب ملاحظاتك وقت المذاكرة هنا، وهتلاقيها محفوظة كل مرة ترجع فيها للحصة دي..."></textarea>
+        <div class="notes-status" id="notes-status">💾 بتتحفظ تلقائيًا</div>
+      </div>
+
       <!-- ===== باقي محتوى المحاضرة (فيديوهات / ملفات / امتحانات) ===== -->
       <div class="panel">
         <h2 id="content-panel-title"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 12.5V7a4 4 0 0 1 8 0v9a2.5 2.5 0 0 1-5 0V8.5"/></svg></span> محتوى المحاضرة</h2>
@@ -413,6 +480,21 @@
   let attemptsByExam = {};
   let bestAttemptPctByExam = {}; // exam_id -> أعلى نسبة حققها الطالب في أي محاولة (لتحديد النجاح)
   let videoProgressByItem = {}; // item_id -> { max_percent, completed }
+  let videoBookmarks = []; // علامات الفيديو الخاصة بالعنصر (item) اللي بيتشغّل دلوقتي
+  let rebuildBookmarkMarkers = () => {}; // بتتحدد جوه wireControls كل ما مشغّل جديد يتركّب
+  let notesSaveTimer = null;
+
+  // أيقونة الهيكل العظمي الصغير (نفس شخصية الموقع) بتستخدم كعلامة على شريط الفيديو
+  const SKELETON_MARK_SVG = `
+    <svg viewBox="0 0 24 26" fill="none">
+      <path d="M6 25c0-4.2 1.6-6.2 1.6-6.2h8.8s1.6 2 1.6 6.2Z" fill="#1c2f72" stroke="#f3ecd9" stroke-width=".6"/>
+      <path d="M11.3 15.5 12 17.3l.7-1.8-.2 6.4h-1Z" fill="#5fa82b"/>
+      <circle cx="12" cy="9.2" r="6.4" fill="#f3ecd9" stroke="#101c46" stroke-width="1.1"/>
+      <ellipse cx="9.6" cy="8.7" rx="1.35" ry="1.6" fill="#101c46"/>
+      <ellipse cx="14.4" cy="8.7" rx="1.35" ry="1.6" fill="#101c46"/>
+      <path d="M12 10.2 10.8 12.2h2.4Z" fill="#101c46"/>
+      <path d="M9.6 13.6c1.6 1.2 3.2 1.2 4.8 0" stroke="#101c46" stroke-width=".9" stroke-linecap="round" fill="none"/>
+    </svg>`;
 
 
   function showState(name){
@@ -486,6 +568,7 @@
             <div class="cp-seek-fill" data-role="fill"></div>
           </div>
           <div class="cp-seek-handle" data-role="handle"></div>
+          <div class="cp-bookmarks-layer" data-role="markers"></div>
         </div>
         <div class="cp-row">
           <button type="button" class="cp-btn" data-role="playbtn" title="تشغيل/إيقاف"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg></button>
@@ -502,6 +585,13 @@
           <div class="cp-menu-wrap" data-role="qualitywrap" style="display:none;">
             <button type="button" class="cp-btn" data-role="qualitybtn" title="جودة الفيديو" style="width:auto; padding:0 8px; font-size:12.5px;">Auto</button>
             <div class="cp-menu" data-role="qualitymenu"></div>
+          </div>
+          <div class="cp-menu-wrap" data-role="bookmarkwrap">
+            <button type="button" class="cp-btn" data-role="bookmarkbtn" title="حط علامة على اللحظة دي"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M6 3h12v18l-6-4.5L6 21Z"/></svg></button>
+            <div class="cp-menu cp-bookmark-form" data-role="bookmarkform">
+              <input type="text" data-role="bookmarknote" placeholder="وصف مختصر (اختياري)" maxlength="80">
+              <button type="button" data-role="bookmarksave">احفظ العلامة هنا</button>
+            </div>
           </div>
           <button type="button" class="cp-btn" data-role="fsbtn" title="ملء الشاشة"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
         </div>
@@ -704,6 +794,8 @@
     const speedBtn = q('speedbtn'), speedMenu = q('speedmenu');
     const qualityWrap = q('qualitywrap'), qualityBtn = q('qualitybtn'), qualityMenu = q('qualitymenu');
     const fsBtn = q('fsbtn');
+    const bookmarkBtn = q('bookmarkbtn'), bookmarkForm = q('bookmarkform'), bookmarkNoteInput = q('bookmarknote'), bookmarkSaveBtn = q('bookmarksave');
+    const markersLayer = q('markers');
     const container = cp.parentElement;
 
     let seeking = false;
@@ -729,6 +821,70 @@
       const buf = adapter.getBuffered ? adapter.getBuffered() : 0;
       bufferedEl.style.width = (buf*100) + '%';
       timeEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+      positionBookmarkMarks();
+    }
+
+    // ===== علامات الفيديو (شكل هيكل عظمي صغير قاعد فوق الشريط) =====
+    let bookmarkMarkEls = []; // { el, time }
+    function buildBookmarkMarks(){
+      markersLayer.innerHTML = '';
+      bookmarkMarkEls = videoBookmarks.map(b => {
+        const m = document.createElement('button');
+        m.type = 'button';
+        m.className = 'cp-bookmark-mark';
+        m.title = b.note ? b.note : `علامة عند ${fmtTime(b.time_seconds)}`;
+        m.innerHTML = SKELETON_MARK_SVG;
+        m.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); adapter.seekTo(b.time_seconds); });
+        markersLayer.appendChild(m);
+        return { el: m, time: b.time_seconds };
+      });
+      positionBookmarkMarks();
+    }
+    function positionBookmarkMarks(){
+      const dur = adapter.getDuration();
+      if(!dur) return;
+      bookmarkMarkEls.forEach(({ el, time }) => {
+        el.style.left = Math.min(100, Math.max(0, (time / dur) * 100)) + '%';
+      });
+    }
+    rebuildBookmarkMarkers = buildBookmarkMarks;
+    buildBookmarkMarks();
+
+    if(bookmarkBtn && bookmarkForm){
+      bookmarkBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = bookmarkForm.classList.contains('open');
+        closeAllMenus();
+        if(!open){ bookmarkForm.classList.add('open'); bookmarkNoteInput.value = ''; bookmarkNoteInput.focus(); }
+      });
+      bookmarkForm.addEventListener('click', (e) => e.stopPropagation());
+      bookmarkNoteInput.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ e.preventDefault(); bookmarkSaveBtn.click(); } });
+      bookmarkSaveBtn.addEventListener('click', async () => {
+        if(!currentUser || !currentItem){ return; }
+        const timeSeconds = adapter.getCurrentTime();
+        const note = bookmarkNoteInput.value.trim();
+        bookmarkSaveBtn.disabled = true;
+        bookmarkSaveBtn.textContent = 'بيحفظ...';
+        try{
+          const { data, error } = await supabaseClient
+            .from('video_bookmarks')
+            .insert({ user_id: currentUser.id, item_id: currentItem.id, lesson_id: currentLesson.id, time_seconds: timeSeconds, note: note || null })
+            .select().single();
+          if(error) throw error;
+          videoBookmarks.push(data);
+          videoBookmarks.sort((a, b) => a.time_seconds - b.time_seconds);
+          buildBookmarkMarks();
+          renderBookmarksList();
+          if(window.showToast) showToast('اتحطت العلامة! ⭐', fmtTime(timeSeconds), 'ok');
+        }catch(err){
+          console.error('add bookmark error:', err);
+          if(window.showToast) showToast('حصلت مشكلة', 'مقدرناش نحفظ العلامة، جرّب تاني', 'error');
+        }finally{
+          bookmarkSaveBtn.disabled = false;
+          bookmarkSaveBtn.textContent = 'احفظ العلامة هنا';
+          bookmarkForm.classList.remove('open');
+        }
+      });
     }
 
     adapter.on('timeupdate', updateProgress);
@@ -869,6 +1025,8 @@
       if(document.fullscreenElement){ document.exitFullscreen(); }
       else if(container.requestFullscreen){ container.requestFullscreen(); }
     });
+
+    window._cpAdapterSeek = (t) => adapter.seekTo(t);
 
     setPlayIcon();
     updateProgress();
@@ -1184,7 +1342,117 @@
     renderLectureContent();
     await fetchProgressRow();
     await syncLessonCompletion();
+    await fetchBookmarks();
+    await loadLessonNotes();
     showState('content');
+  }
+
+  // ============================================================
+  // علامات الفيديو: بنجيب علامات الطالب على العنصر (الفيديو) اللي
+  // بيتشغّل دلوقتي بس، وبنعرضها في القائمة تحت المشغّل + كأيقونة
+  // هيكل عظمي صغيرة على شريط التقديم.
+  // ============================================================
+  async function fetchBookmarks(){
+    if(!currentItem || !currentUser){ videoBookmarks = []; renderBookmarksList(); return; }
+    try{
+      const { data, error } = await supabaseClient
+        .from('video_bookmarks')
+        .select('id, time_seconds, note')
+        .eq('user_id', currentUser.id)
+        .eq('item_id', currentItem.id)
+        .order('time_seconds', { ascending: true });
+      if(error) throw error;
+      videoBookmarks = data || [];
+    }catch(err){
+      console.error('fetchBookmarks error:', err);
+      videoBookmarks = [];
+    }
+    rebuildBookmarkMarkers();
+    renderBookmarksList();
+  }
+
+  function renderBookmarksList(){
+    const panel = document.getElementById('bookmarks-panel');
+    const listEl = document.getElementById('bookmarks-list');
+    if(!panel || !listEl) return;
+    if(!currentItem){ panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    if(videoBookmarks.length === 0){
+      listEl.innerHTML = `<p class="bm-empty">لسه مفيش علامات — ضيف علامة من زرار <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.2em"><path d="M6 3h12v18l-6-4.5L6 21Z"/></svg> اللي في شريط تحكم الفيديو.</p>`;
+      return;
+    }
+    listEl.innerHTML = videoBookmarks.map(b => `
+      <div class="bm-row" data-id="${b.id}">
+        <span class="bm-ic">${SKELETON_MARK_SVG}</span>
+        <span class="bm-time">${fmtTime(b.time_seconds)}</span>
+        <span class="bm-note">${b.note ? escapeHtml(b.note) : 'من غير وصف'}</span>
+        <button type="button" class="bm-del" data-action="goto" title="روح للحظة دي" data-id="${b.id}"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg></button>
+        <button type="button" class="bm-del" data-action="delete" title="امسح العلامة" data-id="${b.id}"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-12"/></svg></button>
+      </div>`).join('');
+
+    listEl.querySelectorAll('[data-action="goto"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const b = videoBookmarks.find(x => x.id === btn.dataset.id);
+        if(!b) return;
+        document.getElementById('player-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if(window._cpAdapterSeek) window._cpAdapterSeek(b.time_seconds);
+      });
+    });
+    listEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        try{
+          await supabaseClient.from('video_bookmarks').delete().eq('id', id);
+          videoBookmarks = videoBookmarks.filter(x => x.id !== id);
+          rebuildBookmarkMarkers();
+          renderBookmarksList();
+        }catch(err){
+          console.error('delete bookmark error:', err);
+          if(window.showToast) showToast('حصلت مشكلة', 'مقدرناش نمسح العلامة', 'error');
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  }
+
+  // ============================================================
+  // ملاحظاتي على الحصة: نص واحد لكل طالب لكل حصة، بيتحفظ لوحده
+  // (autosave) بعد ما الطالب يوقف عن الكتابة شوية.
+  // ============================================================
+  async function loadLessonNotes(){
+    const input = document.getElementById('lesson-notes-input');
+    const status = document.getElementById('notes-status');
+    if(!input || !currentUser || !LESSON_ID) return;
+    try{
+      const { data } = await supabaseClient
+        .from('lesson_notes').select('content').eq('user_id', currentUser.id).eq('lesson_id', LESSON_ID).maybeSingle();
+      input.value = data?.content || '';
+    }catch(err){
+      console.error('loadLessonNotes error:', err);
+    }
+    input.oninput = () => {
+      status.textContent = '⏳ بتتحفظ...';
+      clearTimeout(notesSaveTimer);
+      notesSaveTimer = setTimeout(saveLessonNotes, 800);
+    };
+  }
+
+  async function saveLessonNotes(){
+    const input = document.getElementById('lesson-notes-input');
+    const status = document.getElementById('notes-status');
+    if(!input || !currentUser || !LESSON_ID) return;
+    try{
+      await supabaseClient.from('lesson_notes').upsert({
+        user_id: currentUser.id, lesson_id: LESSON_ID, content: input.value, updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,lesson_id' });
+      status.textContent = '✅ اتحفظت';
+    }catch(err){
+      console.error('saveLessonNotes error:', err);
+      status.textContent = '⚠️ مقدرناش نحفظ، جرّب تاني';
+    }
   }
 
   // ============================================================
@@ -1439,9 +1707,12 @@
   function renderContentRow(it){
     if(it.type === 'video'){
       const isCurrent = currentItem && it.id === currentItem.id;
+      const watchPct = Math.max(0, Math.min(100, Math.round(videoProgressByItem[it.id]?.max_percent || 0)));
       return `
         <div class="file-row type-video ${isCurrent ? 'is-playing' : ''}">
-          <div class="file-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg></div>
+          <div class="file-ic video-thumb"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z"/></svg>
+            <div class="vprogress-track"><div class="vprogress-fill" style="width:${watchPct}%"></div></div>
+          </div>
           <span class="fname">${it.title}${isCurrent ? ' <span style="color:var(--green-bright); font-size:11px;">(بيتشغّل دلوقتي)</span>' : ''}</span>
           ${isCurrent
             ? `<span class="btn btn-sm" style="opacity:.6; cursor:default;"><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M8 5v14l11-7Z" fill="currentColor" stroke="none"/></svg></span> حالي</span>`

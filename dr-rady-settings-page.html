@@ -446,6 +446,7 @@
     }
 
     successEl.style.display = 'block';
+    if(typeof showToast === 'function') showToast('تم الحفظ', 'اتحدّثت بياناتك بنجاح');
     // نحدّث الاسم الظاهر في الهيدر والسايدبار فورًا
     const newName = document.getElementById('f-name').value.trim() || currentUser.email;
     document.getElementById('user-name').textContent = newName;
@@ -492,6 +493,7 @@
     }
 
     successEl.style.display = 'block';
+    if(typeof showToast === 'function') showToast('تم التغيير', 'كلمة المرور اتحدّثت بنجاح');
     document.getElementById('f-pass1').value = '';
     document.getElementById('f-pass2').value = '';
   });
@@ -525,6 +527,7 @@
     }
 
     successEl.style.display = 'block';
+    if(typeof showToast === 'function') showToast('تم التفعيل', 'الترتيب بقى مفتوح ليك');
     document.getElementById('unlock-form').style.display = 'none';
     document.getElementById('unlock-active-state').style.display = 'flex';
   });

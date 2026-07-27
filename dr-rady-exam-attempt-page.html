@@ -20,6 +20,7 @@
     --line: rgba(243,236,217,0.14);
     --rose:#b45253;
     --rose-bright:#e08182;
+    --warn:#e8b84b;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -69,10 +70,18 @@
   .exam-top p{font-size:12.5px; color:var(--bone-dim);}
   .exam-top-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
   .timer{
-    display:flex; align-items:center; gap:8px; background:var(--navy-deep); border:1px solid var(--line);
-    border-radius:100px; padding:9px 18px; font-weight:800; font-family:'Tajawal'; font-size:15px; color:var(--green-bright);
+    background:var(--navy-deep); border:1px solid var(--line);
+    border-radius:14px; padding:9px 16px; min-width:150px;
   }
-  .timer.low{color:#e8a3a4; border-color:rgba(180,82,83,0.5);}
+  .timer .timer-row{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:7px;}
+  .timer .timer-label{font-size:10.5px; color:var(--bone-dim); font-weight:700;}
+  .timer .timer-clock{font-family:'Tajawal'; font-weight:900; font-size:16px; color:var(--green-bright); transition:color .4s ease;}
+  .timer .timer-bar-track{height:5px; background:var(--navy-base); border-radius:100px; overflow:hidden;}
+  .timer .timer-bar-fill{height:100%; width:100%; border-radius:100px; background:var(--green-bright); transition:width 1s linear, background .4s ease;}
+  .timer.warn .timer-clock{color:var(--warn);}
+  .timer.warn .timer-bar-fill{background:var(--warn);}
+  .timer.low .timer-clock{color:var(--rose-bright);}
+  .timer.low .timer-bar-fill{background:var(--rose-bright);}
 
   /* ===== شريط أرقام الأسئلة ===== */
   .qnav-wrap{background:var(--navy-soft); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:18px; position:sticky; top:172px; z-index:9;}
@@ -106,8 +115,14 @@
     border-radius:13px; padding:13px 16px; cursor:pointer; transition:.15s; font-size:13.5px;
   }
   .opt:hover{border-color:rgba(95,168,43,0.5);}
-  .opt.selected{border-color:var(--green); background:rgba(95,168,43,0.1);}
-  .opt input{accent-color:var(--green); width:17px; height:17px; flex-shrink:0;}
+  .opt.selected{border-color:var(--green-bright); background:rgba(95,168,43,0.14);}
+  .opt input{position:absolute; opacity:0; width:0; height:0;}
+  .opt .dot{
+    width:19px; height:19px; border-radius:50%; border:2px solid var(--bone-dim);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:border-color .15s ease;
+  }
+  .opt.selected .dot{border-color:var(--green-bright);}
+  .opt.selected .dot::after{content:""; width:10px; height:10px; border-radius:50%; background:var(--green-bright);}
   .opt.correct{border-color:var(--green); background:rgba(95,168,43,0.16);}
   .opt.wrong{border-color:var(--rose); background:rgba(180,82,83,0.14);}
 
@@ -129,14 +144,26 @@
 
   /* ===== نتيجة الاختبار ===== */
   .result-box{background:var(--navy-soft); border:1px solid var(--line); border-radius:22px; padding:40px 30px; text-align:center; margin-bottom:24px;}
-  .result-ring{
-    width:130px; height:130px; border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center;
-    flex-direction:column; border:6px solid var(--navy-deep);
+  .result-ring{width:140px; height:140px; margin:0 auto 20px; position:relative;}
+  .result-ring svg{transform:rotate(-90deg);}
+  .result-ring .gauge-track{fill:none; stroke:var(--navy-deep); stroke-width:11;}
+  .result-ring .gauge-fill{
+    fill:none; stroke-width:11; stroke-linecap:round; stroke:var(--green-bright);
+    stroke-dasharray:301; stroke-dashoffset:301; transition:stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1), stroke .4s ease;
   }
-  .result-ring.pass{border-color:var(--green);}
-  .result-ring.fail{border-color:var(--rose);}
-  .result-ring b{font-family:'Tajawal'; font-size:32px;}
+  .result-ring.fail .gauge-fill{stroke:var(--rose-bright);}
+  .result-ring .gauge-center{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .result-ring b{font-family:'Tajawal'; font-size:30px;}
   .result-ring span{font-size:11px; color:var(--bone-dim);}
+  .result-chips{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:-6px 0 22px;}
+  .result-chip{
+    width:27px; height:27px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; font-family:'Tajawal'; cursor:default;
+  }
+  .result-chip.ok{background:rgba(95,168,43,0.22); color:var(--green-bright);}
+  .result-chip.no{background:rgba(180,82,83,0.22); color:var(--rose-bright);}
   .result-box h2{font-size:20px; margin-bottom:8px;}
   .result-box p{font-size:13.5px; color:var(--bone-dim); margin-bottom:22px;}
   .result-stats{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;}
@@ -146,6 +173,15 @@
   .result-stat.wrong b{color:var(--rose-bright);}
   .result-stat span{font-size:11px; color:var(--bone-dim);}
   .result-actions{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+
+  /* ===== فلتر "اعرض الغلط بس" في مراجعة الإجابات ===== */
+  .review-toggle{display:flex; gap:8px; margin-bottom:16px;}
+  .review-toggle button{
+    flex:1; background:var(--navy-soft); border:1px solid var(--line); color:var(--bone-dim);
+    font-size:13px; font-weight:700; padding:10px; border-radius:100px; cursor:pointer; font-family:inherit; transition:.15s;
+  }
+  .review-toggle button.active{background:var(--green); color:var(--navy-deep); border-color:var(--green);}
+  .q-card.hidden{display:none;}
 
   @media (max-width:640px){
     .exam-top{position:static;}
@@ -262,7 +298,10 @@
         <p id="exam-sub"></p>
       </div>
       <div class="exam-top-right">
-        <div id="timer-box" class="timer" style="display:none;">⏱️ <span id="timer-text">--:--</span></div>
+        <div id="timer-box" class="timer" style="display:none;">
+          <div class="timer-row"><span class="timer-label">الوقت المتبقي</span><span class="timer-clock" id="timer-text">--:--</span></div>
+          <div class="timer-bar-track"><div class="timer-bar-fill" id="timer-bar"></div></div>
+        </div>
         <button class="btn btn-sm" id="submit-btn" onclick="openSubmitModal()">تسليم الاختبار <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M5 12.5 9.5 17 19 7"/></svg></button>
       </div>
     </div>
@@ -292,9 +331,16 @@
   <div id="state-result" style="display:none;">
     <div class="result-box">
       <div id="result-ring" class="result-ring">
-        <b id="result-percentage">0%</b>
-        <span id="result-fraction">0 / 0</span>
+        <svg width="140" height="140" viewBox="0 0 110 110">
+          <circle class="gauge-track" cx="55" cy="55" r="48"/>
+          <circle class="gauge-fill" id="gauge-fill" cx="55" cy="55" r="48"/>
+        </svg>
+        <div class="gauge-center">
+          <b id="result-percentage">0%</b>
+          <span id="result-fraction">0 / 0</span>
+        </div>
       </div>
+      <div class="result-chips" id="result-chips"></div>
       <h2 id="result-title">النتيجة</h2>
       <p id="result-text"></p>
       <div class="result-stats">
@@ -323,6 +369,10 @@
       </div>
     </div>
 
+    <div class="review-toggle" id="review-toggle" style="display:none;">
+      <button type="button" class="active" onclick="filterReview('all', this)">كل الأسئلة</button>
+      <button type="button" onclick="filterReview('wrong', this)">الغلط بس</button>
+    </div>
     <div id="review-list"></div>
   </div>
 
@@ -667,6 +717,7 @@
           ${q.options.map(o => `
             <label class="opt ${chosen === o.id ? 'selected' : ''}" id="opt-${o.id}" onclick="selectAnswer('${q.id}', '${o.id}')">
               <input type="radio" name="q-${q.id}" value="${o.id}" ${chosen === o.id ? 'checked' : ''}>
+              <span class="dot"></span>
               <span>${o.option_text}</span>
             </label>
           `).join('')}
@@ -727,13 +778,18 @@
     let remaining = totalSeconds;
     const box = document.getElementById('timer-box');
     const text = document.getElementById('timer-text');
-    box.style.display = 'flex';
+    const bar = document.getElementById('timer-bar');
+    box.style.display = 'block';
 
     function tick(){
       const m = Math.floor(remaining / 60).toString().padStart(2, '0');
       const s = (remaining % 60).toString().padStart(2, '0');
       text.textContent = `${m}:${s}`;
-      if(remaining <= 60) box.classList.add('low');
+      const pct = totalSeconds > 0 ? Math.max(0, (remaining / totalSeconds) * 100) : 0;
+      bar.style.width = pct + '%';
+      box.classList.remove('warn', 'low');
+      if(pct <= 20) box.classList.add('low');
+      else if(pct <= 50) box.classList.add('warn');
       if(remaining <= 0){
         clearInterval(timerInterval);
         submitExam();
@@ -788,6 +844,9 @@
 
     if(data.timeExpired){
       alert('الوقت انتهى قبل ما تسلّم، فاتسجلت النتيجة صفر ⏱️');
+    } else if(typeof showToast === 'function'){
+      const isHomework = exam && exam.kind === 'homework';
+      showToast(isHomework ? 'تم تسليم الواجب' : 'تم تسليم الاختبار', 'نتيجتك جاهزة تحت');
     }
 
     showResult(data.score, data.percentage);
@@ -869,6 +928,19 @@
     ring.classList.add(passed ? 'pass' : 'fail');
     document.getElementById('result-percentage').textContent = percentage + '%';
     document.getElementById('result-fraction').textContent = `${correctCount} / ${total}`;
+
+    const circumference = 301;
+    const gaugeFill = document.getElementById('gauge-fill');
+    gaugeFill.style.strokeDashoffset = circumference;
+    requestAnimationFrame(() => {
+      gaugeFill.style.strokeDashoffset = circumference - (circumference * (percentage / 100));
+    });
+
+    document.getElementById('result-chips').innerHTML = questions.map((q, i) => {
+      const correctOption = q.options.find(o => o.is_correct);
+      const isCorrect = answers[q.id] && correctOption && answers[q.id] === correctOption.id;
+      return `<div class="result-chip ${isCorrect ? 'ok' : 'no'}">${i + 1}</div>`;
+    }).join('');
     document.getElementById('result-title').textContent = passed ? 'مبروك، نجحت في الاختبار' : 'محتاج تراجع الحصة تاني';
     document.getElementById('result-text').textContent = passed
       ? 'أداء كويس! تقدر تكمل باقي الاختبارات أو تراجع أي سؤال غلطت فيه تحت.'
@@ -905,8 +977,9 @@
     document.getElementById('review-list').innerHTML = questions.map((q, i) => {
       const chosenId = answers[q.id];
       const correctOption = q.options.find(o => o.is_correct);
+      const isCorrect = chosenId && correctOption && chosenId === correctOption.id;
       return `
-        <div class="q-card">
+        <div class="q-card" data-correct="${isCorrect ? '1' : '0'}">
           <div class="q-num">سؤال ${i + 1}</div>
           ${q.image_url ? `<img src="${q.image_url}" alt="" style="width:100%; max-height:260px; object-fit:contain; border-radius:12px; border:1px solid var(--line); margin-bottom:12px; background:var(--ink);">` : ''}
           <div class="q-text">${q.question_text}</div>
@@ -922,7 +995,26 @@
       `;
     }).join('');
 
+    const toggleEl = document.getElementById('review-toggle');
+    if(wrongCount > 0 && wrongCount < total){
+      toggleEl.style.display = 'flex';
+      toggleEl.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i === 0));
+      filterReview('all');
+    } else {
+      toggleEl.style.display = 'none';
+    }
+
     showState('result');
+  }
+
+  function filterReview(mode, btn){
+    if(btn){
+      document.querySelectorAll('#review-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    document.querySelectorAll('#review-list .q-card').forEach(card => {
+      card.classList.toggle('hidden', mode === 'wrong' && card.dataset.correct === '1');
+    });
   }
 
   init();

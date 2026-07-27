@@ -127,6 +127,23 @@
     padding:9px 14px; color:var(--bone); font-family:'Cairo'; font-size:13.5px; outline:none;
   }
 
+  /* ===== حالة "مفيش نتائج" ===== */
+  .empty-state{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:18px;
+    padding:44px 24px; text-align:center; grid-column:1/-1;
+  }
+  .empty-state .ic{
+    width:56px; height:56px; border-radius:50%; background:rgba(95,168,43,0.14);
+    display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; color:var(--green-bright);
+  }
+  .empty-state h4{font-size:15px; margin-bottom:6px;}
+  .empty-state p{font-size:13px; color:var(--bone-dim); margin-bottom:18px;}
+  .empty-state button{
+    background:transparent; border:1px solid var(--line); color:var(--green-bright);
+    font-size:12.5px; font-weight:700; padding:9px 18px; border-radius:100px; font-family:inherit; cursor:pointer; transition:.2s;
+  }
+  .empty-state button:hover{border-color:var(--green-bright);}
+
   /* ===== COURSES GRID ===== */
   .courses-grid{
     display:grid; grid-template-columns:repeat(3,1fr); gap:22px;
@@ -317,7 +334,7 @@
     <select class="sort-select" id="sort-select">
       <option value="newest">الأحدث</option>
       <option value="price-asc">الأقل سعرًا</option>
-      <option value="rating">الأعلى تقييمًا</option>
+      <option value="price-desc">الأعلى سعرًا</option>
     </select>
   </div>
 
@@ -397,14 +414,19 @@
 
     if(sortMode === 'price-asc'){
       filtered = filtered.slice().sort((a, b) => (a.price || 0) - (b.price || 0));
-    } else if(sortMode === 'rating'){
-      // ملاحظة: مفيش عمود تقييم في جدول courses لسه، فالترتيب ده هيفضل زي "الأحدث" لحد ما يتضاف
-      filtered = filtered.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if(sortMode === 'price-desc'){
+      filtered = filtered.slice().sort((a, b) => (b.price || 0) - (a.price || 0));
     }
 
     if(filtered.length === 0){
       countEl.textContent = 'مفيش كورسات مطابقة للفلاتر دي';
-      grid.innerHTML = '';
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.35-4.35"/></svg></div>
+          <h4>مفيش كورسات مطابقة</h4>
+          <p>جرّب تغيّر المرحلة الدراسية أو امسح كلمة البحث</p>
+          <button onclick="resetFilters()">مسح الفلاتر</button>
+        </div>`;
       return;
     }
 
@@ -414,6 +436,18 @@
 
   document.getElementById('search-input').addEventListener('input', applyFilters);
   document.getElementById('sort-select').addEventListener('change', applyFilters);
+
+  function resetFilters(){
+    document.getElementById('search-input').value = '';
+    document.getElementById('sort-select').value = 'newest';
+    document.querySelectorAll('[data-grade]').forEach(c => c.classList.remove('active'));
+    document.querySelector('[data-grade="الكل"]').classList.add('active');
+    document.querySelectorAll('[data-type]').forEach(c => c.classList.remove('active'));
+    document.querySelector('[data-type="الكل"]').classList.add('active');
+    activeGrade = 'الكل';
+    activeType = 'الكل';
+    applyFilters();
+  }
 
   document.querySelectorAll('[data-grade]').forEach(chip => {
     chip.addEventListener('click', () => {

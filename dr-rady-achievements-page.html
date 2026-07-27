@@ -134,7 +134,12 @@
   .ach-card.unlocked .ach-icon{
     background:rgba(232,196,104,0.18); border-color:var(--gold);
   }
-  .ach-card.locked .ach-icon{filter:grayscale(1); opacity:.55;}
+  .ach-card.locked .ach-icon{filter:grayscale(1); opacity:.55; position:relative;}
+  .ach-lock{
+    position:absolute; bottom:-2px; inset-inline-end:calc(50% - 34px);
+    width:20px; height:20px; border-radius:50%; background:var(--navy-deep); border:1.5px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--bone-dim); font-size:10px;
+  }
   .ach-card h4{font-size:14px; color:var(--bone); margin-bottom:6px;}
   .ach-card.locked h4{color:var(--bone-dim);}
   .ach-card p{font-size:11.5px; color:var(--bone-dim); min-height:32px;}
@@ -519,7 +524,7 @@
       }
       return `
         <div class="ach-card locked" style="animation-delay:${delay}s;">
-          <div class="ach-icon">${a.icon}</div>
+          <div class="ach-icon">${a.icon}<span class="ach-lock"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
           <h4>${a.title}</h4>
           <p>${a.desc}</p>
           <div class="ach-progress">
