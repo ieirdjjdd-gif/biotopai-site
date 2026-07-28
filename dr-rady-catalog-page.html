@@ -14,6 +14,7 @@
     --navy-soft:#26398c;
     --green:#5fa82b;
     --green-bright:#8fd155;
+    --gold:#e8c15a;
     --bone:#f3ecd9;
     --bone-dim:#e2d8bd;
     --ink:#0c1230;
@@ -48,8 +49,6 @@
   .eyebrow .dot{width:7px; height:7px; border-radius:50%; background:var(--green-bright);}
 
   /* ===== ANIMATIONS ===== */
-  @keyframes floatSlow{0%,100%{transform:translateY(0) translateX(0);} 50%{transform:translateY(-18px) translateX(8px);}}
-  @keyframes floatSlow2{0%,100%{transform:translateY(0) translateX(0);} 50%{transform:translateY(14px) translateX(-10px);}}
   @keyframes popIn{from{opacity:0; transform:translateY(22px) scale(.96);} to{opacity:1; transform:translateY(0) scale(1);}}
 
   .reveal{
@@ -59,10 +58,6 @@
   .reveal.in-view{opacity:1; transform:translateY(0);}
 
   .card-pop{animation:popIn .5s cubic-bezier(.16,1,.3,1) backwards;}
-
-  .float-shape{position:absolute; pointer-events:none; user-select:none; opacity:.8;}
-  .float-shape.a{animation:floatSlow 6s ease-in-out infinite;}
-  .float-shape.b{animation:floatSlow2 7s ease-in-out infinite;}
 
   /* ===== HEADER ===== */
   header{
@@ -82,8 +77,9 @@
   .menu-toggle{display:none; font-size:26px; background:none; border:none; color:var(--bone); cursor:pointer;}
 
   /* ===== PAGE HERO ===== */
-  .page-hero{padding:52px 0 20px; text-align:center; position:relative; overflow:hidden;}
-  .page-hero h1{font-size:38px; color:var(--bone); margin-bottom:12px;}
+  .page-hero{padding:60px 0 24px; text-align:center; position:relative; overflow:hidden;}
+  .page-hero .eyebrow{letter-spacing:.3px;}
+  .page-hero h1{font-size:40px; line-height:1.25; letter-spacing:-.3px; color:var(--bone); margin-bottom:14px;}
   .page-hero p{color:var(--bone-dim); font-size:15.5px; max-width:520px; margin:0 auto;}
 
   /* ===== SEARCH ===== */
@@ -122,20 +118,12 @@
   }
   .results-count{font-size:14px; color:var(--bone-dim);}
   .results-count b{color:var(--green-bright);}
-  .sort-select{
-    background:var(--navy-soft); border:1px solid var(--line); border-radius:10px;
-    padding:9px 14px; color:var(--bone); font-family:'Cairo'; font-size:13.5px; outline:none;
-  }
-
   /* ===== حالة "مفيش نتائج" ===== */
   .empty-state{
     background:var(--navy-soft); border:1px solid var(--line); border-radius:18px;
     padding:44px 24px; text-align:center; grid-column:1/-1;
   }
-  .empty-state .ic{
-    width:56px; height:56px; border-radius:50%; background:rgba(95,168,43,0.14);
-    display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 16px; color:var(--green-bright);
-  }
+  .empty-illus{margin:0 auto 16px; display:block;}
   .empty-state h4{font-size:15px; margin-bottom:6px;}
   .empty-state p{font-size:13px; color:var(--bone-dim); margin-bottom:18px;}
   .empty-state button{
@@ -166,7 +154,7 @@
   .course-cover .mascot{width:52%; margin-bottom:-2px;}
   .course-cover .fallback-ic{font-size:38px; margin-bottom:auto; margin-top:auto; opacity:.55;}
   .course-cover .cover-badge{
-    position:absolute; top:12px; right:12px; background:var(--green); color:var(--navy-deep);
+    position:absolute; top:12px; right:12px; background:var(--gold); color:var(--navy-deep);
     font-size:11px; font-weight:800; padding:5px 12px; border-radius:100px;
   }
   .course-cover .cover-tag{
@@ -185,6 +173,15 @@
   .course-price{font-family:'Tajawal'; font-weight:900; font-size:19px; color:var(--green-bright);}
   .course-price span{font-size:11.5px; font-weight:500; color:var(--bone-dim);}
   .course-price .old{font-size:12px; font-weight:500; color:var(--bone-dim); text-decoration:line-through; margin-left:6px;}
+
+  /* ===== SKELETON LOADING ===== */
+  @keyframes shimmer{0%{background-position:200% 0;} 100%{background-position:-200% 0;}}
+  .skel-card{background:var(--navy-soft); border:1px solid var(--line); border-radius:20px; overflow:hidden;}
+  .skel-cover{aspect-ratio:16/10; background:linear-gradient(90deg, rgba(243,236,217,0.04) 25%, rgba(243,236,217,0.09) 50%, rgba(243,236,217,0.04) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite;}
+  .skel-body{padding:22px;}
+  .skel-line{height:11px; border-radius:6px; margin-bottom:12px; background:linear-gradient(90deg, rgba(243,236,217,0.04) 25%, rgba(243,236,217,0.09) 50%, rgba(243,236,217,0.04) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite;}
+  .skel-line.w60{width:60%;}
+  .skel-line.w80{width:80%; margin-bottom:20px;}
 
   /* ===== FOOTER ===== */
   footer{background:var(--navy-deep); padding:40px 0 24px; border-top:1px solid var(--line); text-align:center;}
@@ -300,8 +297,6 @@
 
 <!-- ===== PAGE HERO ===== -->
 <section class="wrap page-hero">
-  <span class="float-shape a" style="top:4%; left:8%; font-size:28px;"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 5.5C6 4.5 9 4.5 12 6c3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z"/><path d="M12 6v13"/></svg></span>
-  <span class="float-shape b" style="top:14%; right:6%; font-size:26px;"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M7 3c0 6 10 6 10 12"/><path d="M17 21c0-6-10-6-10-12"/><path d="M8 6h8M7.5 10h9M7.5 14h9M8 18h8"/></svg></span>
   <div class="reveal">
     <div class="eyebrow" style="margin:0 auto 16px; display:inline-flex;"><span class="dot"></span> كل الكورسات</div>
     <h1>اختار الكورس اللي مناسب لمرحلتك</h1>
@@ -330,16 +325,13 @@
 <!-- ===== RESULTS + GRID ===== -->
 <div class="wrap">
   <div class="results-row">
-    <div class="results-count" id="results-count">جارٍ تحميل الكورسات...</div>
-    <select class="sort-select" id="sort-select">
-      <option value="newest">الأحدث</option>
-      <option value="price-asc">الأقل سعرًا</option>
-      <option value="price-desc">الأعلى سعرًا</option>
-    </select>
+    <div class="results-count" id="results-count" style="visibility:hidden;">.</div>
   </div>
 
   <div class="courses-grid" id="courses-grid">
-    <!-- الكورسات بتتحمل هنا أوتوماتيك من قاعدة البيانات -->
+    <div class="skel-card"><div class="skel-cover"></div><div class="skel-body"><div class="skel-line w80"></div><div class="skel-line w60"></div></div></div>
+    <div class="skel-card"><div class="skel-cover"></div><div class="skel-body"><div class="skel-line w80"></div><div class="skel-line w60"></div></div></div>
+    <div class="skel-card"><div class="skel-cover"></div><div class="skel-body"><div class="skel-line w80"></div><div class="skel-line w60"></div></div></div>
   </div>
 </div>
 
@@ -359,6 +351,7 @@
 
     if(error){
       console.error('loadCourses error:', error);
+      countEl.style.visibility = 'visible';
       countEl.textContent = 'حصل خطأ في تحميل الكورسات: ' + error.message;
       return;
     }
@@ -376,6 +369,7 @@
       <a href="dr-rady-course-page.html?id=${course.id}" class="course-card card-pop" style="animation-delay:${delay}s;">
         <div class="course-cover">
           ${cover}
+          ${course.old_price ? `<span class="cover-badge">خصم ${Math.round((1 - course.price / course.old_price) * 100)}%</span>` : ''}
           <span class="cover-tag">${course.grade || ''}</span>
         </div>
         <div class="course-body">
@@ -394,8 +388,8 @@
   function applyFilters(){
     const grid = document.getElementById('courses-grid');
     const countEl = document.getElementById('results-count');
+    countEl.style.visibility = 'visible';
     const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
-    const sortMode = document.getElementById('sort-select').value;
 
     if(allCourses.length === 0){
       countEl.textContent = 'مفيش كورسات متاحة دلوقتي';
@@ -412,17 +406,16 @@
       return matchesGrade && matchesType && matchesSearch;
     });
 
-    if(sortMode === 'price-asc'){
-      filtered = filtered.slice().sort((a, b) => (a.price || 0) - (b.price || 0));
-    } else if(sortMode === 'price-desc'){
-      filtered = filtered.slice().sort((a, b) => (b.price || 0) - (a.price || 0));
-    }
-
     if(filtered.length === 0){
       countEl.textContent = 'مفيش كورسات مطابقة للفلاتر دي';
       grid.innerHTML = `
         <div class="empty-state">
-          <div class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.35-4.35"/></svg></div>
+          <svg class="empty-illus" width="120" height="88" viewBox="0 0 120 88" fill="none">
+            <ellipse cx="60" cy="80" rx="42" ry="6" fill="rgba(143,209,85,0.08)"/>
+            <circle cx="52" cy="38" r="28" stroke="var(--green-bright)" stroke-width="2" fill="rgba(143,209,85,0.06)"/>
+            <path d="M72 58 L88 74" stroke="var(--green-bright)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M40 38h24M52 26v24" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
           <h4>مفيش كورسات مطابقة</h4>
           <p>جرّب تغيّر المرحلة الدراسية أو امسح كلمة البحث</p>
           <button onclick="resetFilters()">مسح الفلاتر</button>
@@ -435,11 +428,9 @@
   }
 
   document.getElementById('search-input').addEventListener('input', applyFilters);
-  document.getElementById('sort-select').addEventListener('change', applyFilters);
 
   function resetFilters(){
     document.getElementById('search-input').value = '';
-    document.getElementById('sort-select').value = 'newest';
     document.querySelectorAll('[data-grade]').forEach(c => c.classList.remove('active'));
     document.querySelector('[data-grade="الكل"]').classList.add('active');
     document.querySelectorAll('[data-type]').forEach(c => c.classList.remove('active'));

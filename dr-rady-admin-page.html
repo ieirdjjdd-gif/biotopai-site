@@ -132,6 +132,54 @@
     }
     .admin-side-link{white-space:nowrap; flex-shrink:0;}
   }
+
+  /* ===== بحث عن طالب ===== */
+  .student-search-results{margin-top:10px; display:flex; flex-direction:column; gap:8px;}
+  .student-result-row{
+    display:flex; align-items:center; gap:12px; background:var(--navy-deep); border:1px solid var(--line);
+    border-radius:12px; padding:10px 14px; cursor:pointer; transition:.15s;
+  }
+  .student-result-row:hover{border-color:var(--green-bright);}
+  .student-result-row .avatar{
+    width:34px; height:34px; border-radius:50%; background:rgba(95,168,43,0.16); color:var(--green-bright);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0;
+  }
+  .student-result-row .name{font-size:13.5px; font-weight:700; color:var(--bone);}
+  .student-result-row .meta{font-size:11.5px; color:var(--bone-dim);}
+
+  .student-profile-card{
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:linear-gradient(120deg, var(--navy-deep), var(--navy-soft));
+    border:1px solid var(--line); border-radius:18px; padding:20px 22px; margin-bottom:20px;
+  }
+  .student-profile-card .avatar-lg{
+    width:54px; height:54px; border-radius:50%; background:rgba(95,168,43,0.18); color:var(--green-bright);
+    display:flex; align-items:center; justify-content:center; font-weight:900; font-size:20px; flex-shrink:0;
+  }
+  .student-profile-card h3{font-size:17px; margin-bottom:4px;}
+  .student-profile-card .info-row{display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--bone-dim);}
+  .student-profile-card .last-active{margin-inline-start:auto; font-size:11px; font-weight:700; padding:5px 12px; border-radius:100px; flex-shrink:0;}
+  .student-profile-card .last-active.recent{background:rgba(143,209,85,0.14); color:var(--green-bright);}
+  .student-profile-card .last-active.away{background:rgba(180,82,83,0.14); color:var(--rose);}
+
+  .student-section-title{font-size:14px; font-weight:800; color:var(--bone); margin:22px 0 12px; display:flex; align-items:center; gap:8px;}
+  .student-course-card{
+    background:var(--navy-soft); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px;
+  }
+  .student-course-card .top-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; gap:10px;}
+  .student-course-card b{font-size:13.5px;}
+  .student-course-card .pct{font-family:'Tajawal'; font-weight:800; color:var(--green-bright); font-size:13px;}
+  .sc-track{height:6px; border-radius:6px; background:var(--navy-deep); overflow:hidden;}
+  .sc-fill{height:100%; background:var(--green-bright); border-radius:6px;}
+
+  .student-exam-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--navy-soft);
+    border:1px solid var(--line); border-radius:12px; padding:11px 15px; margin-bottom:8px; font-size:12.5px;
+  }
+  .student-exam-row .ex-title{font-weight:700; color:var(--bone);}
+  .student-exam-row .ex-date{color:var(--bone-dim); font-size:11px; margin-top:2px;}
+  .student-exam-row .ex-score{font-family:'Tajawal'; font-weight:800; font-size:14px;}
+  .student-exam-row .ex-score.pass{color:var(--green-bright);}
+  .student-exam-row .ex-score.fail{color:var(--rose);}
 </style>
 <script src="js/ui-effects.js" defer></script>
 </head>
@@ -215,6 +263,9 @@
           <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-4 4-6 7-6s5.5 2 7 6"/></svg></span> طلبات الاشتراك
           <span class="admin-side-badge" id="side-badge-enrollments" style="display:none;"></span>
         </button>
+        <button class="admin-side-link" data-tab="student-search" onclick="showAdminTab('student-search')">
+          <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.35-4.35"/></svg></span> بحث عن طالب
+        </button>
         <button class="admin-side-link" data-tab="courses" onclick="showAdminTab('courses')">
           <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 5.5C6 4.5 9 4.5 12 6c3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z"/><path d="M12 6v13"/></svg></span> الكورسات
         </button>
@@ -227,11 +278,8 @@
         <button class="admin-side-link" data-tab="assignments" onclick="showAdminTab('assignments')">
           <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.8l-.7-.7a2 2 0 0 0-2.8 0L4.5 16.5Z"/><path d="M13.3 6.8 17.2 10.7"/></svg></span> الواجبات
         </button>
-        <button class="admin-side-link" data-tab="unlock-codes" onclick="showAdminTab('unlock-codes')">
-          <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg></span> أكواد فتح الترتيب
-        </button>
         <button class="admin-side-link" data-tab="coupons" onclick="showAdminTab('coupons')">
-          <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M3 12h18" stroke-dasharray="2 2"/><circle cx="8" cy="12" r="1.6"/></svg></span> كوبونات السنتر
+          <span class="ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M3 12h18" stroke-dasharray="2 2"/><circle cx="8" cy="12" r="1.6"/></svg></span> أكواد السنتر
         </button>
       </nav>
 
@@ -296,6 +344,19 @@
   </div>
 
   <!-- ===== إضافة / تعديل كورس ===== -->
+        </div>
+
+        <div class="admin-tab-section" id="admin-tab-student-search">
+          <div class="panel">
+            <div class="panel-head">
+              <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.35-4.35"/></svg></span> بحث عن طالب</h2>
+            </div>
+            <div class="field" style="max-width:420px;">
+              <input type="text" id="student-search-input" placeholder="اكتب اسم الطالب...">
+            </div>
+            <div id="student-search-results" class="student-search-results"></div>
+            <div id="student-detail-panel" style="margin-top:20px;"></div>
+          </div>
         </div>
 
         <div class="admin-tab-section" id="admin-tab-courses">
@@ -915,48 +976,14 @@
 
         </div>
 
-        <div class="admin-tab-section" id="admin-tab-unlock-codes">
-  <div class="panel">
-    <div class="panel-head">
-      <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg></span> أكواد فتح الترتيب</h2>
-      <p>الكود ده بيدي الطالب (اللي حضر لايف في السنتر) صلاحية يفتح أي محاضرة في صفه من غير ما يخلّص اللي قبلها بالترتيب. كل كود بيتستخدم مرة واحدة بس.</p>
-    </div>
-
-    <div style="display:flex; align-items:flex-end; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
-      <div class="field" style="margin-bottom:0; width:140px;">
-        <label for="unlock-gen-count">عدد الأكواد</label>
-        <input type="number" id="unlock-gen-count" value="10" min="1" max="200">
-      </div>
-      <button class="btn" onclick="generateUnlockCodes()" id="unlock-gen-btn">توليد أكواد جديدة</button>
-    </div>
-
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-      <select id="unlock-codes-filter" onchange="loadUnlockCodes()" style="width:auto; background:var(--navy-deep); border:1.5px solid var(--line); border-radius:10px; padding:8px 12px; color:var(--bone); font-size:13px;">
-        <option value="unused">لسه ما اتستخدمش</option>
-        <option value="used">اتستخدمت</option>
-        <option value="all">الكل</option>
-      </select>
-    </div>
-
-    <table>
-      <thead>
-        <tr><th>الكود</th><th>الحالة</th><th>استخدمه</th><th>تاريخ الاستخدام</th></tr>
-      </thead>
-      <tbody id="unlock-codes-table-body">
-        <tr><td colspan="4">جارٍ التحميل...</td></tr>
-      </tbody>
-    </table>
-  </div>
-        </div>
-
         <div class="admin-tab-section" id="admin-tab-coupons">
   <div class="panel">
     <div class="panel-head">
-      <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M3 12h18" stroke-dasharray="2 2"/><circle cx="8" cy="12" r="1.6"/></svg></span> كوبونات فتح كورسات السنتر</h2>
+      <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M3 12h18" stroke-dasharray="2 2"/><circle cx="8" cy="12" r="1.6"/></svg></span> أكواد السنتر</h2>
     </div>
     <p style="font-size:12px; color:var(--bone-dim); margin:-10px 0 16px;">
       <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg>
-      اختار السنة الدراسية وولّد كود. أي طالب يكتب الكود ده في صفحة الإعدادات، هيتفتحله أوتوماتيك كل كورسات السنة دي — الموجودة دلوقتي واللي هتتضاف بعدين — وهيفضل مقفول عليه كورسات باقي السنين.
+      اختار السنة الدراسية وولّد كود. أي طالب يكتب الكود ده في صفحة الإعدادات، هيتفتحله أوتوماتيك كل كورسات السنة دي — الموجودة دلوقتي واللي هتتضاف بعدين — وكمان يقدر يفتح أي محاضرة من غير ما يخلّص اللي قبلها بالترتيب (الكود الواحد بيعمل الاتنين مع بعض).
     </p>
 
     <div class="field-row">
@@ -1038,7 +1065,6 @@
     loadEnrollments();
     loadSupportThreads();
     subscribeToSupportMessages();
-    loadUnlockCodes();
     loadGradeCoupons();
   })();
 
@@ -1058,6 +1084,189 @@
     const div = document.createElement('div');
     div.textContent = str || '';
     return div.innerHTML;
+  }
+
+  // ===== بحث عن طالب بالاسم وعرض كل معلوماته =====
+  let studentSearchTimer = null;
+  document.getElementById('student-search-input').addEventListener('input', (e) => {
+    clearTimeout(studentSearchTimer);
+    const term = e.target.value.trim();
+    const resultsEl = document.getElementById('student-search-results');
+    if(term.length < 2){
+      resultsEl.innerHTML = '';
+      return;
+    }
+    studentSearchTimer = setTimeout(() => searchStudents(term), 300);
+  });
+
+  async function searchStudents(term){
+    const resultsEl = document.getElementById('student-search-results');
+    resultsEl.innerHTML = `<p style="font-size:12.5px; color:var(--bone-dim);">جارٍ البحث...</p>`;
+
+    const { data: students, error } = await supabaseClient
+      .from('profiles')
+      .select('id, full_name, grade, phone')
+      .ilike('full_name', `%${term}%`)
+      .limit(15);
+
+    if(error){
+      resultsEl.innerHTML = `<p style="font-size:12.5px; color:var(--bone-dim);">حصل خطأ في البحث.</p>`;
+      return;
+    }
+    if(!students || students.length === 0){
+      resultsEl.innerHTML = `<p style="font-size:12.5px; color:var(--bone-dim);">مفيش طلاب بالاسم ده.</p>`;
+      return;
+    }
+
+    resultsEl.innerHTML = students.map(s => `
+      <div class="student-result-row" onclick="loadStudentDetail('${s.id}')">
+        <div class="avatar">${(s.full_name || '؟').charAt(0)}</div>
+        <div>
+          <div class="name">${escapeHtml(s.full_name || 'بدون اسم')}</div>
+          <div class="meta">${escapeHtml(s.grade || '—')} ${s.phone ? '· ' + escapeHtml(s.phone) : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function loadStudentDetail(studentId){
+    const panel = document.getElementById('student-detail-panel');
+    panel.innerHTML = `<p style="font-size:12.5px; color:var(--bone-dim);">جارٍ تحميل بيانات الطالب...</p>`;
+
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('id, full_name, grade, phone, guardian_phone, created_at')
+      .eq('id', studentId)
+      .single();
+
+    if(!profile){
+      panel.innerHTML = `<p style="font-size:12.5px; color:var(--bone-dim);">تعذّر تحميل بيانات الطالب.</p>`;
+      return;
+    }
+
+    // كل الكورسات المدفوعة للطالب ده
+    const { data: enrollments } = await supabaseClient
+      .from('enrollments')
+      .select('status, courses(id, title, grade, lessons_count)')
+      .eq('user_id', studentId);
+
+    const paidCourses = (enrollments || []).filter(e => e.status === 'paid' && e.courses);
+
+    // نسبة تقدّم كل كورس (حصص مخلّصة / إجمالي الحصص) زي صفحة الداشبورد بالظبط
+    let progressByCourse = {};
+    let lessonsByCourse = {};
+    if(paidCourses.length > 0){
+      const courseIds = paidCourses.map(e => e.courses.id);
+      const { data: lessons } = await supabaseClient
+        .from('lessons').select('id, course_id').in('course_id', courseIds);
+      const lessonToCourse = {};
+      (lessons || []).forEach(l => {
+        lessonToCourse[l.id] = l.course_id;
+        lessonsByCourse[l.course_id] = (lessonsByCourse[l.course_id] || 0) + 1;
+      });
+      const lessonIds = Object.keys(lessonToCourse);
+      if(lessonIds.length > 0){
+        const { data: progressRows } = await supabaseClient
+          .from('lesson_progress').select('lesson_id, completed')
+          .eq('user_id', studentId).in('lesson_id', lessonIds);
+        (progressRows || []).forEach(p => {
+          if(!p.completed) return;
+          const cid = lessonToCourse[p.lesson_id];
+          if(cid) progressByCourse[cid] = (progressByCourse[cid] || 0) + 1;
+        });
+      }
+    }
+
+    // كل محاولات الاختبارات والواجبات
+    const { data: attempts } = await supabaseClient
+      .from('exam_attempts')
+      .select('percentage, completed_at, exams(title, kind, passing_score)')
+      .eq('user_id', studentId)
+      .not('completed_at', 'is', null)
+      .order('completed_at', { ascending: false });
+
+    // آخر نشاط للطالب: أحدث تاريخ بين مشاهدة فيديو وإكمال حصة
+    const { data: lastVideoActivity } = await supabaseClient
+      .from('item_video_progress').select('updated_at')
+      .eq('user_id', studentId).order('updated_at', { ascending: false }).limit(1).maybeSingle();
+    const { data: lastLessonActivity } = await supabaseClient
+      .from('lesson_progress').select('completed_at')
+      .eq('user_id', studentId).not('completed_at', 'is', null)
+      .order('completed_at', { ascending: false }).limit(1).maybeSingle();
+
+    const activityDates = [lastVideoActivity?.updated_at, lastLessonActivity?.completed_at].filter(Boolean).map(d => new Date(d));
+    const lastActive = activityDates.length > 0 ? new Date(Math.max(...activityDates)) : null;
+
+    let lastActiveLabel = 'مفيش نشاط مسجّل لسه';
+    let lastActiveCls = 'away';
+    if(lastActive){
+      const daysAgo = Math.floor((Date.now() - lastActive.getTime()) / 86400000);
+      lastActiveCls = daysAgo <= 3 ? 'recent' : 'away';
+      lastActiveLabel = daysAgo === 0 ? 'نشط اليوم' : daysAgo === 1 ? 'نشط من يوم' : `نشط من ${daysAgo} يوم`;
+    }
+
+    const initial = (profile.full_name || '؟').charAt(0);
+    const joinDate = profile.created_at
+      ? new Date(profile.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })
+      : '—';
+
+    let html = `
+      <div class="student-profile-card">
+        <div class="avatar-lg">${initial}</div>
+        <div>
+          <h3>${escapeHtml(profile.full_name || 'بدون اسم')}</h3>
+          <div class="info-row">
+            <span>الصف: ${escapeHtml(profile.grade || '—')}</span>
+            <span>تليفون: ${escapeHtml(profile.phone || '—')}</span>
+            <span>ولي الأمر: ${escapeHtml(profile.guardian_phone || '—')}</span>
+            <span>عضو من: ${joinDate}</span>
+          </div>
+        </div>
+        <span class="last-active ${lastActiveCls}">${lastActiveLabel}</span>
+      </div>
+
+      <div class="student-section-title"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><path d="M4 5.5C6 4.5 9 4.5 12 6c3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z"/><path d="M12 6v13"/></svg> الكورسات المشترك فيها (${paidCourses.length})</div>`;
+
+    if(paidCourses.length === 0){
+      html += `<p style="font-size:12.5px; color:var(--bone-dim);">مفيش كورسات مدفوعة لسه.</p>`;
+    } else {
+      html += paidCourses.map(e => {
+        const total = lessonsByCourse[e.courses.id] || 0;
+        const done = progressByCourse[e.courses.id] || 0;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        return `
+          <div class="student-course-card">
+            <div class="top-row">
+              <b>${escapeHtml(e.courses.title)}</b>
+              <span class="pct">${pct}%</span>
+            </div>
+            <div class="sc-track"><div class="sc-fill" style="width:${pct}%"></div></div>
+            <div style="font-size:11px; color:var(--bone-dim); margin-top:6px;">${done} من ${total} حصة</div>
+          </div>`;
+      }).join('');
+    }
+
+    html += `<div class="student-section-title"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg> الاختبارات والواجبات (${(attempts || []).length})</div>`;
+
+    if(!attempts || attempts.length === 0){
+      html += `<p style="font-size:12.5px; color:var(--bone-dim);">لسه ماعملش أي اختبار أو واجب.</p>`;
+    } else {
+      html += attempts.map(a => {
+        if(!a.exams) return '';
+        const passed = a.percentage >= (a.exams.passing_score || 50);
+        const date = a.completed_at ? new Date(a.completed_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+        return `
+          <div class="student-exam-row">
+            <div>
+              <div class="ex-title">${escapeHtml(a.exams.title)} <span style="color:var(--bone-dim); font-weight:500;">(${a.exams.kind === 'homework' ? 'واجب' : 'اختبار'})</span></div>
+              <div class="ex-date">${date}</div>
+            </div>
+            <div class="ex-score ${passed ? 'pass' : 'fail'}">${Math.round(a.percentage)}%</div>
+          </div>`;
+      }).join('');
+    }
+
+    panel.innerHTML = html;
   }
 
   // ===== رسائل الطلاب (تواصل معانا) =====
@@ -3617,77 +3826,7 @@
     document.getElementById('hw-attempt-detail').style.display = 'none';
   }
 
-  // ===== أكواد فتح الترتيب =====
-  function randomUnlockCode(){
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // من غير حروف/أرقام بتتلخبط زي O/0/I/1
-    let s = '';
-    for(let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
-    return s.slice(0, 4) + '-' + s.slice(4);
-  }
-
-  async function generateUnlockCodes(){
-    const btn = document.getElementById('unlock-gen-btn');
-    const count = Math.max(1, Math.min(200, parseInt(document.getElementById('unlock-gen-count').value, 10) || 0));
-    btn.disabled = true; btn.textContent = 'جارٍ التوليد...';
-
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    const rows = Array.from({ length: count }, () => ({ code: randomUnlockCode(), created_by: user?.id || null }));
-
-    const { error } = await supabaseClient.from('unlock_codes').insert(rows);
-
-    btn.disabled = false; btn.textContent = 'توليد أكواد جديدة';
-
-    if(error){
-      console.error('generate unlock codes error:', error);
-      alert('حصل خطأ أثناء توليد الأكواد: ' + error.message);
-      return;
-    }
-
-    document.getElementById('unlock-codes-filter').value = 'unused';
-    loadUnlockCodes();
-  }
-
-  async function loadUnlockCodes(){
-    const tbody = document.getElementById('unlock-codes-table-body');
-    const filter = document.getElementById('unlock-codes-filter').value;
-    tbody.innerHTML = `<tr><td colspan="4">جارٍ التحميل...</td></tr>`;
-
-    let query = supabaseClient.from('unlock_codes').select('*').order('created_at', { ascending: false });
-    if(filter === 'unused') query = query.eq('is_used', false);
-    if(filter === 'used') query = query.eq('is_used', true);
-    const { data: codes, error } = await query;
-
-    if(error){
-      tbody.innerHTML = `<tr><td colspan="4">حصل خطأ في تحميل الأكواد (تأكد إن ملف add_unlock_codes.sql اتشغّل في Supabase)</td></tr>`;
-      return;
-    }
-    if(!codes || codes.length === 0){
-      tbody.innerHTML = `<tr><td colspan="4">مفيش أكواد هنا دلوقتي</td></tr>`;
-      return;
-    }
-
-    const usedByIds = [...new Set(codes.filter(c => c.used_by).map(c => c.used_by))];
-    let usersMap = {};
-    if(usedByIds.length > 0){
-      const { data: profiles } = await supabaseClient
-        .from('profiles').select('id, full_name, grade').in('id', usedByIds);
-      (profiles || []).forEach(p => usersMap[p.id] = p);
-    }
-
-    tbody.innerHTML = codes.map(c => {
-      const usedByName = c.used_by ? (usersMap[c.used_by]?.full_name || '—') : '—';
-      const usedAt = c.used_at ? new Date(c.used_at).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-      return `
-        <tr>
-          <td style="font-family:monospace; letter-spacing:.05em;">${c.code}</td>
-          <td><span class="tag ${c.is_used ? 'tag-hidden' : 'tag-live'}">${c.is_used ? 'اتستخدم' : 'متاح'}</span></td>
-          <td>${usedByName}</td>
-          <td>${usedAt}</td>
-        </tr>`;
-    }).join('');
-  }
-
-  // ===== كوبونات فتح كورسات السنتر بالسنة الدراسية =====
+  // ===== كوبونات فتح كورسات السنتر بالسنة الدراسية (وبتفتح كمان ترتيب المحاضرات) =====
   function makeCouponCode(){
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';

@@ -128,15 +128,20 @@
 
   .pending-row{
     display:flex; align-items:flex-start; gap:12px; padding:13px 14px;
-    background:var(--navy-deep); border-radius:14px; border:1px solid var(--line);
+    background:rgba(217,142,75,0.06); border-radius:14px; border:1px solid rgba(217,142,75,0.3);
     margin-bottom:12px;
   }
   .pending-row:last-child{margin-bottom:0;}
   .pending-ic{
-    flex:0 0 34px; width:34px; height:34px; border-radius:10px;
+    position:relative; flex:0 0 34px; width:34px; height:34px; border-radius:10px;
     display:flex; align-items:center; justify-content:center; font-size:15px;
     background:rgba(217,142,75,0.16); color:var(--amber);
   }
+  .pending-ic::after{
+    content:''; position:absolute; inset:-3px; border-radius:13px;
+    border:2px solid var(--amber); animation:pendingPulse 1.8s ease-out infinite;
+  }
+  @keyframes pendingPulse{0%{transform:scale(.85); opacity:.9;} 100%{transform:scale(1.25); opacity:0;}}
   .pending-row b{display:block; font-size:13.5px; color:var(--bone); margin-bottom:3px;}
   .pending-row span{font-size:11.5px; color:var(--bone-dim);}
 
@@ -403,7 +408,7 @@
           <div class="pending-ic"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l4 2.5"/></svg></div>
           <div>
             <b>${e.courses.title}</b>
-            <span>الاشتراك لسه مستني تأكيد الدفع من الأدمن</span>
+            <span>بيتراجع من الأدمن دلوقتي — هيتفتح فور الموافقة</span>
           </div>
         </div>
       `).join('');

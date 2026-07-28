@@ -132,8 +132,13 @@
     background:var(--navy-deep); border:2px solid var(--line);
   }
   .ach-card.unlocked .ach-icon{
-    background:rgba(232,196,104,0.18); border-color:var(--gold);
+    background:rgba(232,196,104,0.18); border-color:var(--gold); position:relative;
   }
+  .ach-card.unlocked .ach-icon::before{
+    content:''; position:absolute; inset:-7px; border-radius:50%;
+    border:2px dashed rgba(232,196,104,0.45);
+  }
+  .ach-card.unlocked{box-shadow:0 0 0 1px rgba(232,196,104,0.08) inset;}
   .ach-card.locked .ach-icon{filter:grayscale(1); opacity:.55; position:relative;}
   .ach-lock{
     position:absolute; bottom:-2px; inset-inline-end:calc(50% - 34px);

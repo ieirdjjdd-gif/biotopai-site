@@ -155,7 +155,7 @@
   .result-ring .gauge-center{
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
-  .result-ring b{font-family:'Tajawal'; font-size:30px;}
+  .result-ring b{font-family:'Tajawal'; font-size:38px;}
   .result-ring span{font-size:11px; color:var(--bone-dim);}
   .result-chips{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:-6px 0 22px;}
   .result-chip{
@@ -337,7 +337,6 @@
         </svg>
         <div class="gauge-center">
           <b id="result-percentage">0%</b>
-          <span id="result-fraction">0 / 0</span>
         </div>
       </div>
       <div class="result-chips" id="result-chips"></div>
@@ -927,7 +926,6 @@
     const ring = document.getElementById('result-ring');
     ring.classList.add(passed ? 'pass' : 'fail');
     document.getElementById('result-percentage').textContent = percentage + '%';
-    document.getElementById('result-fraction').textContent = `${correctCount} / ${total}`;
 
     const circumference = 301;
     const gaugeFill = document.getElementById('gauge-fill');

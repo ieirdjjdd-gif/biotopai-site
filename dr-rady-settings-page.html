@@ -330,36 +330,16 @@
       <button type="submit" class="btn btn-outline" id="pass-save-btn">تغيير كلمة المرور</button>
     </form>
 
-    <!-- ===== كود فتح الترتيب (لطلاب السنتر) ===== -->
-    <div class="panel" id="unlock-panel">
-      <div class="panel-head">
-        <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg></span> فتح ترتيب المحاضرات</h2>
-        <p>لو حضرت المحاضرة لايف في السنتر، اكتب الكود اللي اديهولك د. راضي عشان تقدر تفتح أي محاضرة في صفك من غير ما تخلّص اللي قبلها.</p>
-      </div>
-
-      <div id="unlock-active-state" style="display:none; align-items:center; gap:10px; background:rgba(95,168,43,0.14); border:1px solid rgba(95,168,43,0.4); color:var(--green-bright); border-radius:12px; padding:14px 16px; font-size:13px; font-weight:700;">
-        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>
-        الترتيب مفتوح ليك، تقدر تفتح أي محاضرة تحب.
-      </div>
-
-      <form id="unlock-form">
-        <div class="alert alert-success" id="unlock-success">تم تفعيل الكود، الترتيب بقى مفتوح ليك دلوقتي.</div>
-        <div class="alert alert-error" id="unlock-error">الكود ده مش صح أو اتستخدم قبل كده.</div>
-
-        <div class="field">
-          <label for="f-unlock-code">الكود</label>
-          <input type="text" id="f-unlock-code" placeholder="اكتب الكود هنا" autocomplete="off">
-        </div>
-
-        <button type="submit" class="btn btn-outline" id="unlock-save-btn">تفعيل الكود</button>
-      </form>
-    </div>
-
-    <!-- ===== كود فتح كورسات السنتر ===== -->
+    <!-- ===== كود فتح كورسات السنتر (وبيفتح كمان ترتيب المحاضرات) ===== -->
     <div class="panel" id="coupon-panel">
       <div class="panel-head">
-        <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M3 12h18" stroke-dasharray="2 2"/><circle cx="8" cy="12" r="1.6"/></svg></span> عندك كود فتح كورسات؟</h2>
-        <p>لو أخدت كود من الأدمن، اكتبه هنا وهيتفتحلك كورسات سنتك على طول.</p>
+        <h2><span class="ic ic-inline"><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M3 12h18" stroke-dasharray="2 2"/><circle cx="8" cy="12" r="1.6"/></svg></span> عندك كود من د. راضي؟</h2>
+        <p>اكتب الكود اللي أخدته من الأدمن، وهيتفتحلك كورسات سنتك كلها، وكمان تقدر تفتح أي محاضرة من غير ما تخلّص اللي قبلها.</p>
+      </div>
+
+      <div id="coupon-active-state" style="display:none; align-items:center; gap:10px; background:rgba(95,168,43,0.14); border:1px solid rgba(95,168,43,0.4); color:var(--green-bright); border-radius:12px; padding:14px 16px; font-size:13px; font-weight:700; margin-bottom:16px;">
+        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 5-5"/></svg>
+        ترتيب المحاضرات مفتوح ليك، تقدر تفتح أي محاضرة تحب.
       </div>
 
       <div class="alert alert-success" id="coupon-success"></div>
@@ -410,8 +390,7 @@
     document.getElementById('f-guardian').value = profile?.guardian_phone || '';
 
     if(profile?.unlock_sequence){
-      document.getElementById('unlock-active-state').style.display = 'flex';
-      document.getElementById('unlock-form').style.display = 'none';
+      document.getElementById('coupon-active-state').style.display = 'flex';
     }
   })();
 
@@ -498,41 +477,7 @@
     document.getElementById('f-pass2').value = '';
   });
 
-  // ===== تفعيل كود فتح الترتيب =====
-  document.getElementById('unlock-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const successEl = document.getElementById('unlock-success');
-    const errorEl = document.getElementById('unlock-error');
-    successEl.style.display = 'none';
-    errorEl.style.display = 'none';
-
-    const code = document.getElementById('f-unlock-code').value.trim();
-    if(!code){
-      errorEl.textContent = 'اكتب الكود الأول.';
-      errorEl.style.display = 'block';
-      return;
-    }
-
-    const btn = document.getElementById('unlock-save-btn');
-    btn.disabled = true; btn.textContent = 'جارٍ التفعيل...';
-
-    const { data, error } = await supabaseClient.rpc('redeem_unlock_code', { input_code: code });
-
-    btn.disabled = false; btn.textContent = 'تفعيل الكود';
-
-    if(error || data !== true){
-      console.error('redeem code error:', error);
-      errorEl.style.display = 'block';
-      return;
-    }
-
-    successEl.style.display = 'block';
-    if(typeof showToast === 'function') showToast('تم التفعيل', 'الترتيب بقى مفتوح ليك');
-    document.getElementById('unlock-form').style.display = 'none';
-    document.getElementById('unlock-active-state').style.display = 'flex';
-  });
-
-  // ===== تفعيل كود فتح كورسات السنتر =====
+  // ===== تفعيل كود فتح كورسات السنتر (وده كمان بيفتح ترتيب المحاضرات) =====
   async function redeemGradeCoupon(){
     const successEl = document.getElementById('coupon-success');
     const errorEl = document.getElementById('coupon-error');
@@ -560,8 +505,9 @@
       return;
     }
 
-    successEl.textContent = `تم! اتفتحلك كورسات ${unlockedGrade} كلها.`;
+    successEl.textContent = `تم! اتفتحلك كورسات ${unlockedGrade} كلها، وترتيب المحاضرات بقى مفتوح ليك.`;
     successEl.style.display = 'block';
+    document.getElementById('coupon-active-state').style.display = 'flex';
     document.getElementById('f-coupon').value = '';
   }
 </script>
